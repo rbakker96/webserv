@@ -1,0 +1,1 @@
+/usr/bin/cc -g   CMakeFiles/webserv.dir/practice_socket_programming/server.c.o CMakeFiles/webserv.dir/practice_socket_programming/client.c.o  -o webserv 

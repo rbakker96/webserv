@@ -1,8 +1,4 @@
-/Applications/CLion.app/Contents/bin/cmake/mac/bin/cmake -DCMAKE_BUILD_TYPE=Debug -G "CodeBlocks - Unix Makefiles" /Users/roybakker/Desktop/webserv
-CMake Error at CMakeLists.txt:6 (set):
-  set called with incorrect number of arguments
-
-
--- Configuring incomplete, errors occurred!
-See also "/Users/roybakker/Desktop/webserv/cmake-build-debug/CMakeFiles/CMakeOutput.log".
-See also "/Users/roybakker/Desktop/webserv/cmake-build-debug/CMakeFiles/CMakeError.log".
+"/home/qli/Documents/Installed programs/clion-2020.2.4/bin/cmake/linux/bin/cmake" -DCMAKE_BUILD_TYPE=Debug -G "CodeBlocks - Unix Makefiles" /home/qli/CLionProjects/webserv
+-- Configuring done
+-- Generating done
+-- Build files have been written to: /home/qli/CLionProjects/webserv/cmake-build-debug

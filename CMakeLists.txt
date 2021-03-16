@@ -3,8 +3,6 @@ project(webserv)
 
 set(CMAKE_CXX_STANDARD 98)
 
-set()
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra")
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -Werror")
-
-add_executable(webserv ${SOURCES})
+add_executable(webserv ${SOURCES} "practice socket programming/server.c" "practice socket programming/client.c")

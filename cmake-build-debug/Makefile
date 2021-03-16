@@ -59,38 +59,27 @@ cmake_force:
 SHELL = /bin/sh
 
 # The CMake executable.
-CMAKE_COMMAND = /Applications/CLion.app/Contents/bin/cmake/mac/bin/cmake
+CMAKE_COMMAND = "/home/qli/Documents/Installed programs/clion-2020.2.4/bin/cmake/linux/bin/cmake"
 
 # The command to remove a file.
-RM = /Applications/CLion.app/Contents/bin/cmake/mac/bin/cmake -E rm -f
+RM = "/home/qli/Documents/Installed programs/clion-2020.2.4/bin/cmake/linux/bin/cmake" -E rm -f
 
 # Escaping for special characters.
 EQUALS = =
 
 # The top-level source directory on which CMake was run.
-CMAKE_SOURCE_DIR = /Users/roybakker/Desktop/webserv
+CMAKE_SOURCE_DIR = /home/qli/CLionProjects/webserv
 
 # The top-level build directory on which CMake was run.
-CMAKE_BINARY_DIR = /Users/roybakker/Desktop/webserv/cmake-build-debug
+CMAKE_BINARY_DIR = /home/qli/CLionProjects/webserv/cmake-build-debug
 
 #=============================================================================
 # Targets provided globally by CMake.
 
-# Special rule for the target rebuild_cache
-rebuild_cache:
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --cyan "Running CMake to regenerate build system..."
-	/Applications/CLion.app/Contents/bin/cmake/mac/bin/cmake --regenerate-during-build -S$(CMAKE_SOURCE_DIR) -B$(CMAKE_BINARY_DIR)
-.PHONY : rebuild_cache
-
-# Special rule for the target rebuild_cache
-rebuild_cache/fast: rebuild_cache
-
-.PHONY : rebuild_cache/fast
-
 # Special rule for the target edit_cache
 edit_cache:
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --cyan "No interactive CMake dialog available..."
-	/Applications/CLion.app/Contents/bin/cmake/mac/bin/cmake -E echo No\ interactive\ CMake\ dialog\ available.
+	"/home/qli/Documents/Installed programs/clion-2020.2.4/bin/cmake/linux/bin/cmake" -E echo No\ interactive\ CMake\ dialog\ available.
 .PHONY : edit_cache
 
 # Special rule for the target edit_cache
@@ -98,11 +87,22 @@ edit_cache/fast: edit_cache
 
 .PHONY : edit_cache/fast
 
+# Special rule for the target rebuild_cache
+rebuild_cache:
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --cyan "Running CMake to regenerate build system..."
+	"/home/qli/Documents/Installed programs/clion-2020.2.4/bin/cmake/linux/bin/cmake" --regenerate-during-build -S$(CMAKE_SOURCE_DIR) -B$(CMAKE_BINARY_DIR)
+.PHONY : rebuild_cache
+
+# Special rule for the target rebuild_cache
+rebuild_cache/fast: rebuild_cache
+
+.PHONY : rebuild_cache/fast
+
 # The main all target
 all: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /Users/roybakker/Desktop/webserv/cmake-build-debug/CMakeFiles /Users/roybakker/Desktop/webserv/cmake-build-debug/CMakeFiles/progress.marks
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/qli/CLionProjects/webserv/cmake-build-debug/CMakeFiles /home/qli/CLionProjects/webserv/cmake-build-debug/CMakeFiles/progress.marks
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 all
-	$(CMAKE_COMMAND) -E cmake_progress_start /Users/roybakker/Desktop/webserv/cmake-build-debug/CMakeFiles 0
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/qli/CLionProjects/webserv/cmake-build-debug/CMakeFiles 0
 .PHONY : all
 
 # The main clean target
@@ -130,6 +130,73 @@ depend:
 	$(CMAKE_COMMAND) -S$(CMAKE_SOURCE_DIR) -B$(CMAKE_BINARY_DIR) --check-build-system CMakeFiles/Makefile.cmake 1
 .PHONY : depend
 
+#=============================================================================
+# Target rules for targets named webserv
+
+# Build rule for target.
+webserv: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 webserv
+.PHONY : webserv
+
+# fast build rule for target.
+webserv/fast:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/webserv.dir/build.make CMakeFiles/webserv.dir/build
+.PHONY : webserv/fast
+
+practice_socket_programming/client.o: practice_socket_programming/client.c.o
+
+.PHONY : practice_socket_programming/client.o
+
+# target to build an object file
+practice_socket_programming/client.c.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/webserv.dir/build.make CMakeFiles/webserv.dir/practice_socket_programming/client.c.o
+.PHONY : practice_socket_programming/client.c.o
+
+practice_socket_programming/client.i: practice_socket_programming/client.c.i
+
+.PHONY : practice_socket_programming/client.i
+
+# target to preprocess a source file
+practice_socket_programming/client.c.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/webserv.dir/build.make CMakeFiles/webserv.dir/practice_socket_programming/client.c.i
+.PHONY : practice_socket_programming/client.c.i
+
+practice_socket_programming/client.s: practice_socket_programming/client.c.s
+
+.PHONY : practice_socket_programming/client.s
+
+# target to generate assembly for a file
+practice_socket_programming/client.c.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/webserv.dir/build.make CMakeFiles/webserv.dir/practice_socket_programming/client.c.s
+.PHONY : practice_socket_programming/client.c.s
+
+practice_socket_programming/server.o: practice_socket_programming/server.c.o
+
+.PHONY : practice_socket_programming/server.o
+
+# target to build an object file
+practice_socket_programming/server.c.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/webserv.dir/build.make CMakeFiles/webserv.dir/practice_socket_programming/server.c.o
+.PHONY : practice_socket_programming/server.c.o
+
+practice_socket_programming/server.i: practice_socket_programming/server.c.i
+
+.PHONY : practice_socket_programming/server.i
+
+# target to preprocess a source file
+practice_socket_programming/server.c.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/webserv.dir/build.make CMakeFiles/webserv.dir/practice_socket_programming/server.c.i
+.PHONY : practice_socket_programming/server.c.i
+
+practice_socket_programming/server.s: practice_socket_programming/server.c.s
+
+.PHONY : practice_socket_programming/server.s
+
+# target to generate assembly for a file
+practice_socket_programming/server.c.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/webserv.dir/build.make CMakeFiles/webserv.dir/practice_socket_programming/server.c.s
+.PHONY : practice_socket_programming/server.c.s
+
 # Help Target
 help:
 	@echo "The following are some of the valid targets for this Makefile:"
@@ -138,6 +205,13 @@ help:
 	@echo "... depend"
 	@echo "... edit_cache"
 	@echo "... rebuild_cache"
+	@echo "... webserv"
+	@echo "... practice_socket_programming/client.o"
+	@echo "... practice_socket_programming/client.i"
+	@echo "... practice_socket_programming/client.s"
+	@echo "... practice_socket_programming/server.o"
+	@echo "... practice_socket_programming/server.i"
+	@echo "... practice_socket_programming/server.s"
 .PHONY : help
 
 
