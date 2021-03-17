@@ -7,4 +7,4 @@ set()
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -Werror")
 
-add_executable(webserv ${SOURCES})
+add_executable(webserv ${SOURCES} main.cpp TCP_layer/tcp_connection.hpp TCP_layer/tcp_connection.cpp)
