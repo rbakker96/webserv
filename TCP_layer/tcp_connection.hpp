@@ -26,8 +26,12 @@ public:
     tcp_connection(tcp_connection const &src);
     ~tcp_connection();
 
-    tcp_connection & operator=(tcp_connection const &rhs);
-};
+//    tcp_connection & operator=(tcp_connection const &rhs);
 
+    int     create_socket();
+    int     bind_socket_addrs(int port);
+    int     create_connection(int backlog);
+    int     response(char *hello);
+};
 
 #endif //WEBSERV_TCP_HPP
