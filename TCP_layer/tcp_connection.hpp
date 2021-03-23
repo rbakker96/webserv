@@ -14,16 +14,22 @@
 #define TCP_CONNECTION_HPP
 
 #include <netinet/in.h>
+#include <unistd.h>
+#include <cstring>
+#include <string>
+#include <sys/socket.h>
+#include <errno.h>
+#include <iostream>
 
 class tcp_connection {
 public:
-    int server_fd;
-    int tcp_socket;
-    struct sockaddr_in addr;
-    int addr_len;
+    int 	server_fd;
+    int 	tcp_socket;
+    struct	sockaddr_in addr;
+    int		addr_len;
 
     tcp_connection();
-    tcp_connection(tcp_connection const &src);
+//    tcp_connection(tcp_connection const &src);
     ~tcp_connection();
 
 //    tcp_connection & operator=(tcp_connection const &rhs);
@@ -31,7 +37,7 @@ public:
     int     create_socket();
     int     bind_socket_addrs(int port);
     int     create_connection(int backlog);
-    int     response(char *hello);
+//    int     response(char *hello);
 };
 
 #endif //WEBSERV_TCP_HPP

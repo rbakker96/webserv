@@ -17,10 +17,13 @@
 #include <unistd.h>
 #include <string.h>
 
+tcp_connection::tcp_connection() {
+	this->server_fd = 0;
+	this->tcp_socket = 0;
+	this->addr_len = 0;
+}
 
-tcp_connection::tcp_connection() {}
-
-tcp_connection::tcp_connection(tcp_connection const &src){}
+//tcp_connection::tcp_connection(tcp_connection const &src){}
 
 tcp_connection::~tcp_connection(){}
 
@@ -50,27 +53,23 @@ int tcp_connection::create_connection(int backlog) {
         perror("listen failed");
         return 1;
     }
-    if ((tcp_socket = accept(server_fd, (struct sockaddr *)&addr, (socklen_t*)&addr_len))<0) {
-        perror("accept failed");
-        return 1;
-    }
     return 0;
 }
 
-int tcp_connection::response(char *hello) {
-    while (1) {
-        printf("\n+++++++ Waiting for new connection ++++++++\n\n");
-        if ((tcp_socket = accept(server_fd, (struct sockaddr *) &addr, (socklen_t *) & addr_len)) < 0) {
-            perror("accept failure");
-            return 1;
-        }
+//int tcp_connection::response(char *hello) {
+    //while (1) {
+        //printf("\n+++++++ Waiting for new connection ++++++++\n\n");
+        //if ((tcp_socket = accept(server_fd, (struct sockaddr *) &addr, (socklen_t *) & addr_len)) < 0) {
+            //perror("accept failure");
+            //return 1;
+        //}
 
-        char buffer[30000] = {0};
-        long valread = read(tcp_socket, buffer, 30000);
-        printf("%s\n", buffer);
-        write(tcp_socket, hello, strlen(hello));
-        printf("------------------Hello message sent-------------------\n");
-        close(tcp_socket);
-    }
-    return 0;
-}
+        //char buffer[30000] = {0};
+        //long valread = read(tcp_socket, buffer, 30000);
+        //printf("%s\n", buffer);
+        //write(tcp_socket, hello, strlen(hello));
+        //printf("------------------Hello message sent-------------------\n");
+        //close(tcp_socket);
+    //}
+    //return 0;
+//}
