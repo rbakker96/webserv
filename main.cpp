@@ -13,6 +13,7 @@
 #include "TCP_layer/tcp_connection.hpp"
 
 int main() {
+
     tcp_connection tcp;
 
 	if (tcp.create_socket() == 1)
@@ -26,4 +27,3 @@ int main() {
 		return (1);
 	return (0);
 }
-
