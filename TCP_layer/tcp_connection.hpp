@@ -37,7 +37,7 @@ public:
     int     create_socket();
     int     bind_socket_addrs(int port);
     int     create_connection(int backlog);
-//    int     response(char *hello);
+    int     response(std::string hello);
 };
 
 #endif //WEBSERV_TCP_HPP
