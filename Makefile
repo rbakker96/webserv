@@ -13,7 +13,7 @@
 NAME			=	webserv
 
 SOURCES			=	main.cpp \
-					TCP_layer/tcp_connection.cpp \
+					tcp_layer/tcp_connection.cpp \
 
 OBJECTS 		=	${SOURCES:%.c=%.o}
 

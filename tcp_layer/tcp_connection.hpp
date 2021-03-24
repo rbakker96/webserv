@@ -34,10 +34,11 @@ public:
 
 //    tcp_connection & operator=(tcp_connection const &rhs);
 
-    int     create_socket();
+    int     create_socket(void);
     int     bind_socket_addrs(int port);
     int     create_connection(int backlog);
-    int     response(std::string hello);
+    int     response(void);
+	void	write_to_browser(void);
 };
 
 #endif //WEBSERV_TCP_HPP
