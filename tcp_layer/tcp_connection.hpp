@@ -20,10 +20,13 @@
 #include <sys/socket.h>
 #include <errno.h>
 #include <iostream>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+#include <strings.h>
 
 class tcp_connection {
 public:
-    int 	server_fd;
     int 	tcp_socket;
     struct	sockaddr_in addr;
     int		addr_len;
@@ -38,7 +41,8 @@ public:
     int     bind_socket_addrs(int port);
     int     create_connection(int backlog);
     int     response(void);
-	void	write_to_browser(void);
+	void	handle_request(char *buffer, int request_fd);
+	void	write_file_content(int request_fd);
 };
 
 #endif //WEBSERV_TCP_HPP
