@@ -25,7 +25,6 @@ public:
     tcp_connection();
     tcp_connection(tcp_connection const &src);
     ~tcp_connection();
-
 //    tcp_connection & operator=(tcp_connection const &rhs);
 
     int     create_socket();
