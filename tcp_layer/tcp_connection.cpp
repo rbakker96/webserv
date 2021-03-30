@@ -29,7 +29,7 @@ int tcp_connection::create_socket() {
     return 0;
 }
 
-int tcp_connection::bind_socket_addrs(int port) {
+int tcp_connection::bind_socket_address(int port) {
     memset((char *)&addr, 0, sizeof(addr));
     addr.sin_family = AF_INET;
     addr.sin_addr.s_addr = htonl(INADDR_ANY);
@@ -53,14 +53,15 @@ int tcp_connection::create_connection(int backlog) {
 int	tcp_connection::response(void) {
 	int	request_fd;
 
-	while (1) {
+	/*while (1) {*/
         if ((request_fd = accept(this->tcp_socket, (struct sockaddr *)&this->addr, (socklen_t *)&this->addr_len)) < 0)
 			return (1);
-        char buffer[30000] = {0};
-        if (read(request_fd, buffer, 30000) < 0)
-			return (1);
-		handle_request(buffer, request_fd);
-    }
+		return (request_fd);
+/*        char buffer[30000] = {0};*/
+        //if (read(request_fd, buffer, 30000) < 0)
+			//return (1);
+		/*handle_request(buffer, request_fd);*/
+/*    }*/
 	return (0);
 }
 
@@ -72,16 +73,22 @@ void	tcp_connection::handle_request(char *buffer, int request_fd)
 	std::cout << "--- buffer ---" << std::endl;
 	std::cout << buffer << std::endl;
 	std::cout << "--- buffer ---" << std::endl;
-	write_file_content(request_fd);
+	write_file_content(request_fd, 1);
 	close(request_fd);
 }
 
-void	tcp_connection::write_file_content(int request_fd) {
+void	tcp_connection::write_file_content(int request_fd, int conn) {
+	int		fd;
+	char	buffer[30000] = {0};
+
+	std::cout << "hi " << conn << std::endl;
 	std::string	header1 = "HTTP/1.1 200 OK\n";
 	std::string	header2 = "Content-Type: text/html; charset=UTF-8\n";
 	std::string	header3 = "Content-Length: 302\n\n";
-	int fd = open("html_css_testfiles/test.html", O_RDONLY);
-	char buffer[30000] = {0};
+	if (conn == 1)
+		fd = open("html_css_testfiles/test_one.html", O_RDONLY);
+	if (conn == 2)
+		fd = open("html_css_testfiles/test_two.html", O_RDONLY);
 	read(fd, buffer, 30000);
 	int	len = 0;
 	while (buffer[len] != '\0')

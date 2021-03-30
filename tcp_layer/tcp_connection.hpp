@@ -38,11 +38,11 @@ public:
 //    tcp_connection & operator=(tcp_connection const &rhs);
 
     int     create_socket(void);
-    int     bind_socket_addrs(int port);
+    int     bind_socket_address(int port);
     int     create_connection(int backlog);
     int     response(void);
 	void	handle_request(char *buffer, int request_fd);
-	void	write_file_content(int request_fd);
+	void	write_file_content(int request_fd, int conn);
 };
 
 #endif //WEBSERV_TCP_HPP
