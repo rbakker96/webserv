@@ -6,13 +6,14 @@
 #    By: roybakker <roybakker@student.codam.nl>       +#+                      #
 #                                                    +#+                       #
 #    Created: 2021/02/25 14:55:06 by roybakker     #+#    #+#                  #
-#    Updated: 2021/02/25 14:55:06 by roybakker     ########   odam.nl          #
+#    Updated: 2021/03/25 11:28:38 by gbouwen       ########   odam.nl          #
 #                                                                              #
 # **************************************************************************** #
 
 NAME			=	webserv
 
-SOURCES			=
+SOURCES			=	main.cpp \
+					tcp_layer/tcp_connection.cpp \
 
 OBJECTS 		=	${SOURCES:%.c=%.o}
 

@@ -6,29 +6,24 @@
 /*   By: roybakker <roybakker@student.codam.nl>       +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2021/03/16 16:23:09 by roybakker     #+#    #+#                 */
-/*   Updated: 2021/03/16 16:23:09 by roybakker     ########   odam.nl         */
+/*   Updated: 2021/03/25 11:28:55 by gbouwen       ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include <stdio.h>
-#include "TCP_layer/tcp_connection.hpp"
+#include "tcp_layer/tcp_connection.hpp"
 
 int main() {
+
     tcp_connection tcp;
 
-    while (1) {
-        printf("\n+++++++ Waiting for new connection ++++++++\n\n");
-        if ((tcp.tcp_socket = accept(tcp.server_fd, (struct sockaddr *)&tcp.addr, (socklen_t*)&tcp.addr_len))<0) {
-            perror("In accept");
-            exit(EXIT_FAILURE);
-        }
-
-        char buffer[30000] = {0};
-        int valread = read( tcp.tcp_socket , buffer, 30000);
-        printf("%s\n",buffer );
-        write(tcp.tcp_socket , hello , strlen(hello));
-        printf("------------------Hello message sent-------------------\n");
-        close(tcp.tcp_socket);
-    }
+	if (tcp.create_socket() == 1)
+		return (1);
+	if (tcp.bind_socket_addrs(8080) == 1)
+		return (1);
+	if (tcp.create_connection(100) == 1)
+		return (1);
+	std::string hello = "HTTP/1.1 200 OK\nContent-Type: text/plain\nContent-Length: 12\n\nHello world!";
+	if (tcp.response(hello) == 1)
+		return (1);
+	return (0);
 }
-
