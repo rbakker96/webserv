@@ -82,18 +82,24 @@ void	tcp_connection::write_file_content(int request_fd, int conn) {
 	char	buffer[30000] = {0};
 
 	std::cout << "hi " << conn << std::endl;
+	std::cout << "--- READ REQUEST ---" << std::endl;
+	read(request_fd, buffer, 30000);
+	std::cout << buffer << std::endl;
+	std::cout << "--- READ REQUEST ---" << std::endl;
 	std::string	header1 = "HTTP/1.1 200 OK\n";
 	std::string	header2 = "Content-Type: text/html; charset=UTF-8\n";
-	std::string	header3 = "Content-Length: 302\n\n";
+	std::string	header3 = "Content-Length: 313\n\n";
 	if (conn == 1)
-		fd = open("html_css_testfiles/test_one.html", O_RDONLY);
+		fd = open("../html_css_testfiles/test_one.html", O_RDONLY);
 	if (conn == 2)
-		fd = open("html_css_testfiles/test_two.html", O_RDONLY);
+		fd = open("../html_css_testfiles/test_two.html", O_RDONLY);
+	std::cout << "FD " << fd << std::endl;
 	read(fd, buffer, 30000);
 	int	len = 0;
 	while (buffer[len] != '\0')
 		len++;
 
+	std::cout << "LEN " << len << std::endl;
 	std::cout << "im gonna write" << std::endl;
 	write(request_fd, header1.c_str(), header1.length());
 	write(request_fd, header2.c_str(), header2.length());

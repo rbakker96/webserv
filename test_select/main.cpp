@@ -8,9 +8,6 @@ int	main(void)
 {
 	tcp_connection	connection_one, connection_two;
 	fd_set			read_fds;
-	struct timeval	tv;
-	char			buff_one[30000], buff_two[30000];
-	int				n;
 
 	FD_ZERO(&read_fds);
 	connection_one.create_socket();
@@ -19,27 +16,15 @@ int	main(void)
 	connection_two.create_socket();
 	connection_two.bind_socket_address(9090);
 	connection_two.create_connection(100);
-	tv.tv_sec = 10;
-	tv.tv_usec = 0;
 	while (1)
 	{
-		std::cout << "before first accept" << std::endl;
-		int	request_fd_one = accept(connection_one.tcp_socket, (struct sockaddr *)&connection_one.addr, (socklen_t *)&connection_one.addr_len);
-		std::cout << "first accept done" << std::endl;
-		if (request_fd_one > 0)
-		{
-			FD_SET(request_fd_one, &read_fds);
-			n = request_fd_one + 1;
-		}
-		std::cout << "before second accept" << std::endl;
-		int	request_fd_two = accept(connection_two.tcp_socket, (struct sockaddr *)&connection_two.addr, (socklen_t *)&connection_two.addr_len);
-		std::cout << "second accept done" << std::endl;
-		if (request_fd_two > 0)
-		{
-			FD_SET(request_fd_two, &read_fds);
-			n = request_fd_two + 1;
-		}
-		int	select_value = select(n, &read_fds, NULL, NULL, &tv);
+		FD_SET(connection_one.tcp_socket, &read_fds);
+		FD_SET(connection_two.tcp_socket, &read_fds);
+		std::cout << "1: " << connection_one.tcp_socket << std::endl;
+		std::cout << "2: " << connection_two.tcp_socket << std::endl;
+		int n = connection_two.tcp_socket + 1;
+		std::cout << "before select" << std::endl;
+		int	select_value = select(n, &read_fds, NULL, NULL, NULL);
 		std::cout << "select done" << std::endl;
 		if (select_value == -1)
 			std::cout << "select error" << std::endl;
@@ -47,24 +32,20 @@ int	main(void)
 			std::cout << "time out" << std::endl;
 		else
 		{
-			if (FD_ISSET(request_fd_one, &read_fds))
+			if (FD_ISSET(connection_one.tcp_socket, &read_fds))
 			{
-				recv(request_fd_one, buff_one, 30000, 0);
-				std::cout << "--- Received in buff_one ---" << std::endl;
-				std::cout << buff_one << std::endl;
-				std::cout << "----------------------------" << std::endl;
-				FD_CLR(request_fd_one, &read_fds);
-				close(request_fd_one);
+				int request_fd = accept(connection_one.tcp_socket, (struct sockaddr *)&connection_one.addr, (socklen_t *)&connection_one.addr_len);
+				connection_one.write_file_content(request_fd, 1);
 			}
-			if (FD_ISSET(request_fd_two, &read_fds))
+			else
+				std::cout << "connection one not set" << std::endl;
+			if (FD_ISSET(connection_two.tcp_socket, &read_fds))
 			{
-				recv(request_fd_two, buff_two, 30000, 0);
-				std::cout << "--- Received in buff_two ---" << std::endl;
-				std::cout << buff_two << std::endl;
-				std::cout << "----------------------------" << std::endl;
-				FD_CLR(request_fd_two, &read_fds);
-				close(request_fd_two);
+				int request_fd = accept(connection_two.tcp_socket, (struct sockaddr *)&connection_two.addr, (socklen_t *)&connection_two.addr_len);
+				connection_two.write_file_content(request_fd, 2);
 			}
+			else
+				std::cout << "connection two not set" << std::endl;
 		}
 	}
 }
