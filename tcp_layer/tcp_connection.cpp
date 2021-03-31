@@ -94,8 +94,10 @@ void	tcp_connection::write_file_content(int request_fd, int conn) {
 	while (buffer[len] != '\0')
 		len++;
 
+	std::cout << "im gonna write" << std::endl;
 	write(request_fd, header1.c_str(), header1.length());
 	write(request_fd, header2.c_str(), header2.length());
 	write(request_fd, header3.c_str(), header3.length());
 	write(request_fd, buffer, len);
+	std::cout << "done writing" << std::endl;
 }
