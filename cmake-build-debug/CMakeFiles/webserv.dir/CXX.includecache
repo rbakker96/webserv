@@ -1,0 +1,42 @@
+#IncludeRegexLine: ^[ 	]*[#%][ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+/home/qli/Documents/Codam/webserv/main.cpp
+tcp_layer/tcp_connection.hpp
+/home/qli/Documents/Codam/webserv/tcp_layer/tcp_connection.hpp
+
+/home/qli/Documents/Codam/webserv/tcp_layer/tcp_connection.cpp
+tcp_connection.hpp
+/home/qli/Documents/Codam/webserv/tcp_layer/tcp_connection.hpp
+sys/socket.h
+-
+errno.h
+-
+stdio.h
+-
+unistd.h
+-
+string.h
+-
+
+/home/qli/Documents/Codam/webserv/tcp_layer/tcp_connection.hpp
+netinet/in.h
+-
+unistd.h
+-
+cstring
+-
+string
+-
+sys/socket.h
+-
+errno.h
+-
+iostream
+-
+

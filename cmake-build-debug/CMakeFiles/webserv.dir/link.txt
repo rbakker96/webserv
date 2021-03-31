@@ -1,0 +1,1 @@
+/usr/bin/c++   -Wall -Wextra -Werror -g   CMakeFiles/webserv.dir/main.cpp.o CMakeFiles/webserv.dir/tcp_layer/tcp_connection.cpp.o  -o webserv 
