@@ -4,10 +4,10 @@ set(CMAKE_DEPENDS_LANGUAGES
   )
 # The set of files for implicit dependencies of each language:
 set(CMAKE_DEPENDS_CHECK_CXX
-  "/home/qli/Documents/Codam/webserv/main.cpp" "/home/qli/Documents/Codam/webserv/cmake-build-debug/CMakeFiles/webserv.dir/main.cpp.o"
-  "/home/qli/Documents/Codam/webserv/tcp_layer/tcp_connection.cpp" "/home/qli/Documents/Codam/webserv/cmake-build-debug/CMakeFiles/webserv.dir/tcp_layer/tcp_connection.cpp.o"
+  "/Users/rbakker/Desktop/webserv/main.cpp" "/Users/rbakker/Desktop/webserv/cmake-build-debug/CMakeFiles/webserv.dir/main.cpp.o"
+  "/Users/rbakker/Desktop/webserv/tcp_layer/tcp_connection.cpp" "/Users/rbakker/Desktop/webserv/cmake-build-debug/CMakeFiles/webserv.dir/tcp_layer/tcp_connection.cpp.o"
   )
-set(CMAKE_CXX_COMPILER_ID "GNU")
+set(CMAKE_CXX_COMPILER_ID "AppleClang")
 
 # The include file search paths:
 set(CMAKE_CXX_TARGET_INCLUDE_PATH
