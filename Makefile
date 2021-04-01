@@ -13,14 +13,19 @@
 NAME			=	webserv
 
 SOURCES			=	main.cpp \
-					tcp_layer/tcp_connection.cpp \
+                    CPP-FILES/gnl/get_next_line.cpp \
+                    CPP-FILES/gnl/get_next_line_utils.cpp \
+                    CPP-FILES/server/location_context.cpp \
+                    CPP-FILES/server/server.cpp \
+                    CPP-FILES/server/webserver.cpp
 
 OBJECTS 		=	${SOURCES:%.c=%.o}
 
 FLAGS 			=	-Wall -Wextra -Werror
-#INCLUDES 		=	-IHEADER_FILES/
-#UTILS			=	-IHEADER_FILES/UTILS/
-#UNIT_TEST		=	-IUNIT_TEST/
+
+CLASS_HEADERS   =	-IHEADER_FILES/CLASS
+UTILS_HEADERS   =   -IHEADER_FILES/UTILS
+
 COMPILE			=	clang++ -std=c++98
 
 GREEN 			= 	\033[38;5;46m
@@ -33,14 +38,13 @@ all: $(NAME)
 
 $(NAME): $(OBJECTS)
 	@echo "$(GREEN)----------------------------------------------------"
-#	@$(COMPILE) $(INCLUDES) $(UTILS) $(UNIT_TEST) $(FLAGS) -o $(NAME) $(OBJECTS)
-	@$(COMPILE) $(FLAGS) -o $(NAME) $(OBJECTS)
+	@$(COMPILE) $(CLASS_HEADERS) $(UTILS_HEADERS) $(FLAGS) -o $(NAME) $(OBJECTS)
 	@echo "Executable				./webserv"
 	@echo "$(GREEN)----------------------------------------------------"
 
 %.o: %.c
 	@echo "$(GREY)Compiling...				$(WHITE)$<"
-#	@$(COMPILE) $(INCLUDES) $(UTILS) $(UNIT_TEST) $(FLAGS) -c -o $@ $<
+	@$(COMPILE) $(CLASS_HEADERS) $(UTILS_HEADERS) $(FLAGS) -c -o $@ $<
 	@$(COMPILE) $(FLAGS) -c -o $@ $<
 
 clean:
