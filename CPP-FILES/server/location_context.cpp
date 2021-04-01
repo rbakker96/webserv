@@ -65,8 +65,8 @@ void    location_context::configure_autoindex(std::string str){
     std::string tmp = str.substr(pos + 1);
 
     if (tmp == "on")
-        _autoindex == true;
-    _autoindex == false;
+        _autoindex = true;
+    _autoindex = false;
 }
 
 void    location_context::invalid_element(std::string str) {
