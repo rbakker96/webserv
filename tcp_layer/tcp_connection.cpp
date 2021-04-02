@@ -26,6 +26,7 @@ int tcp_connection::create_socket() {
         std::cout << "cannot create tcp socket" << std::endl;
         return 1;
     }
+	fcntl(this->tcp_socket, F_SETFL, O_NONBLOCK);
     return 0;
 }
 
@@ -81,11 +82,6 @@ void	tcp_connection::write_file_content(int request_fd, int conn) {
 	int		fd;
 	char	buffer[30000] = {0};
 
-	std::cout << "hi " << conn << std::endl;
-	std::cout << "--- READ REQUEST ---" << std::endl;
-	read(request_fd, buffer, 30000);
-	std::cout << buffer << std::endl;
-	std::cout << "--- READ REQUEST ---" << std::endl;
 	std::string	header1 = "HTTP/1.1 200 OK\n";
 	std::string	header2 = "Content-Type: text/html; charset=UTF-8\n";
 	std::string	header3 = "Content-Length: 313\n\n";
