@@ -32,9 +32,12 @@ void    server::create_new_server(std::vector <std::string> server_config) {
         if (config_id == 6) {
             location.configure_location_context(it, server_config.end());
             server._location.push_back(location);
+            it += context_size(server_config, it);
         }
-        configure function = configure_array[config_id];
-        (this->*function)(*it);
+        else {
+            configure function = configure_array[config_id];
+            (this->*function)(*it);
+        }
     }
 }
 
@@ -50,10 +53,9 @@ int     server::identify_server_value(std::string str) {
     else if ((int)str.find("max_file_size") != -1)
         return 4;
     else if ((int)str.find("location") != -1)
-        return 5;
+        return 6;
     return 5;
 }
-
 
 void    server::configure_port(std::string str) {
     size_t pos = str.find_first_of(' ');
@@ -94,5 +96,18 @@ void    server::invalid_element(std::string str) {
     if (str == "0")
         return;
     return;
+}
+
+int     server::context_size(std::vector<std::string> server_config, std::vector<std::string>::iterator it) {
+    int i = 0;
+    std::string str;
+
+    for (; it != server_config.end(); it++) {
+        str = it->data();
+        if ((int)str.find("}") != -1)
+            return i;
+        i++;
+    }
+    return i;
 }
 

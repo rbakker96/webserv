@@ -65,6 +65,8 @@ public:
     void    configure_location(std::vector <std::string> location_block);
     void    invalid_element(std::string str);
 
+    int     context_size(std::vector<std::string> server_config, std::vector<std::string>::iterator it);
+
 };
 
 #endif //WEBSERV_SERVER_HPP

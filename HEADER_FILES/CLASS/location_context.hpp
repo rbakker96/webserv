@@ -40,6 +40,9 @@ public:
     void    configure_index(std::string str);
     void    configure_autoindex(std::string str);
     void    invalid_element(std::string str);
-};
+
+    int     context_size(std::vector<std::string>::iterator it, std::vector<std::string>::iterator end);
+
+    };
 
 #endif //WEBSERV_LOCATION_CONTEXT_H

@@ -25,10 +25,10 @@ void location_context::configure_location_context(std::vector<std::string>::iter
                                      &location_context::configure_autoindex,
                                      &location_context::invalid_element,};
 
-    for(; it != end; it++) {
-        str = it->data();
-        if ((int)str.find("}") != -1)
-            return;
+    for(end += context_size(it, end); it != end; it++) {
+//        str = it->data();
+//        if ((int)str.find("}") != -1)
+//            return;
         config_id = identify_location_value(*it);
         configure function = configure_array[config_id];
         (this->*function)(*it);
@@ -53,11 +53,29 @@ void    location_context::configure_root(std::string str){
 }
 
 void    location_context::configure_allowed_method(std::string str){
+    size_t pos = str.find_first_of(' ');
+    std::string tmp = str.substr(pos + 1);
+    std::string value;
 
+    while ((pos =tmp.find_first_of(' ') != -1)) {
+        value = tmp.substr(0, pos - 1);
+        _allowed_method.push_back(value);
+        tmp = tmp.substr(pos + 1);
+    }
+    _allowed_method.push_back(tmp);
 }
 
 void    location_context::configure_index(std::string str){
+    size_t pos = str.find_first_of(' ');
+    std::string tmp = str.substr(pos + 1);
+    std::string value;
 
+    while ((pos =tmp.find_first_of(' ') != -1)) {
+        value = tmp.substr(0, pos - 1);
+        _index.push_back(value);
+        tmp = tmp.substr(pos + 1);
+    }
+    _index.push_back(tmp);
 }
 
 void    location_context::configure_autoindex(std::string str){
@@ -73,4 +91,17 @@ void    location_context::invalid_element(std::string str) {
     if (str == "0")
         return;
     return;
+}
+
+int     location_context::context_size(std::vector<std::string>::iterator it, std::vector<std::string>::iterator end) {
+    int i = 0;
+    std::string str;
+
+    for (; it != end; it++) {
+        str = it->data();
+        if ((int)str.find("}") != -1)
+            return i;
+        i++;
+    }
+    return i;
 }
