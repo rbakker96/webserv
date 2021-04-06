@@ -33,6 +33,8 @@
 class server {
 public:
     typedef  void (server::*configure)(std::string);
+    enum server_values{ port_ = 0, host_ = 1, server_name_ = 2, error_page_ = 3,
+                        max_file_size_ = 4, unknown_ = 5, location_ = 6 };
 
 private:
     //Configurations
@@ -51,7 +53,7 @@ private:
 
 public:
     server();
-    server(location_context const &src);
+    server(server const &src);
     ~server();
 
     int     identify_server_value(std::string str);
@@ -65,8 +67,13 @@ public:
     void    configure_location(std::vector <std::string> location_block);
     void    invalid_element(std::string str);
 
-    int     context_size(std::vector<std::string> server_config, std::vector<std::string>::iterator it);
-
+    //GETTERS
+    int                             get_file_size();
+    int                             get_port();
+    std::string                     get_host();
+    std::string                     get_server_name();
+    std::string                     get_error_page();
+    std::vector<location_context>   get_location();
 };
 
 #endif //WEBSERV_SERVER_HPP

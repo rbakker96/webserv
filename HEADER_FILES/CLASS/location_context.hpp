@@ -19,6 +19,7 @@
 class location_context {
 public:
     typedef  void (location_context::*configure)(std::string);
+    enum location_values{ root_ = 0, method_ = 1, autoindex_ = 2, index_ = 3, unknown_ = 4 };
 
 private:
     std::string                 _root;
@@ -41,8 +42,14 @@ public:
     void    configure_autoindex(std::string str);
     void    invalid_element(std::string str);
 
-    int     context_size(std::vector<std::string>::iterator it, std::vector<std::string>::iterator end);
+    int     context_size(std::vector<std::string>::iterator it);
 
-    };
+    //GETTERS
+    std::string                 get_root();
+    std::vector<std::string>    get_method();
+    std::vector<std::string>    get_index();
+    bool                        get_autoindex();
+
+};
 
 #endif //WEBSERV_LOCATION_CONTEXT_H

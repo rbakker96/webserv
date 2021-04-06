@@ -28,6 +28,9 @@ public:
 
     void    load_configuration(char* config_file);
     int     check_server_block(std::vector<std::string> server_block);
+
+    //remove later
+    void    print_struct();
 };
 
 
