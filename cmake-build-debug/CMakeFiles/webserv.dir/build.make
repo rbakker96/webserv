@@ -77,18 +77,18 @@ include CMakeFiles/webserv.dir/progress.make
 # Include the compile flags for this target's objects.
 include CMakeFiles/webserv.dir/flags.make
 
-CMakeFiles/webserv.dir/main.cpp.o: CMakeFiles/webserv.dir/flags.make
-CMakeFiles/webserv.dir/main.cpp.o: ../main.cpp
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/Users/roybakker/Desktop/webserv/cmake-build-debug/CMakeFiles --progress-num=$(CMAKE_PROGRESS_1) "Building CXX object CMakeFiles/webserv.dir/main.cpp.o"
-	/Library/Developer/CommandLineTools/usr/bin/c++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/webserv.dir/main.cpp.o -c /Users/roybakker/Desktop/webserv/main.cpp
+CMakeFiles/webserv.dir/webserver/main.cpp.o: CMakeFiles/webserv.dir/flags.make
+CMakeFiles/webserv.dir/webserver/main.cpp.o: ../webserver/main.cpp
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/Users/roybakker/Desktop/webserv/cmake-build-debug/CMakeFiles --progress-num=$(CMAKE_PROGRESS_1) "Building CXX object CMakeFiles/webserv.dir/webserver/main.cpp.o"
+	/Library/Developer/CommandLineTools/usr/bin/c++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/webserv.dir/webserver/main.cpp.o -c /Users/roybakker/Desktop/webserv/webserver/main.cpp
 
-CMakeFiles/webserv.dir/main.cpp.i: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/webserv.dir/main.cpp.i"
-	/Library/Developer/CommandLineTools/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /Users/roybakker/Desktop/webserv/main.cpp > CMakeFiles/webserv.dir/main.cpp.i
+CMakeFiles/webserv.dir/webserver/main.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/webserv.dir/webserver/main.cpp.i"
+	/Library/Developer/CommandLineTools/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /Users/roybakker/Desktop/webserv/webserver/main.cpp > CMakeFiles/webserv.dir/webserver/main.cpp.i
 
-CMakeFiles/webserv.dir/main.cpp.s: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/webserv.dir/main.cpp.s"
-	/Library/Developer/CommandLineTools/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /Users/roybakker/Desktop/webserv/main.cpp -o CMakeFiles/webserv.dir/main.cpp.s
+CMakeFiles/webserv.dir/webserver/main.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/webserv.dir/webserver/main.cpp.s"
+	/Library/Developer/CommandLineTools/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /Users/roybakker/Desktop/webserv/webserver/main.cpp -o CMakeFiles/webserv.dir/webserver/main.cpp.s
 
 CMakeFiles/webserv.dir/tcp_layer/tcp_connection.cpp.o: CMakeFiles/webserv.dir/flags.make
 CMakeFiles/webserv.dir/tcp_layer/tcp_connection.cpp.o: ../tcp_layer/tcp_connection.cpp
@@ -105,13 +105,13 @@ CMakeFiles/webserv.dir/tcp_layer/tcp_connection.cpp.s: cmake_force
 
 # Object files for target webserv
 webserv_OBJECTS = \
-"CMakeFiles/webserv.dir/main.cpp.o" \
+"CMakeFiles/webserv.dir/webserver/main.cpp.o" \
 "CMakeFiles/webserv.dir/tcp_layer/tcp_connection.cpp.o"
 
 # External object files for target webserv
 webserv_EXTERNAL_OBJECTS =
 
-webserv: CMakeFiles/webserv.dir/main.cpp.o
+webserv: CMakeFiles/webserv.dir/webserver/main.cpp.o
 webserv: CMakeFiles/webserv.dir/tcp_layer/tcp_connection.cpp.o
 webserv: CMakeFiles/webserv.dir/build.make
 webserv: CMakeFiles/webserv.dir/link.txt

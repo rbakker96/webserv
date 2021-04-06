@@ -80,13 +80,13 @@
 				</MakeCommands>
 			</Target>
 		</Build>
-		<Unit filename="/Users/roybakker/Desktop/webserv/main.cpp">
-			<Option target="webserv"/>
-		</Unit>
 		<Unit filename="/Users/roybakker/Desktop/webserv/tcp_layer/tcp_connection.cpp">
 			<Option target="webserv"/>
 		</Unit>
 		<Unit filename="/Users/roybakker/Desktop/webserv/tcp_layer/tcp_connection.hpp">
+			<Option target="webserv"/>
+		</Unit>
+		<Unit filename="/Users/roybakker/Desktop/webserv/webserver/main.cpp">
 			<Option target="webserv"/>
 		</Unit>
 		<Unit filename="/Users/roybakker/Desktop/webserv/CMakeLists.txt">

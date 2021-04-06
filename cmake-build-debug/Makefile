@@ -143,33 +143,6 @@ webserv/fast:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/webserv.dir/build.make CMakeFiles/webserv.dir/build
 .PHONY : webserv/fast
 
-main.o: main.cpp.o
-
-.PHONY : main.o
-
-# target to build an object file
-main.cpp.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/webserv.dir/build.make CMakeFiles/webserv.dir/main.cpp.o
-.PHONY : main.cpp.o
-
-main.i: main.cpp.i
-
-.PHONY : main.i
-
-# target to preprocess a source file
-main.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/webserv.dir/build.make CMakeFiles/webserv.dir/main.cpp.i
-.PHONY : main.cpp.i
-
-main.s: main.cpp.s
-
-.PHONY : main.s
-
-# target to generate assembly for a file
-main.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/webserv.dir/build.make CMakeFiles/webserv.dir/main.cpp.s
-.PHONY : main.cpp.s
-
 tcp_layer/tcp_connection.o: tcp_layer/tcp_connection.cpp.o
 
 .PHONY : tcp_layer/tcp_connection.o
@@ -197,6 +170,33 @@ tcp_layer/tcp_connection.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/webserv.dir/build.make CMakeFiles/webserv.dir/tcp_layer/tcp_connection.cpp.s
 .PHONY : tcp_layer/tcp_connection.cpp.s
 
+webserver/main.o: webserver/main.cpp.o
+
+.PHONY : webserver/main.o
+
+# target to build an object file
+webserver/main.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/webserv.dir/build.make CMakeFiles/webserv.dir/webserver/main.cpp.o
+.PHONY : webserver/main.cpp.o
+
+webserver/main.i: webserver/main.cpp.i
+
+.PHONY : webserver/main.i
+
+# target to preprocess a source file
+webserver/main.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/webserv.dir/build.make CMakeFiles/webserv.dir/webserver/main.cpp.i
+.PHONY : webserver/main.cpp.i
+
+webserver/main.s: webserver/main.cpp.s
+
+.PHONY : webserver/main.s
+
+# target to generate assembly for a file
+webserver/main.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/webserv.dir/build.make CMakeFiles/webserv.dir/webserver/main.cpp.s
+.PHONY : webserver/main.cpp.s
+
 # Help Target
 help:
 	@echo "The following are some of the valid targets for this Makefile:"
@@ -206,12 +206,12 @@ help:
 	@echo "... edit_cache"
 	@echo "... rebuild_cache"
 	@echo "... webserv"
-	@echo "... main.o"
-	@echo "... main.i"
-	@echo "... main.s"
 	@echo "... tcp_layer/tcp_connection.o"
 	@echo "... tcp_layer/tcp_connection.i"
 	@echo "... tcp_layer/tcp_connection.s"
+	@echo "... webserver/main.o"
+	@echo "... webserver/main.i"
+	@echo "... webserver/main.s"
 .PHONY : help
 
 
