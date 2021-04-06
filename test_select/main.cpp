@@ -101,7 +101,7 @@ int	main(void)
 			}
 			if (FD_ISSET(request_fd_two, &write_fds))
 			{
-				std::cout << "writing response to 8080" << std::endl;
+				std::cout << "writing response to 9090" << std::endl;
 				connection_two.write_file_content(request_fd_two, 2);
 				FD_CLR(request_fd_two, &save_write_fds);
 				close(request_fd_two);
