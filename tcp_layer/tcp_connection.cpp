@@ -51,55 +51,47 @@ int tcp_connection::create_connection(int backlog) {
     return 0;
 }
 
-int	tcp_connection::response(void) {
-	int	request_fd;
+//int	tcp_connection::response(void) {
+	//int	request_fd;
 
-	/*while (1) {*/
-        if ((request_fd = accept(this->tcp_socket, (struct sockaddr *)&this->addr, (socklen_t *)&this->addr_len)) < 0)
-			return (1);
-		return (request_fd);
-/*        char buffer[30000] = {0};*/
-        //if (read(request_fd, buffer, 30000) < 0)
+	//while (1) {
+		//if ((request_fd = accept(this->tcp_socket, (struct sockaddr *)&this->addr, (socklen_t *)&this->addr_len)) < 0)
 			//return (1);
-		/*handle_request(buffer, request_fd);*/
-/*    }*/
-	return (0);
-}
+		//return (request_fd);
+		//char buffer[30000] = {0};
+		//if (read(request_fd, buffer, 30000) < 0)
+			//return (1);
+		//handle_request(buffer, request_fd);
+	//}
+	//return (0);
+//}
 
-void	tcp_connection::handle_request(char *buffer, int request_fd)
-{
-//	check_request_method();
-//	write_response_headers();
-//	locate_and_read_file();
-	std::cout << "--- buffer ---" << std::endl;
-	std::cout << buffer << std::endl;
-	std::cout << "--- buffer ---" << std::endl;
-	write_file_content(request_fd, 1);
-	close(request_fd);
-}
+//void	tcp_connection::handle_request(char *buffer, int request_fd)
+//{
+////	check_request_method();
+////	write_response_headers();
+////	locate_and_read_file();
+	//std::cout << "--- buffer ---" << std::endl;
+	//std::cout << buffer << std::endl;
+	//std::cout << "--- buffer ---" << std::endl;
+	//write_file_content(request_fd);
+	//close(request_fd);
+//}
 
-void	tcp_connection::write_file_content(int request_fd, int conn) {
-	int		fd;
-	char	buffer[30000] = {0};
+//void	tcp_connection::write_file_content(int request_fd) {
+	//int		fd;
+	//char	buffer[30000] = {0};
 
-	std::string	header1 = "HTTP/1.1 200 OK\n";
-	std::string	header2 = "Content-Type: text/html; charset=UTF-8\n";
-	std::string	header3 = "Content-Length: 313\n\n";
-	if (conn == 1)
-		fd = open("../html_css_testfiles/test_one.html", O_RDONLY);
-	if (conn == 2)
-		fd = open("../html_css_testfiles/test_two.html", O_RDONLY);
-	std::cout << "FD " << fd << std::endl;
-	read(fd, buffer, 30000);
-	int	len = 0;
-	while (buffer[len] != '\0')
-		len++;
+	//std::string	header1 = "HTTP/1.1 200 OK\n";
+	//std::string	header2 = "Content-Type: text/html; charset=UTF-8\n";
+	//std::string	header3 = "Content-Length: 313\n\n";
+	//read(fd, buffer, 30000);
+	//int	len = 0;
+	//while (buffer[len] != '\0')
+		//len++;
 
-	std::cout << "LEN " << len << std::endl;
-	std::cout << "im gonna write" << std::endl;
-	write(request_fd, header1.c_str(), header1.length());
-	write(request_fd, header2.c_str(), header2.length());
-	write(request_fd, header3.c_str(), header3.length());
-	write(request_fd, buffer, len);
-	std::cout << "done writing" << std::endl;
-}
+	//write(request_fd, header1.c_str(), header1.length());
+	//write(request_fd, header2.c_str(), header2.length());
+	//write(request_fd, header3.c_str(), header3.length());
+	//write(request_fd, buffer, len);
+//}

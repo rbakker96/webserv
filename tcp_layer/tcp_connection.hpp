@@ -40,9 +40,9 @@ public:
     int     create_socket(void);
     int     bind_socket_address(int port);
     int     create_connection(int backlog);
-    int     response(void);
-	void	handle_request(char *buffer, int request_fd);
-	void	write_file_content(int request_fd, int conn);
+/*    int     response(void);*/
+	//void	handle_request(char *buffer, int request_fd);
+	/*void	write_file_content(int request_fd);*/
 };
 
 #endif //WEBSERV_TCP_HPP
