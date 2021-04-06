@@ -2,5 +2,10 @@
 <project version="4">
   <component name="VcsDirectoryMappings">
     <mapping directory="$PROJECT_DIR$" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/gnl" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/parser_utils/gnl" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/server/gnl" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/server/parser/gnl" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/server/parser_utils/gnl" vcs="Git" />
   </component>
 </project>

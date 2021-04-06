@@ -10,20 +10,17 @@
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "tcp_layer/tcp_connection.hpp"
+#include "server/webserver.hpp"
 
-int main() {
+int     main(int argc, char**argv) {
+    webserver   webserver;
 
-    tcp_connection tcp;
-
-	if (tcp.create_socket() == 1)
-		return (1);
-	if (tcp.bind_socket_addrs(8080) == 1)
-		return (1);
-	if (tcp.create_connection(100) == 1)
-		return (1);
-	std::string hello = "HTTP/1.1 200 OK\nContent-Type: text/plain\nContent-Length: 12\n\nHello world!";
-	if (tcp.response(hello) == 1)
-		return (1);
-	return (0);
+    if (argc != 2) //only config file is allowed
+        return -1;
+    try {
+        webserver.load_configuration(argv[1]);
+    }
+    catch (std::exception& e) {
+        std::cout << e.what() << std::endl;
+    }
 }

@@ -54,19 +54,19 @@ cmake_force:
 SHELL = /bin/sh
 
 # The CMake executable.
-CMAKE_COMMAND = "/home/qli/Documents/Installed programs/clion-2020.2.4/bin/cmake/linux/bin/cmake"
+CMAKE_COMMAND = /Applications/CLion.app/Contents/bin/cmake/mac/bin/cmake
 
 # The command to remove a file.
-RM = "/home/qli/Documents/Installed programs/clion-2020.2.4/bin/cmake/linux/bin/cmake" -E rm -f
+RM = /Applications/CLion.app/Contents/bin/cmake/mac/bin/cmake -E rm -f
 
 # Escaping for special characters.
 EQUALS = =
 
 # The top-level source directory on which CMake was run.
-CMAKE_SOURCE_DIR = /home/qli/Documents/Codam/webserv
+CMAKE_SOURCE_DIR = /Users/roybakker/Desktop/webserv
 
 # The top-level build directory on which CMake was run.
-CMAKE_BINARY_DIR = /home/qli/Documents/Codam/webserv/cmake-build-debug
+CMAKE_BINARY_DIR = /Users/roybakker/Desktop/webserv/cmake-build-debug
 
 # Include any dependencies generated for this target.
 include CMakeFiles/webserv.dir/depend.make
@@ -79,29 +79,29 @@ include CMakeFiles/webserv.dir/flags.make
 
 CMakeFiles/webserv.dir/main.cpp.o: CMakeFiles/webserv.dir/flags.make
 CMakeFiles/webserv.dir/main.cpp.o: ../main.cpp
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/qli/Documents/Codam/webserv/cmake-build-debug/CMakeFiles --progress-num=$(CMAKE_PROGRESS_1) "Building CXX object CMakeFiles/webserv.dir/main.cpp.o"
-	/usr/bin/c++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/webserv.dir/main.cpp.o -c /home/qli/Documents/Codam/webserv/main.cpp
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/Users/roybakker/Desktop/webserv/cmake-build-debug/CMakeFiles --progress-num=$(CMAKE_PROGRESS_1) "Building CXX object CMakeFiles/webserv.dir/main.cpp.o"
+	/Library/Developer/CommandLineTools/usr/bin/c++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/webserv.dir/main.cpp.o -c /Users/roybakker/Desktop/webserv/main.cpp
 
 CMakeFiles/webserv.dir/main.cpp.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/webserv.dir/main.cpp.i"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/qli/Documents/Codam/webserv/main.cpp > CMakeFiles/webserv.dir/main.cpp.i
+	/Library/Developer/CommandLineTools/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /Users/roybakker/Desktop/webserv/main.cpp > CMakeFiles/webserv.dir/main.cpp.i
 
 CMakeFiles/webserv.dir/main.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/webserv.dir/main.cpp.s"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/qli/Documents/Codam/webserv/main.cpp -o CMakeFiles/webserv.dir/main.cpp.s
+	/Library/Developer/CommandLineTools/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /Users/roybakker/Desktop/webserv/main.cpp -o CMakeFiles/webserv.dir/main.cpp.s
 
 CMakeFiles/webserv.dir/tcp_layer/tcp_connection.cpp.o: CMakeFiles/webserv.dir/flags.make
 CMakeFiles/webserv.dir/tcp_layer/tcp_connection.cpp.o: ../tcp_layer/tcp_connection.cpp
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/qli/Documents/Codam/webserv/cmake-build-debug/CMakeFiles --progress-num=$(CMAKE_PROGRESS_2) "Building CXX object CMakeFiles/webserv.dir/tcp_layer/tcp_connection.cpp.o"
-	/usr/bin/c++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/webserv.dir/tcp_layer/tcp_connection.cpp.o -c /home/qli/Documents/Codam/webserv/tcp_layer/tcp_connection.cpp
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/Users/roybakker/Desktop/webserv/cmake-build-debug/CMakeFiles --progress-num=$(CMAKE_PROGRESS_2) "Building CXX object CMakeFiles/webserv.dir/tcp_layer/tcp_connection.cpp.o"
+	/Library/Developer/CommandLineTools/usr/bin/c++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/webserv.dir/tcp_layer/tcp_connection.cpp.o -c /Users/roybakker/Desktop/webserv/tcp_layer/tcp_connection.cpp
 
 CMakeFiles/webserv.dir/tcp_layer/tcp_connection.cpp.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/webserv.dir/tcp_layer/tcp_connection.cpp.i"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/qli/Documents/Codam/webserv/tcp_layer/tcp_connection.cpp > CMakeFiles/webserv.dir/tcp_layer/tcp_connection.cpp.i
+	/Library/Developer/CommandLineTools/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /Users/roybakker/Desktop/webserv/tcp_layer/tcp_connection.cpp > CMakeFiles/webserv.dir/tcp_layer/tcp_connection.cpp.i
 
 CMakeFiles/webserv.dir/tcp_layer/tcp_connection.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/webserv.dir/tcp_layer/tcp_connection.cpp.s"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/qli/Documents/Codam/webserv/tcp_layer/tcp_connection.cpp -o CMakeFiles/webserv.dir/tcp_layer/tcp_connection.cpp.s
+	/Library/Developer/CommandLineTools/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /Users/roybakker/Desktop/webserv/tcp_layer/tcp_connection.cpp -o CMakeFiles/webserv.dir/tcp_layer/tcp_connection.cpp.s
 
 # Object files for target webserv
 webserv_OBJECTS = \
@@ -115,7 +115,7 @@ webserv: CMakeFiles/webserv.dir/main.cpp.o
 webserv: CMakeFiles/webserv.dir/tcp_layer/tcp_connection.cpp.o
 webserv: CMakeFiles/webserv.dir/build.make
 webserv: CMakeFiles/webserv.dir/link.txt
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --bold --progress-dir=/home/qli/Documents/Codam/webserv/cmake-build-debug/CMakeFiles --progress-num=$(CMAKE_PROGRESS_3) "Linking CXX executable webserv"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --bold --progress-dir=/Users/roybakker/Desktop/webserv/cmake-build-debug/CMakeFiles --progress-num=$(CMAKE_PROGRESS_3) "Linking CXX executable webserv"
 	$(CMAKE_COMMAND) -E cmake_link_script CMakeFiles/webserv.dir/link.txt --verbose=$(VERBOSE)
 
 # Rule to build all files generated by this target.
@@ -128,6 +128,6 @@ CMakeFiles/webserv.dir/clean:
 .PHONY : CMakeFiles/webserv.dir/clean
 
 CMakeFiles/webserv.dir/depend:
-	cd /home/qli/Documents/Codam/webserv/cmake-build-debug && $(CMAKE_COMMAND) -E cmake_depends "Unix Makefiles" /home/qli/Documents/Codam/webserv /home/qli/Documents/Codam/webserv /home/qli/Documents/Codam/webserv/cmake-build-debug /home/qli/Documents/Codam/webserv/cmake-build-debug /home/qli/Documents/Codam/webserv/cmake-build-debug/CMakeFiles/webserv.dir/DependInfo.cmake --color=$(COLOR)
+	cd /Users/roybakker/Desktop/webserv/cmake-build-debug && $(CMAKE_COMMAND) -E cmake_depends "Unix Makefiles" /Users/roybakker/Desktop/webserv /Users/roybakker/Desktop/webserv /Users/roybakker/Desktop/webserv/cmake-build-debug /Users/roybakker/Desktop/webserv/cmake-build-debug /Users/roybakker/Desktop/webserv/cmake-build-debug/CMakeFiles/webserv.dir/DependInfo.cmake --color=$(COLOR)
 .PHONY : CMakeFiles/webserv.dir/depend
 
