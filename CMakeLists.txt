@@ -5,4 +5,4 @@ set(CMAKE_CXX_STANDARD 98)
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -Werror")
 
-add_executable(webserv ${SOURCES} main.cpp tcp_layer/tcp_connection.cpp tcp_layer/tcp_connection.hpp)
+add_executable(webserv ${SOURCES} webserver/main.cpp tcp_layer/tcp_connection.cpp tcp_layer/tcp_connection.hpp)
