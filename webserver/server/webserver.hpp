@@ -13,8 +13,11 @@
 #ifndef WEBSERV_WEBSERVER_HPP
 #define WEBSERV_WEBSERVER_HPP
 
-#include "server.hpp"
+//general includes
 #include <fcntl.h>
+
+//custom includes
+#include "server.hpp"
 
 class webserver {
 private:
@@ -29,7 +32,7 @@ public:
     void    load_configuration(char* config_file);
     int     check_server_block(std::vector<std::string> server_block);
 
-    //remove later
+    //debug-tool
     void    print_struct();
 };
 

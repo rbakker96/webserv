@@ -10,7 +10,7 @@
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "../../HEADER_FILES/UTILS/get_next_line.hpp"
+#include "get_next_line.hpp"
 
 static int		generate_output(int res, char **buf)
 {

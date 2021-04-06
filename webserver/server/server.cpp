@@ -10,7 +10,7 @@
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "../../HEADER_FILES/CLASS/server.hpp"
+#include "server.hpp"
 
 server::server(){}
 server::server(server const &src){*this = src;}

@@ -10,7 +10,7 @@
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "../../HEADER_FILES/CLASS/location_context.hpp"
+#include "location_context.hpp"
 
 location_context::location_context() : _root(), _allowed_method(0), _index(0), _autoindex(false) {}
 location_context::location_context(location_context const &src){*this = src;}

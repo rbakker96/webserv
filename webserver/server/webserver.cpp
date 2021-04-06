@@ -10,9 +10,9 @@
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "../../HEADER_FILES/UTILS/get_next_line.hpp"
-#include "../../HEADER_FILES/CLASS/webserver.hpp"
-#include "../../HEADER_FILES/CLASS/server.hpp"
+#include "../gnl/get_next_line.hpp"
+#include "webserver.hpp"
+#include "server.hpp"
 
 #include <iostream>
 void webserver::print_struct() {

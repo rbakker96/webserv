@@ -10,7 +10,7 @@
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "../../HEADER_FILES/UTILS/get_next_line.hpp"
+#include "get_next_line.hpp"
 
 int		cpy(char **buf, char *s1)
 {

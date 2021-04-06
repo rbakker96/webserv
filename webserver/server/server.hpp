@@ -22,7 +22,6 @@
 #include <unistd.h>
 #include <exception>
 
-
 //custom includes
 #include "location_context.hpp"
 

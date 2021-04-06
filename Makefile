@@ -12,19 +12,16 @@
 
 NAME			=	webserv
 
-SOURCES			=	main.cpp \
-                    CPP-FILES/gnl/get_next_line.cpp \
-                    CPP-FILES/gnl/get_next_line_utils.cpp \
-                    CPP-FILES/server/location_context.cpp \
-                    CPP-FILES/server/server.cpp \
-                    CPP-FILES/server/webserver.cpp
+SOURCES			=	webserver/main.cpp \
+                    webserver/gnl/get_next_line.cpp \
+                    webserver/gnl/get_next_line_utils.cpp \
+                    webserver/server/location_context.cpp \
+                    webserver/server/server.cpp \
+                    webserver/server/webserver.cpp
 
 OBJECTS 		=	${SOURCES:%.c=%.o}
 
 FLAGS 			=	-Wall -Wextra -Werror
-
-CLASS_HEADERS   =	-IHEADER_FILES/CLASS
-UTILS_HEADERS   =   -IHEADER_FILES/UTILS
 
 COMPILE			=	clang++ -std=c++98
 
@@ -38,13 +35,12 @@ all: $(NAME)
 
 $(NAME): $(OBJECTS)
 	@echo "$(GREEN)----------------------------------------------------"
-	@$(COMPILE) $(CLASS_HEADERS) $(UTILS_HEADERS) $(FLAGS) -o $(NAME) $(OBJECTS)
+	@$(COMPILE) $(FLAGS) -o $(NAME) $(OBJECTS)
 	@echo "Executable				./webserv"
 	@echo "$(GREEN)----------------------------------------------------"
 
-%.o: %.c
+%.o: %.cpp
 	@echo "$(GREY)Compiling...				$(WHITE)$<"
-	@$(COMPILE) $(CLASS_HEADERS) $(UTILS_HEADERS) $(FLAGS) -c -o $@ $<
 	@$(COMPILE) $(FLAGS) -c -o $@ $<
 
 clean:

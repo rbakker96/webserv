@@ -10,7 +10,7 @@
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "tcp_layer/tcp_connection.hpp"
+#include "../tcp_layer/tcp_connection.hpp"
 
 //int main() {
 //
@@ -28,9 +28,7 @@
 //	return (0);
 //}
 
-#include "HEADER_FILES/CLASS/webserver.hpp"
-#include "HEADER_FILES/CLASS/server.hpp"
-#include "HEADER_FILES/UTILS/get_next_line.hpp"
+#include "server/webserver.hpp"
 
 int     main(int argc, char**argv) {
     webserver   webserver;
