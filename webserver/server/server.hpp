@@ -21,6 +21,8 @@
 #include <errno.h>
 #include <unistd.h>
 #include <exception>
+#include <fcntl.h>
+#include <cstdlib> // check if we can use atoi
 
 //custom includes
 #include "location_context.hpp"
@@ -33,9 +35,11 @@
 #include <sys/socket.h>
 
 class server {
-    friend class handler;
-    friend class request_handler;
-    friend class response_handler;
+public:
+	friend class handler;
+	friend class response_handler;
+	friend class request_handler;
+	friend class webserver;
 
 public:
     typedef  void (server::*configure)(std::string);
@@ -62,7 +66,6 @@ private:
 
 public:
     server();
-    server(server const &src);
     ~server();
 
     //configure functions

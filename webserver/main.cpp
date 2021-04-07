@@ -19,6 +19,8 @@ int     main(int argc, char**argv) {
         return -1;
     try {
         webserver.load_configuration(argv[1]);
+		webserver.establish_connection();
+		webserver.run();
     }
     catch (std::exception& e) {
         std::cout << e.what() << std::endl;

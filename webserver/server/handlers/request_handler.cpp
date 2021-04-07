@@ -13,7 +13,6 @@
 #include "request_handler.hpp"
 
 request_handler::request_handler(){}
-request_handler::request_handler(request_handler const &src){}
 request_handler::~request_handler(){}
 
 int     request_handler::open_requested_file(char *relative_path) {

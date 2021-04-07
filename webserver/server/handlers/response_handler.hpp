@@ -13,16 +13,17 @@
 #ifndef WEBSERV_RESPONSE_HANDLER_HPP
 #define WEBSERV_RESPONSE_HANDLER_HPP
 
-class response_handler {
+#include "handler.hpp"
+
+class response_handler : public handler {
 private:
 
 
 public:
     response_handler();
-    response_handler(response_handler const &src);
     ~response_handler();
 
-    void    create_response_file();
+    void    create_response_file(int request_fd, std::string response_file);
 };
 
 

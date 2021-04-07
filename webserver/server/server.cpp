@@ -13,11 +13,9 @@
 #include "server.hpp"
 
 server::server() {
-    _server_fd = 0;
     _tcp_socket = 0;
     _addr_len = 0;
 }
-server::server(server const &src){*this = src;}
 server::~server(){}
 
 void    server::create_new_server(std::vector <std::string> server_config) {
@@ -111,7 +109,6 @@ void    server::invalid_element(std::string str) {
     return;
 }
 
-
 //TCP-connection functions
 int server::create_socket() {
     if ((this->_tcp_socket = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
@@ -123,12 +120,12 @@ int server::create_socket() {
 }
 
 int server::bind_socket_address(int port) {
-    memset((char *)&addr, 0, sizeof(addr));
+    memset((char *)&_addr, 0, sizeof(_addr));
     _addr.sin_family = AF_INET;
     _addr.sin_addr.s_addr = htonl(INADDR_ANY);
     _addr.sin_port = htons(port);
 
-    if (bind(this->tcp_socket, (struct sockaddr *)&_addr, sizeof(_addr)) < 0) {
+    if (bind(this->_tcp_socket, (struct sockaddr *)&_addr, sizeof(_addr)) < 0) {
         std::cout << "bind failed" << std::endl;
         return 1;
     }
@@ -142,7 +139,6 @@ int server::create_connection(int backlog) {
     }
     return 0;
 }
-
 
 //GETTERS
 int                             server::get_file_size(){return _max_file_size;}

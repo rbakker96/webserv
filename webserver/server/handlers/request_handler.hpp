@@ -13,9 +13,6 @@
 #ifndef WEBSERV_REQUEST_HANDLER_HPP
 #define WEBSERV_REQUEST_HANDLER_HPP
 
-//general includes
-#include <string>
-
 //custom includes
 #include "handler.hpp"
 
@@ -24,7 +21,6 @@ private:
 
 public:
     request_handler();
-    request_handler(request_handler const &src);
     ~request_handler();
 
     int     open_requested_file(char *relative_path);

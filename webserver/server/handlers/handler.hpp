@@ -15,18 +15,22 @@
 
 //general includes
 #include <string>
+#include <iostream>
+#include <unistd.h>
+#include <fcntl.h>
 
 class handler {
+
 private:
     std::string     _file;
 
 public:
     handler();
-    handler(handler const &src);
     virtual ~handler();
 
     //Base class functions
-    void    read_file();
+    void    read_file(int fd);
+	std::string	get_file(void);
 };
 
 

@@ -20,16 +20,15 @@
 #include "server.hpp"
 
 class webserver {
+
 private:
     std::vector<server>     _servers;
     fd_set			        _read_fds, _write_fds;
     fd_set			        _buffer_read_fds, _buffer_write_fds;
-    int				        _highest_fd = -1, _request_fd = -1, _file_fd = -1;
+    int				        _highest_fd, _request_fd, _file_fd;
 
 public:
     webserver();
-    webserver(webserver const &src);
-
     ~webserver();
 
     void    load_configuration(char* config_file);
@@ -39,7 +38,7 @@ public:
     //helper functions
     void    initialize_fd_sets();
     void    initialize_highest_fd();
-    void    highest_fd(int fd_one, int fd_two);
+    int		highest_fd(int fd_one, int fd_two);
     void    add_sockets_to_read_fds();
 
     void    accept_request();
