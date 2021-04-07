@@ -17,7 +17,10 @@ SOURCES			=	webserver/main.cpp \
                     webserver/gnl/get_next_line_utils.cpp \
                     webserver/server/location_context.cpp \
                     webserver/server/server.cpp \
-                    webserver/server/webserver.cpp
+                    webserver/server/webserver.cpp \
+                    webserver/server/handlers/handler.cpp \
+                    webserver/server/handlers/request_handler.cpp \
+                    webserver/server/handlers/response_handler.cpp
 
 OBJECTS 		=	${SOURCES:%.c=%.o}
 

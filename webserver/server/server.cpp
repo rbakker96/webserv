@@ -12,7 +12,11 @@
 
 #include "server.hpp"
 
-server::server(){}
+server::server() {
+    _server_fd = 0;
+    _tcp_socket = 0;
+    _addr_len = 0;
+}
 server::server(server const &src){*this = src;}
 server::~server(){}
 
@@ -107,6 +111,39 @@ void    server::invalid_element(std::string str) {
     return;
 }
 
+
+//TCP-connection functions
+int server::create_socket() {
+    if ((this->_tcp_socket = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
+        std::cout << "cannot create tcp socket" << std::endl;
+        return 1;
+    }
+    fcntl(this->_tcp_socket, F_SETFL, O_NONBLOCK);
+    return 0;
+}
+
+int server::bind_socket_address(int port) {
+    memset((char *)&addr, 0, sizeof(addr));
+    _addr.sin_family = AF_INET;
+    _addr.sin_addr.s_addr = htonl(INADDR_ANY);
+    _addr.sin_port = htons(port);
+
+    if (bind(this->tcp_socket, (struct sockaddr *)&_addr, sizeof(_addr)) < 0) {
+        std::cout << "bind failed" << std::endl;
+        return 1;
+    }
+    return 0;
+}
+
+int server::create_connection(int backlog) {
+    if (listen(this->_tcp_socket, backlog) < 0) {
+        std::cout << "listen failed" << std::endl;
+        return 1;
+    }
+    return 0;
+}
+
+
 //GETTERS
 int                             server::get_file_size(){return _max_file_size;}
 int                             server::get_port(){return _port;}
@@ -114,3 +151,6 @@ std::string                     server::get_host(){return _host;}
 std::string                     server::get_server_name(){return _server_name;}
 std::string                     server::get_error_page(){return _error_page;}
 std::vector<location_context>   server::get_location(){return _location;}
+int                             server::get_tcp_socket(){return _tcp_socket;}
+int                             server::get_addr_len() {return _addr_len;}
+struct	sockaddr_in             server::get_addr(){return _addr;}

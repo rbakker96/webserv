@@ -56,7 +56,7 @@ void webserver::print_struct() {
     }
 }
 
-webserver::webserver() : _servers(0){}
+webserver::webserver() : _servers(0), _highest_fd(-1) {}
 
 webserver::webserver(webserver const &src){
     *this = src;
@@ -87,6 +87,126 @@ void    webserver::load_configuration(char *config_file) {
 //    if (!check_server_block(server_block))
 //        throw "Syntax error in config file";
 }
+
+void    webserver::establish_connection(){
+    for (std::vector<server>::iterator it = _servers.begin(); it != _servers.end(); it++) {
+        server current = *it;
+
+        current.create_socket();
+        current.bind_socket_address(current.get_port());
+        current.create_connection(100); //CHECK LATER
+    }
+}
+
+void    webserver::run() {
+    char	requested_file_buffer[30000] = {0};
+
+    initialize_fd_sets();
+    initialize_highest_fd();
+    while (1)
+    {
+        _read_fds = _buffer_read_fds;
+        _write_fds = _buffer_write_fds;
+
+        add_sockets_to_read_fds();
+
+        std::cout << "before select" << std::endl;
+        int	select_value = select(_highest_fd + 1, &_read_fds, &_write_fds, NULL, NULL);
+        if (select_value == -1)
+            std::cout << "select error" << std::endl;
+        else if (select_value == 0)
+            std::cout << "time out" << std::endl;
+        else {
+            accept_request();
+            handle_request();
+            read_request_file();
+            create_response();
+        }
+    }
+}
+
+
+void    webserver::initialize_fd_sets() {
+    FD_ZERO(&_read_fds);
+    FD_ZERO(&_write_fds);
+    FD_ZERO(&_buffer_read_fds);
+    FD_ZERO(&_buffer_write_fds);
+}
+
+void    webserver::initialize_highest_fd() {
+    std::vector<server>::iterator it = _servers.begin();
+    server current = *it;
+
+    _highest_fd = current.get_tcp_socket();
+}
+
+void    webserver::highest_fd(int fd_one, int fd_two) {
+    if (fd_one > fd_two)
+        return (fd_one);
+    return (fd_two);
+}
+
+void    webserver::add_sockets_to_read_fds() {
+    std::vector<server>::iterator it = _servers.begin();
+    server current = *it;
+
+    FD_SET(current.get_tcp_socket(), &_read_fds);
+}
+
+void    webserver::accept_request() {
+    std::vector<server>::iterator it = _servers.begin();
+    server current = *it;
+
+    if (FD_ISSET(current.get_tcp_socket(), &_read_fds))
+    {
+        _request_fd = accept(current.get_tcp_socket(), (struct sockaddr *)&current.get_addr(), (socklen_t *)&current.get_addr_len());
+        fcntl(_request_fd, F_SETFL, O_NONBLOCK);
+        FD_SET(_request_fd, &_buffer_read_fds);
+        _highest_fd = highest_fd(_highest_fd, _request_fd);
+    }
+}
+
+void    webserver::handle_request() {
+    std::vector<server>::iterator it = _servers.begin();
+    server current = *it;
+
+    if (FD_ISSET(_request_fd, &_read_fds))
+    {
+        current._request.read_file(_request_fd);
+        FD_CLR(_request_fd, &_buffer_read_fds);
+        //some parsing functions needed to process request
+        _file_fd = current._request.open_requested_file("../html_css_testfiles/test_one.html");
+        _highest_fd = highest_fd(highest_fd, file_fd);
+        FD_SET(_file_fd, &_buffer_read_fds);
+    }
+}
+
+void    webserver::read_request_file() {
+    std::vector<server>::iterator it = _servers.begin();
+    server current = *it;
+
+    if (FD_ISSET(_file_fd, &_read_fds))
+    {
+        current._request.read_file(_file_fd);
+        FD_CLR(_file_fd, &_buffer_read_fds);
+        FD_SET(_request_fd, &_buffer_write_fds);
+    }
+}
+
+void    webserver::create_response() {
+    std::vector<server>::iterator it = _servers.begin();
+    server current = *it;
+
+    if (FD_ISSET(_request_fd, &_write_fds))
+    {
+        current._response.create_response_file(_request_fd, current._response._file); //see if compiles
+        write_response(request_fd, requested_file_buffer);
+        FD_CLR(_request_fd, &_buffer_write_fds);
+        close(_request_fd);
+        _request_fd = -1;
+    }
+}
+
 
 int     webserver::check_server_block(std::vector <std::string> server_block) {
     int         open_bracket = 0;
