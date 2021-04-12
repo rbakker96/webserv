@@ -19,9 +19,10 @@ void    handler::read_file(int fd) {
     char    buff[3000];
     int     ret = 1;
 
-    while(ret > 0 ) {
+    while (ret > 0) {
         ret = read(fd, buff, 3000);
 		_file.append(buff, ret);
+		std::cout << "_file: " << _file << std::endl;
         if (ret < 3000)
             break;
     }

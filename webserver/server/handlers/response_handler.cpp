@@ -20,8 +20,13 @@ void    response_handler::create_response_file(int request_fd, std::string respo
     std::string	header1 = "HTTP/1.1 200 OK\n";
     std::string	header2 = "Content-Type: text/html; charset=UTF-8\n";
     std::string	header3 = "Content-Length: 313\n\n";
+	int	len = 0;
+	while (response_file[len] != '\0')
+		len++;
+
+	std::cout << "LEN: " << len << std::endl;
     write(request_fd, header1.c_str(), header1.length());
     write(request_fd, header2.c_str(), header2.length());
     write(request_fd, header3.c_str(), header3.length());
-    write(request_fd, response_file.c_str(), response_file.size());
+    write(request_fd, response_file.c_str(), len);
 }

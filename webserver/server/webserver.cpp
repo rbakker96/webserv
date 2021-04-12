@@ -85,13 +85,16 @@ void    webserver::load_configuration(char *config_file) {
 }
 
 void    webserver::establish_connection(){
+	int	index = 0;
+
     for (std::vector<server>::iterator it = _servers.begin(); it != _servers.end(); it++) {
         server current = *it;
 
         current.create_socket();
         current.bind_socket_address(current.get_port());
         current.create_connection(100); //CHECK LATER
-		_servers[0] = current;
+		_servers[index] = current;
+		index++;
     }
 }
 
@@ -168,7 +171,7 @@ void    webserver::handle_request() {
         current._request.read_file(_request_fd);
         FD_CLR(_request_fd, &_buffer_read_fds);
         //some parsing functions needed to process request
-		char location[500] = "../html_css_testfiles/test_one.html"; // temporary location for getting a file
+		char location[500] = "/home/gijs/Desktop/codam/subjects/webserv/html_css_testfiles/test_one.html"; // temporary location for getting a file
         _file_fd = current._request.open_requested_file(location);
         _highest_fd = highest_fd(_highest_fd, _file_fd);
         FD_SET(_file_fd, &_buffer_read_fds);
@@ -193,6 +196,7 @@ void    webserver::create_response() {
 
     if (FD_ISSET(_request_fd, &_write_fds))
     {
+		std::cout << "response.get_file() " << current._response.get_file() << std::endl;
         current._response.create_response_file(_request_fd, current._response.get_file()); //see if compiles
         FD_CLR(_request_fd, &_buffer_write_fds);
         close(_request_fd);
