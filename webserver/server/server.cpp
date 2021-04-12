@@ -19,8 +19,6 @@ server::server() {
 server::~server(){}
 
 void    server::create_new_server(std::vector <std::string> server_config) {
-    int                             config_id = 0;
-    std::vector<location_context>   location_vector;
     location_context                location;
     configure configure_array[6] = { &server::configure_port,
                                      &server::configure_host,
@@ -29,19 +27,27 @@ void    server::create_new_server(std::vector <std::string> server_config) {
                                      &server::configure_max_file_size,
                                      &server::invalid_element };
 
+    clean_server_instance();
     for (std::vector<std::string>::iterator it = server_config.begin(); it != server_config.end(); it++) {
-        config_id = identify_server_value(*it);
+        int config_id = identify_server_value(*it);
         if (config_id == location_) {
-            location.configure_location_context(it, server_config.end());
-            location_vector.push_back(location);
+            location.configure_location_context(it, (it + location_size(it, server_config.end())));
+            _location.push_back(location);
         }
         else {
             configure function = configure_array[config_id];
             (this->*function)(*it);
         }
     }
-    _location = location_vector;
-    location_vector.clear();
+}
+
+void    server::clean_server_instance(){
+    _max_file_size = 0;
+    _port = 0;
+    _host.clear();
+    _server_name.clear();
+    _error_page.clear();
+    _location.clear();
 }
 
 int     server::identify_server_value(std::string str) {
@@ -97,10 +103,16 @@ void    server::configure_max_file_size(std::string str) {
     _max_file_size = atoi(temp.c_str());
 }
 
-void    server::configure_location(std::vector <std::string> location_block) {
-    if (location_block.size() == 0)
-        return;
-    return;
+int    server::location_size(string_iterator it, string_iterator end) {
+
+    for (int i = 0; it != end; it++) {
+        std::string str = it->data();
+
+        if ((int)str.find("}") != -1)
+            return i;
+        i++;
+    }
+    return 0;
 }
 
 void    server::invalid_element(std::string str) {
@@ -108,6 +120,8 @@ void    server::invalid_element(std::string str) {
         return;
     return;
 }
+
+
 
 //TCP-connection functions
 int server::create_socket() {

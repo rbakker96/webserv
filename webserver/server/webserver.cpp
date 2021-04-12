@@ -138,6 +138,7 @@ void    webserver::add_sockets_to_read_fds() {
 void    webserver::accept_request() {
     if (FD_ISSET(_servers[0].get_tcp_socket(), &_read_fds))
     {
+        printf("----------------testtttt-----------------\n");
         _request_fd = accept(_servers[0].get_tcp_socket(), (struct sockaddr *)&_servers[0]._addr, (socklen_t *)&_servers[0]._addr_len);
         fcntl(_request_fd, F_SETFL, O_NONBLOCK);
         FD_SET(_request_fd, &_buffer_read_fds);
@@ -152,7 +153,7 @@ void    webserver::handle_request() {
 		std::cout << "_FILE: " << _servers[0]._request.get_file() << std::endl;
         FD_CLR(_request_fd, &_buffer_read_fds);
         //some parsing functions needed to process request
-		char location[500] = "/home/gijs/Desktop/codam/subjects/webserv/html_css_testfiles/test_one.html"; // temporary location for getting a file
+		char location[500] = "/Users/roybakker/Desktop/webserv/html_css_testfiles/test_one.html"; // temporary location for getting a file
         _file_fd = _servers[0]._request.open_requested_file(location);
         _highest_fd = highest_fd(_highest_fd, _file_fd);
         FD_SET(_file_fd, &_buffer_read_fds);

@@ -19,8 +19,9 @@
 
 class location_context {
 public:
-    typedef  void (location_context::*configure)(std::string);
-    enum location_values{ root_ = 0, method_ = 1, autoindex_ = 2, index_ = 3, unknown_ = 4 };
+    typedef     std::vector<std::string>::iterator string_iterator;
+    typedef     void (location_context::*configure)(std::string);
+    enum        location_values{ root_ = 0, method_ = 1, autoindex_ = 2, index_ = 3, unknown_ = 4 };
 
 private:
     std::string                 _root;
@@ -31,19 +32,17 @@ private:
 
 public:
     location_context();
-    location_context(location_context const &src);
     ~location_context();
 
-    void    configure_location_context(std::vector<std::string>::iterator begin, std::vector<std::string>::iterator end);
+    //Configure functions
+    void    configure_location_context(string_iterator begin, string_iterator end);
+    void    clean_location_instance();
     int     identify_location_value(std::string str);
-
     void    configure_root(std::string str);
     void    configure_allowed_method(std::string str);
     void    configure_index(std::string str);
     void    configure_autoindex(std::string str);
     void    invalid_element(std::string str);
-
-    int     context_size(std::vector<std::string>::iterator it);
 
     //GETTERS
     std::string                 get_root();

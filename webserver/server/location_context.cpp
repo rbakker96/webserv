@@ -13,25 +13,28 @@
 #include "location_context.hpp"
 
 location_context::location_context() : _root(), _allowed_method(0), _index(0), _autoindex(false) {}
-location_context::location_context(location_context const &src){*this = src;}
 location_context::~location_context(){}
 
-void location_context::configure_location_context(std::vector<std::string>::iterator it, std::vector<std::string>::iterator end) {
-    std::string str;
-    int config_id = 0;
+void location_context::configure_location_context(string_iterator it, string_iterator end) {
     configure configure_array[5] = { &location_context::configure_root,
                                      &location_context::configure_allowed_method,
                                      &location_context::configure_autoindex,
                                      &location_context::configure_index,
                                      &location_context::invalid_element };
 
+    clean_location_instance();
     for(; it != end; it++) {
-        if (context_size(it))
-            break;
-        config_id = identify_location_value(*it);
+        int config_id = identify_location_value(*it);
         configure function = configure_array[config_id];
         (this->*function)(*it);
     }
+}
+
+void    location_context::clean_location_instance() {
+    _root.clear();
+    _allowed_method.clear();
+    _index.clear();
+    _autoindex = false;
 }
 
 int     location_context::identify_location_value(std::string str){
@@ -54,7 +57,6 @@ void    location_context::configure_root(std::string str){
 }
 
 void    location_context::configure_allowed_method(std::string str){
-    std::vector<std::string>    methods;
     size_t                      start = str.find_first_not_of(' ');
     size_t                      pos = str.find_first_of(' ', start);
     std::string                 tmp = str.substr(pos + 1);
@@ -62,16 +64,13 @@ void    location_context::configure_allowed_method(std::string str){
 
     while ((int)(pos =tmp.find_first_of(' ')) != -1) {
         value = tmp.substr(0, pos);
-        methods.push_back(value);
+        _allowed_method.push_back(value);
         tmp = tmp.substr(pos + 1);
     }
-    methods.push_back(tmp);
-    _allowed_method = methods;
-    methods.clear();
+    _allowed_method.push_back(tmp);
 }
 
 void    location_context::configure_index(std::string str){
-    std::vector<std::string>    indexen;
     size_t                      start = str.find_first_not_of(' ');
     size_t                      pos = str.find_first_of(' ', start);
     std::string                 tmp = str.substr(pos + 1);
@@ -79,12 +78,10 @@ void    location_context::configure_index(std::string str){
 
     while ((int)(pos =tmp.find_first_of(' ')) != -1) {
         value = tmp.substr(0, pos);
-        indexen.push_back(value);
+        _index.push_back(value);
         tmp = tmp.substr(pos + 1);
     }
-    indexen.push_back(tmp);
-    _index = indexen;
-    indexen.clear();
+    _index.push_back(tmp);
 }
 
 void    location_context::configure_autoindex(std::string str){
@@ -94,22 +91,13 @@ void    location_context::configure_autoindex(std::string str){
 
     if (tmp == "on")
         _autoindex = true;
-    else
-        _autoindex = false;
+    return;
 }
 
 void    location_context::invalid_element(std::string str) {
     if (str == "0")
         return;
     return;
-}
-
-int     location_context::context_size(std::vector<std::string>::iterator it) {
-    std::string str = it->data();
-
-    if ((int)str.find("}") != -1)
-        return 1;
-    return 0;
 }
 
 //GETTERS

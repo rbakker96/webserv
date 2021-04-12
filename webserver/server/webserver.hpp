@@ -35,7 +35,7 @@ public:
     void    establish_connection();
     void    run();
 
-    //helper functions
+    //Helper functions
     void    initialize_fd_sets();
     void    initialize_highest_fd();
     int		highest_fd(int fd_one, int fd_two);
@@ -48,7 +48,7 @@ public:
 
     int     check_server_block(std::vector<std::string> server_block);
 
-    //debug-tool
+    //Debug-tool
     void    print_struct();
 };
 

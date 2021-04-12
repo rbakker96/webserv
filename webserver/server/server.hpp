@@ -42,9 +42,10 @@ public:
 	friend class webserver;
 
 public:
-    typedef  void (server::*configure)(std::string);
-    enum server_values{ port_ = 0, host_ = 1, server_name_ = 2, error_page_ = 3,
-                        max_file_size_ = 4, unknown_ = 5, location_ = 6 };
+    typedef     std::vector<std::string>::iterator string_iterator;
+    typedef     void (server::*configure)(std::string);
+    enum        server_values{ port_ = 0, host_ = 1, server_name_ = 2, error_page_ = 3,
+                                max_file_size_ = 4, unknown_ = 5, location_ = 6 };
 
 private:
     //Configurations
@@ -53,7 +54,7 @@ private:
     std::string                     _host;
     std::string                     _server_name;
     std::string                     _error_page;
-    std::vector<location_context>   _location;
+    std::vector<location_context>  _location;
 
     //TCP conection
     int 	                        _tcp_socket;
@@ -68,7 +69,8 @@ public:
     server();
     ~server();
 
-    //configure functions
+    //Configure functions
+    void    clean_server_instance();
     int     identify_server_value(std::string str);
     void    create_new_server(std::vector<std::string> server_config);
     void    configure_port(std::string str);
@@ -76,13 +78,15 @@ public:
     void    configure_server_name(std::string str);
     void    configure_max_file_size(std::string str);
     void    configure_error_page(std::string str);
-    void    configure_location(std::vector <std::string> location_block);
     void    invalid_element(std::string str);
 
     //TCP-connection functions
     int     create_socket(void);
     int     bind_socket_address(int port);
     int     create_connection(int backlog);
+
+    //Helper functions
+    int     location_size(string_iterator it, string_iterator end);
 
     //GETTERS
     int                             get_file_size();
