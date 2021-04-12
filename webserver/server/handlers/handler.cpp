@@ -22,12 +22,12 @@ void    handler::read_file(int fd) {
     while (ret > 0) {
         ret = read(fd, buff, 3000);
 		_file.append(buff, ret);
-		std::cout << "_file: " << _file << std::endl;
         if (ret < 3000)
             break;
     }
-    if (ret == -1)
-        return ; //need some error checking method
+    if (ret == -1) {
+		return ; //need some error checking method
+	}
     return;
 }
 
