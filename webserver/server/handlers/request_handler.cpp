@@ -15,8 +15,12 @@
 request_handler::request_handler(){}
 request_handler::~request_handler(){}
 
-int     request_handler::open_requested_file(char *relative_path) {
-    int	fd = open(relative_path, O_RDONLY);
+int     request_handler::open_requested_file(std::string location) {
+	char	*path;
+	int		fd;
+
+	path = &location[0];
+    fd = open(path, O_RDONLY);
     if (fd == -1)
         return -1; //need some error checking method
     fcntl(fd, F_SETFL, O_NONBLOCK);

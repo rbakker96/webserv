@@ -15,14 +15,24 @@
 response_handler::response_handler(){}
 response_handler::~response_handler(){}
 
+// create get_content_len
+
 void    response_handler::create_response_file(int request_fd, std::string response_file) {
+	int		len = 0;
+	char	*len_str;
+
+	while (response_file[len] != '\0')
+		len++;
+	len_str = ft_itoa(len);
+	std::cout << len << std::endl;
+	std::cout << len_str << std::endl;
+
     std::cout << "writing response..." << std::endl;
     std::string	header1 = "HTTP/1.1 200 OK\n";
     std::string	header2 = "Content-Type: text/html; charset=UTF-8\n";
-    std::string	header3 = "Content-Length: 313\n\n";
-	int	len = 0;
-	while (response_file[len] != '\0')
-		len++;
+    std::string	header3 = "Content-Length: ";
+	header3.append(len_str);
+	header3.append("\n\n");
 
 	std::cout << "LEN: " << len << std::endl;
     write(request_fd, header1.c_str(), header1.length());

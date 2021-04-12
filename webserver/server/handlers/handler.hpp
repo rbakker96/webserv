@@ -19,6 +19,8 @@
 #include <unistd.h>
 #include <fcntl.h>
 
+#include "../../helper/helper.hpp"
+
 class handler {
 
 private:
@@ -29,8 +31,9 @@ public:
     virtual ~handler();
 
     //Base class functions
-    void    read_file(int fd);
+    void    	read_file(int fd);
 	std::string	get_file(void);
+	void		clear_file(void);
 };
 
 

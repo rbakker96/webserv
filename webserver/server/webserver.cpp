@@ -145,17 +145,48 @@ void    webserver::accept_request() {
     }
 }
 
+// create get_location()
+// create get_filename()
+// create get_index()
+
+std::string	webserver::get_location_from_request(std::string file)
+{
+	std::string	location;
+	size_t		start;
+	size_t		len;
+	std::string	filename;
+
+	location.append("/home/gijs/Desktop/codam/subjects/webserv/html_css_testfiles"); // should be one of location blocks
+	start = file.find(' ') + 1;
+	len = start;
+	while (file[len] != '\0' && file[len] != ' ')
+		len++;
+	filename = file.substr(start, len - start);
+	if (filename.compare("/") == 0 || filename.compare("/favicon.ico"))
+		location.append("/test_one.html");
+	else
+		location.append(filename);
+
+	return (location);
+}
+
 void    webserver::handle_request() {
+	std::string	location;
+
     if (FD_ISSET(_request_fd, &_read_fds))
     {
         _servers[0]._request.read_file(_request_fd);
 		std::cout << "_FILE: " << _servers[0]._request.get_file() << std::endl;
         FD_CLR(_request_fd, &_buffer_read_fds);
         //some parsing functions needed to process request
-		char location[500] = "/home/gijs/Desktop/codam/subjects/webserv/html_css_testfiles/test_one.html"; // temporary location for getting a file
+		location = get_location_from_request(_servers[0]._request.get_file());
+		std::cout << "LOCATION " << location << std::endl;
         _file_fd = _servers[0]._request.open_requested_file(location);
-        _highest_fd = highest_fd(_highest_fd, _file_fd);
-        FD_SET(_file_fd, &_buffer_read_fds);
+		std::cout << "FILE_FD: " << _file_fd << std::endl;
+		if (_file_fd == -1)
+			// get an error page / favicon / something else
+		_highest_fd = highest_fd(_highest_fd, _file_fd);
+		FD_SET(_file_fd, &_buffer_read_fds);
     }
 }
 
@@ -171,11 +202,12 @@ void    webserver::read_request_file() {
 void    webserver::create_response() {
     if (FD_ISSET(_request_fd, &_write_fds))
     {
-		std::cout << "response.get_file(): " << _servers[0]._response.get_file() << std::endl;
-        _servers[0]._response.create_response_file(_request_fd, _servers[0]._response.get_file()); //see if compiles
+        _servers[0]._response.create_response_file(_request_fd, _servers[0]._response.get_file());
         FD_CLR(_request_fd, &_buffer_write_fds);
         close(_request_fd);
         _request_fd = -1;
+		_servers[0]._request.clear_file();
+		_servers[0]._response.clear_file();
     }
 }
 

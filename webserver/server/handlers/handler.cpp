@@ -35,3 +35,9 @@ std::string	handler::get_file(void)
 {
 	return (_file);
 }
+
+void		handler::clear_file(void)
+{
+	_file.clear();
+}
+

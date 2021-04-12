@@ -23,7 +23,7 @@ public:
     request_handler();
     ~request_handler();
 
-    int     open_requested_file(char *relative_path);
+    int     open_requested_file(std::string location);
 };
 
 
