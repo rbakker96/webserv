@@ -1,0 +1,31 @@
+# OS
+From ubuntu:latest
+
+# update packages
+RUN apt-get update && apt-get upgrade -y
+
+# install Nginx
+RUN apt-get install -y nginx openssl
+
+# generate ssl certificate
+RUN openssl req -x509 \
+	-nodes -days 365 -newkey rsa:2048 \
+	-keyout /etc/ssl/private/localhost.key \
+	-out /etc/ssl/certs/localhost.crt \
+	-subj "/C=NL/ST=Noord Holland/L=Amsterdam\
+	/O=Codam/CN=www.localhost.com"
+
+# copy nginx config file to the right place
+COPY srcs/nginx.conf /etc/nginx/sites-available/localhost
+COPY srcs/index.html /var/www/html/
+COPY srcs/style.css /var/www/html/
+
+# symlin this to sites-enabled to enable it
+RUN ln -s /etc/nginx/sites-available/localhost /etc/nginx/sites-enabled
+
+# define the port number the container should expose
+# 80 for HTTP && 443 for HTTPS
+EXPOSE 80 443
+
+# run the command
+CMD service nginx start && bash
