@@ -1,0 +1,3 @@
+location_context -> should the name of the location also be part of the location_context?
+					im trying to match the request location with on of the vectors,
+					but i'm not really sure how that works.

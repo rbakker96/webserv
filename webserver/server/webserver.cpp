@@ -108,7 +108,7 @@ void    webserver::run() {
         else {
             accept_request();
             handle_request();
-            read_request_file();
+            read_requested_file();
             create_response();
         }
     }
@@ -146,27 +146,33 @@ void    webserver::accept_request() {
 }
 
 // create get_location()
-// create get_filename()
 // create get_index()
 
-std::string	webserver::get_location_from_request(std::string file)
+std::string	get_filename(std::string file)
 {
-	std::string	location;
+	std::string	filename;
 	size_t		start;
 	size_t		len;
+
+	start = file.find(' ') + 1;
+	len = start;
+	while (file[len] != ' ' && file[len] != '\0')
+		len++;
+	filename = file.substr(start, len - start);
+	return (filename);
+}
+
+std::string	get_location_from_request(std::string file)
+{
+	std::string	location;
 	std::string	filename;
 
 	location.append("/home/gijs/Desktop/codam/subjects/webserv/html_css_testfiles"); // should be one of location blocks
-	start = file.find(' ') + 1;
-	len = start;
-	while (file[len] != '\0' && file[len] != ' ')
-		len++;
-	filename = file.substr(start, len - start);
-	if (filename.compare("/") == 0 || filename.compare("/favicon.ico"))
-		location.append("/test_one.html");
+	filename = get_filename(file);
+	if (filename.compare("/") == 0 || filename.compare("/favicon.ico") == 0)
+		location.append("/test_one.html"); // get_index_file();
 	else
 		location.append(filename);
-
 	return (location);
 }
 
@@ -176,21 +182,21 @@ void    webserver::handle_request() {
     if (FD_ISSET(_request_fd, &_read_fds))
     {
         _servers[0]._request.read_file(_request_fd);
-		std::cout << "_FILE: " << _servers[0]._request.get_file() << std::endl;
         FD_CLR(_request_fd, &_buffer_read_fds);
         //some parsing functions needed to process request
 		location = get_location_from_request(_servers[0]._request.get_file());
-		std::cout << "LOCATION " << location << std::endl;
         _file_fd = _servers[0]._request.open_requested_file(location);
-		std::cout << "FILE_FD: " << _file_fd << std::endl;
 		if (_file_fd == -1)
+		{
+			std::cout << "file not found" << std::endl;
 			// get an error page / favicon / something else
+		}
 		_highest_fd = highest_fd(_highest_fd, _file_fd);
 		FD_SET(_file_fd, &_buffer_read_fds);
     }
 }
 
-void    webserver::read_request_file() {
+void    webserver::read_requested_file() {
     if (FD_ISSET(_file_fd, &_read_fds))
     {
         _servers[0]._response.read_file(_file_fd);

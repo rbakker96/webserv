@@ -43,8 +43,7 @@ public:
 
     void    	accept_request();
     void   		handle_request();
-	std::string	get_location_from_request(std::string file);
-    void    	read_request_file();
+    void    	read_requested_file();
     void    	create_response();
 
     int    		check_server_block(std::vector<std::string> server_block);
