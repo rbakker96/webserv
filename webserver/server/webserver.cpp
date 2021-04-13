@@ -57,7 +57,6 @@ void webserver::print_struct() {
 }
 
 webserver::webserver() : _servers(0), _highest_fd(-1), _request_fd(-1), _file_fd(-1) {}
-
 webserver::~webserver(){}
 
 void    webserver::load_configuration(char *config_file) {
