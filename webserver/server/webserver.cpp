@@ -163,8 +163,16 @@ void    webserver::accept_request() {
     }
 }
 
-// create get_location()
-// create get_index()
+// the functions get_root(), get_filename(), and get_pathname_from_request()
+// are a work-in-progress, when the request_handler class is better equipped to handle the request headers,
+// we can start working on getting the correct files to the server
+
+std::string	get_root(std::string filename, std::vector<location_context> location)
+{
+	if (filename.compare(location[0].get_location()) == 0)
+		return (location[0].get_root());
+	return (location[0].get_root());
+}
 
 std::string	get_filename(std::string file)
 {
@@ -180,20 +188,21 @@ std::string	get_filename(std::string file)
 	return (filename);
 }
 
-std::string	get_location_from_request(std::string file)
+std::string	webserver::get_pathname_from_request(std::string file)
 {
-	std::string	location;
 	std::string	filename;
+	std::string	pathname;
 
-	location.append("/home/gijs/Desktop/codam/evals/test/html_css_testfiles/test_one.html"); // should be one of location blocks
 	filename = get_filename(file);
-	printf("filename = %s\n", filename.c_str());
+//	pathname.append(get_root(filename, _servers[0]._location));
+	pathname.append("home/gijs/Desktop/codam/subjects/webserv/html_css_testfiles");
 	if (filename.compare("/") == 0 || filename.compare("/favicon.ico") == 0)
-		location.append("/test_one.html"); // get_index_file();
+		pathname.append("/test_one.html"); // get_index_file();
 	else
-		location.append(filename);
-	printf("location = %s\n", location.c_str());
-	return (location);
+		pathname.append(filename);
+	std::cout << "PATHNAME: " << "|" << pathname << "|" << std::endl;
+//	while (1) {}
+	return (pathname);
 }
 
 void    webserver::handle_request() {
@@ -208,7 +217,7 @@ void    webserver::handle_request() {
         if (ret == valid_) {
             FD_CLR(_servers[0]._io_fd, &_buffer_read_fds);
 //            handler.parse_request(_servers[0]._request_buffer); //complete request needs parsing
-            location = get_location_from_request(_servers[0]._request.get_file());
+            location = get_pathname_from_request(_servers[0]._request.get_file());
             _file_fd = _servers[0]._request.open_requested_file(location);
             if (_file_fd == -1)
             {

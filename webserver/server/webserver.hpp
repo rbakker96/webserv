@@ -47,6 +47,7 @@ public:
 
     void    	accept_request();
     void   		handle_request();
+	std::string	get_pathname_from_request(std::string file);
     void    	read_requested_file();
     void    	create_response();
 
