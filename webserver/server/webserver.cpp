@@ -33,6 +33,7 @@ void webserver::print_struct() {
             location_context location = *it;
 
             std::cout << "\n  ------------- location block -------------\n";
+            std::cout << "  location = " << location.get_location() << std::endl;
             std::cout << "  Root = " << location.get_root() << std::endl;
 
             std::vector<std::string> methods = location.get_method();
@@ -137,7 +138,6 @@ void    webserver::add_sockets_to_read_fds() {
 void    webserver::accept_request() {
     if (FD_ISSET(_servers[0].get_tcp_socket(), &_read_fds))
     {
-        printf("----------------testtttt-----------------\n");
         _request_fd = accept(_servers[0].get_tcp_socket(), (struct sockaddr *)&_servers[0]._addr, (socklen_t *)&_servers[0]._addr_len);
         fcntl(_request_fd, F_SETFL, O_NONBLOCK);
         FD_SET(_request_fd, &_buffer_read_fds);
@@ -146,8 +146,19 @@ void    webserver::accept_request() {
 }
 
 void    webserver::handle_request() {
+    std::string     request_headers;
+    request_handler handler;
+
+
     if (FD_ISSET(_request_fd, &_read_fds))
     {
+//        request_headers = handler.read_request(_request_fd);
+//        if (_servers[0].update_request_buffer(_servers[0]._io_fd, request_headers)) {
+//
+//        }
+
+
+
         _servers[0]._request.read_file(_request_fd);
 		std::cout << "_FILE: " << _servers[0]._request.get_file() << std::endl;
         FD_CLR(_request_fd, &_buffer_read_fds);

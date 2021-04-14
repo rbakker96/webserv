@@ -26,7 +26,7 @@
 //Accept: text/css,*/*;q=0.1
 //User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_6) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/14.0.3 Safari/605.1.15
 //Accept-Language: en-us
-//        Referer: http://localhost:8080/
+//Referer: http://localhost:8080/
 //Accept-Encoding: gzip, deflate
 
 

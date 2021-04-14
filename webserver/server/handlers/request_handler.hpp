@@ -13,18 +13,34 @@
 #ifndef WEBSERV_REQUEST_HANDLER_HPP
 #define WEBSERV_REQUEST_HANDLER_HPP
 
+//general includes
+#include <map>
+
 //custom includes
+//#include "../server.hpp"
 #include "handler.hpp"
 
 class request_handler : public handler {
+public:
+    friend class server;
+
 private:
+    //Request headers
+//    std::string     _method;
+//    std::string     _location;
+//    std::string     _host;
+//    std::string     _user_agent;
+//    std::string     _accept_language;
+//    std::string     _authorization;
 
 public:
     request_handler();
     ~request_handler();
 
+    //Parse functions
+    void    update_request_buffer(int fd, std::string request);
     int     open_requested_file(char *relative_path);
-};
 
+};
 
 #endif //WEBSERV_REQUEST_HANDLER_HPP

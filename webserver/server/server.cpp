@@ -41,6 +41,8 @@ void    server::create_new_server(std::vector <std::string> server_config) {
     }
 }
 
+
+//------Configure functions------
 void    server::clean_server_instance(){
     _max_file_size = 0;
     _port = 0;
@@ -103,25 +105,14 @@ void    server::configure_max_file_size(std::string str) {
     _max_file_size = atoi(temp.c_str()); //NOT ALLOWED
 }
 
-int    server::location_size(string_iterator it, string_iterator end) {
-
-    for (int i = 0; it != end; it++) {
-        std::string str = it->data();
-
-        if ((int)str.find("}") != -1)
-            return i;
-        i++;
-    }
-    return 0;
-}
-
 void    server::invalid_element(std::string str) {
     if (str == "0")
         return;
     return;
 }
 
-//TCP-connection functions
+
+//------TCP-connection functions------
 int server::create_socket() {
     if ((this->_tcp_socket = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
         std::cout << "cannot create tcp socket" << std::endl;
@@ -152,7 +143,37 @@ int server::create_connection(int backlog) {
     return 0;
 }
 
-//GETTERS
+//------Helper functions------
+int    server::location_size(string_iterator it, string_iterator end) {
+    for (int i = 0; it != end; it++) {
+        std::string str = it->data();
+
+        if ((int)str.find("}") != -1)
+            return i;
+        i++;
+    }
+    return 0;
+}
+
+int     server::update_request_buffer(int fd, std::string request) {
+    std::map<int, std::string>::iterator it;
+
+    it = _request_buffer.find(fd);
+    if (it == _request_buffer.end())
+        _request_buffer.insert(std::pair<int, std::string>(fd , request));
+    else
+        it->second = it->second.append(request);
+    return (valid_request(it->second));
+}
+
+int     server::valid_request(std::string request) {
+//    _request_buffer[fd]
+    if (request == " ")
+        return 1;
+    return 0;
+}
+
+//------Getters------
 int                             server::get_file_size(){return _max_file_size;}
 int                             server::get_port(){return _port;}
 std::string                     server::get_host(){return _host;}

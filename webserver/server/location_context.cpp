@@ -23,6 +23,7 @@ void location_context::configure_location_context(string_iterator it, string_ite
                                      &location_context::invalid_element };
 
     clean_location_instance();
+    configure_location(*it);
     for(; it != end; it++) {
         int config_id = identify_location_value(*it);
         configure function = configure_array[config_id];
@@ -47,6 +48,14 @@ int     location_context::identify_location_value(std::string str){
     else if ((int)str.find("index") != -1)
         return index_;
     return unknown_;
+}
+
+#include <iostream>
+void    location_context::configure_location(std::string str) {
+    size_t start = str.find_first_of('/');
+    size_t end = str.find_first_of(' ', start);
+
+    _location = str.substr(start, end - start);
 }
 
 void    location_context::configure_root(std::string str){
@@ -100,7 +109,8 @@ void    location_context::invalid_element(std::string str) {
     return;
 }
 
-//GETTERS
+//Getters
+std::string                 location_context::get_location() {return _location;}
 std::string                 location_context::get_root() {return _root;}
 std::vector<std::string>    location_context::get_method() {return _allowed_method;}
 std::vector<std::string>    location_context::get_index() {return _index;}

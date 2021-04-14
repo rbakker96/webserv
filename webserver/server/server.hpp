@@ -17,6 +17,7 @@
 #include <string>
 #include <cstring>
 #include <vector>
+#include <map>
 #include <iostream>
 #include <errno.h>
 #include <unistd.h>
@@ -48,13 +49,16 @@ public:
                                 max_file_size_ = 4, unknown_ = 5, location_ = 6 };
 
 private:
+    //Connection
+    int                             _io_fd;
+
     //Configurations
     int                             _max_file_size;
     int                             _port;
     std::string                     _host;
     std::string                     _server_name;
     std::string                     _error_page;
-    std::vector<location_context>  _location;
+    std::vector<location_context>   _location;
 
     //TCP conection
     int 	                        _tcp_socket;
@@ -62,6 +66,7 @@ private:
     struct	sockaddr_in             _addr;
 
     //Handlers
+    std::map<int, std::string>      _request_buffer;
     request_handler                 _request;
     response_handler                _response;
 
@@ -87,8 +92,10 @@ public:
 
     //Helper functions
     int     location_size(string_iterator it, string_iterator end);
+    int     update_request_buffer(int fd, std::string request);
+    int     valid_request(std::string);
 
-    //GETTERS
+    //Getters
     int                             get_file_size();
     int                             get_port();
     std::string                     get_host();

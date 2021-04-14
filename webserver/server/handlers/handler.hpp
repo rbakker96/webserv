@@ -20,18 +20,28 @@
 #include <fcntl.h>
 
 class handler {
-
 private:
-    std::string     _file;
+    //Entity headers
+//    int             _content_length;
+//    std::string     _content_type;
+//    std::string     _conent_language;
+//    std::string     _content_location;
+//    std::string     _allow;
+
+    std::string     _file; //local now?
+
+    //Add map container with standard responses which can be altered in the actual response which will be send
 
 public:
     handler();
     virtual ~handler();
 
     //Base class functions
-    void    read_file(int fd);
-	std::string	get_file(void);
-};
+    std::string     read_request(int fd);
+    void            read_file(int fd); //old
 
+    //GETTER
+	std::string	    get_file(void);
+};
 
 #endif //WEBSERV_HANDLER_HPP
