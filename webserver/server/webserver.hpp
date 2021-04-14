@@ -33,22 +33,22 @@ public:
     webserver();
     ~webserver();
 
-    void    load_configuration(char* config_file);
-    void    establish_connection();
-    void    run();
+    void    	load_configuration(char* config_file);
+    void    	establish_connection();
+    void    	run();
 
-    //Helper functions
-    void    initialize_fd_sets();
-    void    initialize_highest_fd();
-    int		highest_fd(int fd_one, int fd_two);
-    void    add_sockets_to_read_fds();
+    //helper functions
+    void    	initialize_fd_sets();
+    void    	initialize_highest_fd();
+    int			highest_fd(int fd_one, int fd_two);
+    void    	add_sockets_to_read_fds();
 
-    void    accept_request();
-    void    handle_request();
-    void    read_request_file();
-    void    create_response();
+    void    	accept_request();
+    void   		handle_request();
+    void    	read_requested_file();
+    void    	create_response();
 
-    int     check_server_block(std::vector<std::string> server_block);
+    int    		check_server_block(std::vector<std::string> server_block);
 
     //Debug-tool
     void    print_struct();

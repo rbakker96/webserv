@@ -67,21 +67,42 @@ void    webserver::load_configuration(char *config_file) {
     int                         ret;
     int                         fd = open(config_file, O_RDONLY);
 
+	if (fd == -1)
+		throw std::invalid_argument("Error opening config file");
     while ((ret = get_next_line(fd, &line)) == 1) {
         server_block.push_back(line);
+        free(line);
         if (check_server_block(server_block)) {
             server.create_new_server(server_block);
             _servers.push_back(server);
             server_block.clear();
         }
-        //free(line); not yet sure if needed?
     }
-    print_struct();                         //  PRINTING STRUCT
+	free(line);
     close(fd);
-//    if (ret == -1)
-//        throw "Reading error occured";
-//    if (!check_server_block(server_block))
-//        throw "Syntax error in config file";
+	if (ret == -1)
+		throw std::runtime_error("Error while reading config file");
+	if (!server_block.empty())
+		throw std::invalid_argument("Error: missing '{' or '}' in config file");
+    print_struct();                         //  PRINTING STRUCT
+}
+
+int     webserver::check_server_block(std::vector <std::string> server_block) {
+    int         open_bracket = 0;
+    int         closing_bracket = 0;
+    std::string str;
+
+    for (std::vector<std::string>::iterator it = server_block.begin(); it != server_block.end(); it++) {
+        str = it->data();
+        if ((int)str.find("{") != -1)
+            open_bracket++;
+        if ((int)str.find("}") != -1)
+            closing_bracket++;
+    }
+    if (open_bracket == closing_bracket && open_bracket != 0) {
+        return 1;
+	}
+    return 0;
 }
 
 void    webserver::establish_connection(){
@@ -99,16 +120,12 @@ void    webserver::run() {
         _write_fds = _buffer_write_fds;
 
         add_sockets_to_read_fds();
-        std::cout << "before select" << std::endl;
-        int	select_value = select(_highest_fd + 1, &_read_fds, &_write_fds, NULL, NULL);
-        if (select_value == -1)
-            std::cout << "select error" << std::endl;
-        else if (select_value == 0)
-            std::cout << "time out" << std::endl;
+        if (select(_highest_fd + 1, &_read_fds, &_write_fds, NULL, NULL) == -1)
+			throw std::runtime_error("Select failed");
         else {
             accept_request();
             handle_request();
-            read_request_file();
+            read_requested_file();
             create_response();
         }
     }
@@ -145,10 +162,41 @@ void    webserver::accept_request() {
     }
 }
 
+// create get_location()
+// create get_index()
+
+std::string	get_filename(std::string file)
+{
+	std::string	filename;
+	size_t		start;
+	size_t		len;
+
+	start = file.find(' ') + 1;
+	len = start;
+	while (file[len] != ' ' && file[len] != '\0')
+		len++;
+	filename = file.substr(start, len - start);
+	return (filename);
+}
+
+std::string	get_location_from_request(std::string file)
+{
+	std::string	location;
+	std::string	filename;
+
+	location.append("/home/gijs/Desktop/codam/subjects/webserv/html_css_testfiles"); // should be one of location blocks
+	filename = get_filename(file);
+	if (filename.compare("/") == 0 || filename.compare("/favicon.ico") == 0)
+		location.append("/test_one.html"); // get_index_file();
+	else
+		location.append(filename);
+	return (location);
+}
+
 void    webserver::handle_request() {
     std::string     request_headers;
     request_handler handler;
-
+	std::string	location;
 
     if (FD_ISSET(_request_fd, &_read_fds))
     {
@@ -157,20 +205,22 @@ void    webserver::handle_request() {
 //
 //        }
 
-
-
         _servers[0]._request.read_file(_request_fd);
-		std::cout << "_FILE: " << _servers[0]._request.get_file() << std::endl;
         FD_CLR(_request_fd, &_buffer_read_fds);
         //some parsing functions needed to process request
-		char location[500] = "/Users/roybakker/Desktop/webserv/html_css_testfiles/test_one.html"; // temporary location for getting a file
+		location = get_location_from_request(_servers[0]._request.get_file());
         _file_fd = _servers[0]._request.open_requested_file(location);
-        _highest_fd = highest_fd(_highest_fd, _file_fd);
-        FD_SET(_file_fd, &_buffer_read_fds);
+		if (_file_fd == -1)
+		{
+			std::cout << "file not found" << std::endl;
+			// get an error page / favicon / something else
+		}
+		_highest_fd = highest_fd(_highest_fd, _file_fd);
+		FD_SET(_file_fd, &_buffer_read_fds);
     }
 }
 
-void    webserver::read_request_file() {
+void    webserver::read_requested_file() {
     if (FD_ISSET(_file_fd, &_read_fds))
     {
         _servers[0]._response.read_file(_file_fd);
@@ -182,27 +232,11 @@ void    webserver::read_request_file() {
 void    webserver::create_response() {
     if (FD_ISSET(_request_fd, &_write_fds))
     {
-		std::cout << "response.get_file(): " << _servers[0]._response.get_file() << std::endl;
-        _servers[0]._response.create_response_file(_request_fd, _servers[0]._response.get_file()); //see if compiles
+        _servers[0]._response.create_response_file(_request_fd, _servers[0]._response.get_file());
         FD_CLR(_request_fd, &_buffer_write_fds);
         close(_request_fd);
         _request_fd = -1;
+		_servers[0]._request.clear_file();
+		_servers[0]._response.clear_file();
     }
-}
-
-int     webserver::check_server_block(std::vector <std::string> server_block) {
-    int         open_bracket = 0;
-    int         closing_bracket = 0;
-    std::string str;
-
-    for (std::vector<std::string>::iterator it = server_block.begin(); it != server_block.end(); it++) {
-        str = it->data();
-        if ((int)str.find("{") != -1)
-            open_bracket++;
-        if ((int)str.find("}") != -1)
-            closing_bracket++;
-    }
-    if (open_bracket == closing_bracket && open_bracket != 0)
-        return 1;
-    return 0;
 }

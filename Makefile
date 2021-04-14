@@ -20,7 +20,9 @@ SOURCES			=	webserver/main.cpp \
                     webserver/server/webserver.cpp \
                     webserver/server/handlers/handler.cpp \
                     webserver/server/handlers/request_handler.cpp \
-                    webserver/server/handlers/response_handler.cpp
+                    webserver/server/handlers/response_handler.cpp \
+					webserver/helper/ft_itoa.cpp \
+					webserver/helper/ft_atoi.cpp
 
 OBJECTS 		=	${SOURCES:%.c=%.o}
 

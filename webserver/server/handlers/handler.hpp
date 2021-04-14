@@ -19,6 +19,8 @@
 #include <unistd.h>
 #include <fcntl.h>
 
+#include "../../helper/helper.hpp"
+
 class handler {
 private:
     //Entity headers
@@ -39,6 +41,7 @@ public:
     //Base class functions
     std::string     read_request(int fd);
     void            read_file(int fd); //old
+	void		    clear_file(void);
 
     //GETTER
 	std::string	    get_file(void);

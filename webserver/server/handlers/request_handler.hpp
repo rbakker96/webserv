@@ -39,8 +39,7 @@ public:
 
     //Parse functions
     void    update_request_buffer(int fd, std::string request);
-    int     open_requested_file(char *relative_path);
-
+    int     open_requested_file(std::string location);
 };
 
 #endif //WEBSERV_REQUEST_HANDLER_HPP
