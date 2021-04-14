@@ -46,7 +46,7 @@ public:
     typedef     std::vector<std::string>::iterator string_iterator;
     typedef     void (server::*configure)(std::string);
     enum        server_values{ port_ = 0, host_ = 1, server_name_ = 2, error_page_ = 3,
-                                max_file_size_ = 4, unknown_ = 5, location_ = 6 };
+                                max_file_size_ = 4, unknown_ = 5, location_ = 6, valid_ = 7, invalid_ = 8 };
 
 private:
     //Connection

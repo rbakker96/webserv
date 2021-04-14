@@ -35,6 +35,13 @@
 request_handler::request_handler(){}
 request_handler::~request_handler(){}
 
+void    request_handler::parse_request(int fd) {
+
+    if (fd > 1)
+        return;
+    return;
+}
+
 int     request_handler::open_requested_file(std::string location) {
 	char	*path;
 	int		fd;
@@ -45,5 +52,18 @@ int     request_handler::open_requested_file(std::string location) {
         return -1; //need some error checking method
     fcntl(fd, F_SETFL, O_NONBLOCK);
     return (fd);
+}
+
+void    request_handler::clear_atributes() {
+     _method.clear();
+     _location.clear();
+     _host.clear();
+     _user_agent.clear();
+     _accept_language.clear();
+     _authorization.clear();
+     _content_type.clear();
+     _content_language.clear();
+     _content_location.clear();
+     _content_length = 0;
 }
 

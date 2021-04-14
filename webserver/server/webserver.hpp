@@ -22,12 +22,14 @@
 #include "handlers/request_handler.hpp"
 
 class webserver {
+public:
+    enum        webserver_values{ valid_ = 7, invalid_ = 8 };
 
 private:
     std::vector<server>     _servers;
     fd_set			        _read_fds, _write_fds;
     fd_set			        _buffer_read_fds, _buffer_write_fds;
-    int				        _highest_fd, _request_fd, _file_fd;
+    int				        _highest_fd, _request_fd, _file_fd; //request fd needs to be gone instead use io_fd
 
 public:
     webserver();

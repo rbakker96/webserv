@@ -22,13 +22,13 @@
 #include "../../helper/helper.hpp"
 
 class handler {
-private:
+protected:
     //Entity headers
-//    int             _content_length;
-//    std::string     _content_type;
-//    std::string     _conent_language;
-//    std::string     _content_location;
-//    std::string     _allow;
+    int             _content_length;
+    std::string     _content_type;
+    std::string     _content_language;
+    std::string     _content_location;
+    std::string     _allow;
 
     std::string     _file; //local now?
 

@@ -123,6 +123,7 @@ void    webserver::run() {
         if (select(_highest_fd + 1, &_read_fds, &_write_fds, NULL, NULL) == -1)
 			throw std::runtime_error("Select failed");
         else {
+            printf("XX  ");
             accept_request();
             handle_request();
             read_requested_file();
@@ -155,10 +156,10 @@ void    webserver::add_sockets_to_read_fds() {
 void    webserver::accept_request() {
     if (FD_ISSET(_servers[0].get_tcp_socket(), &_read_fds))
     {
-        _request_fd = accept(_servers[0].get_tcp_socket(), (struct sockaddr *)&_servers[0]._addr, (socklen_t *)&_servers[0]._addr_len);
-        fcntl(_request_fd, F_SETFL, O_NONBLOCK);
-        FD_SET(_request_fd, &_buffer_read_fds);
-        _highest_fd = highest_fd(_highest_fd, _request_fd);
+        _servers[0]._io_fd = accept(_servers[0].get_tcp_socket(), (struct sockaddr *)&_servers[0]._addr, (socklen_t *)&_servers[0]._addr_len);
+        fcntl(_servers[0]._io_fd, F_SETFL, O_NONBLOCK);
+        FD_SET(_servers[0]._io_fd, &_buffer_read_fds);
+        _highest_fd = highest_fd(_highest_fd, _servers[0]._io_fd);
     }
 }
 
@@ -184,39 +185,52 @@ std::string	get_location_from_request(std::string file)
 	std::string	location;
 	std::string	filename;
 
-	location.append("/home/gijs/Desktop/codam/subjects/webserv/html_css_testfiles"); // should be one of location blocks
+	location.append("/Users/roybakker/Desktop/webserv/html_css_testfiles/test_one.html"); // should be one of location blocks
 	filename = get_filename(file);
+	printf("filename = %s\n", filename.c_str());
 	if (filename.compare("/") == 0 || filename.compare("/favicon.ico") == 0)
 		location.append("/test_one.html"); // get_index_file();
 	else
 		location.append(filename);
+	printf("location = %s\n", location.c_str());
 	return (location);
 }
 
 void    webserver::handle_request() {
     std::string     request_headers;
     request_handler handler;
-	std::string	location;
+	std::string	    location;
 
-    if (FD_ISSET(_request_fd, &_read_fds))
+    if (FD_ISSET(_servers[0]._io_fd, &_read_fds))
     {
-//        request_headers = handler.read_request(_request_fd);
-//        if (_servers[0].update_request_buffer(_servers[0]._io_fd, request_headers)) {
-//
-//        }
+        request_headers = handler.read_request(_servers[0]._io_fd);
+        int ret = _servers[0].update_request_buffer(_servers[0]._io_fd, request_headers);
+        if (ret == valid_) {
+            FD_CLR(_request_fd, &_buffer_read_fds);
+//            handler.parse_request(_servers[0]._request_buffer); //complete request needs parsing
+            location = get_location_from_request(_servers[0]._request.get_file());
+            _file_fd = _servers[0]._request.open_requested_file(location);
+            if (_file_fd == -1)
+            {
+                std::cout << "file not found" << std::endl;
+                // get an error page / favicon / something else
+            }
+            _highest_fd = highest_fd(_highest_fd, _file_fd);
+            FD_SET(_file_fd, &_buffer_read_fds);
+        }
 
-        _servers[0]._request.read_file(_request_fd);
-        FD_CLR(_request_fd, &_buffer_read_fds);
-        //some parsing functions needed to process request
-		location = get_location_from_request(_servers[0]._request.get_file());
-        _file_fd = _servers[0]._request.open_requested_file(location);
-		if (_file_fd == -1)
-		{
-			std::cout << "file not found" << std::endl;
-			// get an error page / favicon / something else
-		}
-		_highest_fd = highest_fd(_highest_fd, _file_fd);
-		FD_SET(_file_fd, &_buffer_read_fds);
+//        _servers[0]._request.read_file(_request_fd);
+//        FD_CLR(_servers[0]._io_fd, &_buffer_read_fds);
+//        //some parsing functions needed to process request
+//		location = get_location_from_request(_servers[0]._request.get_file());
+//        _file_fd = _servers[0]._request.open_requested_file(location);
+//		if (_file_fd == -1)
+//		{
+//			std::cout << "file not found" << std::endl;
+//			// get an error page / favicon / something else
+//		}
+//		_highest_fd = highest_fd(_highest_fd, _file_fd);
+//		FD_SET(_file_fd, &_buffer_read_fds);
     }
 }
 
@@ -225,17 +239,17 @@ void    webserver::read_requested_file() {
     {
         _servers[0]._response.read_file(_file_fd);
         FD_CLR(_file_fd, &_buffer_read_fds);
-        FD_SET(_request_fd, &_buffer_write_fds);
+        FD_SET(_servers[0]._io_fd, &_buffer_write_fds);
     }
 }
 
 void    webserver::create_response() {
-    if (FD_ISSET(_request_fd, &_write_fds))
+    if (FD_ISSET(_servers[0]._io_fd, &_write_fds))
     {
-        _servers[0]._response.create_response_file(_request_fd, _servers[0]._response.get_file());
-        FD_CLR(_request_fd, &_buffer_write_fds);
+        _servers[0]._response.create_response_file(_servers[0]._io_fd, _servers[0]._response.get_file());
+        FD_CLR(_servers[0]._io_fd, &_buffer_write_fds);
         close(_request_fd);
-        _request_fd = -1;
+        _servers[0]._io_fd = -1;
 		_servers[0]._request.clear_file();
 		_servers[0]._response.clear_file();
     }

@@ -26,20 +26,22 @@ public:
 
 private:
     //Request headers
-//    std::string     _method;
-//    std::string     _location;
-//    std::string     _host;
-//    std::string     _user_agent;
-//    std::string     _accept_language;
-//    std::string     _authorization;
+    std::string     _method;
+    std::string     _location;
+    std::string     _host;
+    std::string     _user_agent;
+    std::string     _accept_language;
+    std::string     _authorization;
 
 public:
     request_handler();
     ~request_handler();
 
     //Parse functions
-    void    update_request_buffer(int fd, std::string request);
+    void    parse_request(int fd);
+
     int     open_requested_file(std::string location);
+    void    clear_atributes();
 };
 
 #endif //WEBSERV_REQUEST_HANDLER_HPP

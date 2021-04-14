@@ -11,6 +11,7 @@
 /* ************************************************************************** */
 
 #include "server.hpp"
+#include "../helper/helper.hpp"
 
 server::server() {
     _tcp_socket = 0;
@@ -150,18 +151,30 @@ int     server::update_request_buffer(int fd, std::string request) {
     std::map<int, std::string>::iterator it;
 
     it = _request_buffer.find(fd);
-    if (it == _request_buffer.end())
-        _request_buffer.insert(std::pair<int, std::string>(fd , request));
+    if (it == _request_buffer.end()) {
+        _request_buffer.insert(std::pair<int, std::string>(fd, request));
+        it = _request_buffer.find(fd);
+    }
     else
         it->second = it->second.append(request);
     return (valid_request(it->second));
 }
 
 int     server::valid_request(std::string request) {
-//    _request_buffer[fd]
-    if (request == " ")
-        return 1;
-    return 0;
+    int header_size;
+    int pos;
+
+    if ((header_size = (int)request.find("\r\n")) != -1) {
+        if ((pos = (int)request.find("Content-Length:")) == -1)
+            return valid_;
+        int content_length = ft_atoi(request.c_str() + (pos + 16));
+        printf("conent length = %d\n", content_length); //remove later
+        std::string body = request.substr(header_size+2); //after two linebreaks ??
+        std::cout << "body = " << body << std::endl;
+        if ((int)body.length() == content_length)
+            return valid_;
+    }
+    return invalid_;
 }
 
 //------Getters------
