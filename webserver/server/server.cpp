@@ -12,6 +12,7 @@
 
 #include "server.hpp"
 #include "../helper/helper.hpp"
+#include <stdio.h>
 
 server::server() {
     _tcp_socket = 0;

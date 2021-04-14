@@ -13,6 +13,7 @@
 #include "../gnl/get_next_line.hpp"
 #include "webserver.hpp"
 #include "server.hpp"
+#include <stdio.h>
 
 #include <iostream>
 void webserver::print_struct() {
@@ -57,7 +58,7 @@ void webserver::print_struct() {
     }
 }
 
-webserver::webserver() : _servers(0), _highest_fd(-1), _request_fd(-1), _file_fd(-1) {}
+webserver::webserver() : _servers(0), _highest_fd(-1), _file_fd(-1) {}
 webserver::~webserver(){}
 
 void    webserver::load_configuration(char *config_file) {
@@ -123,7 +124,6 @@ void    webserver::run() {
         if (select(_highest_fd + 1, &_read_fds, &_write_fds, NULL, NULL) == -1)
 			throw std::runtime_error("Select failed");
         else {
-            printf("XX  ");
             accept_request();
             handle_request();
             read_requested_file();
@@ -185,7 +185,7 @@ std::string	get_location_from_request(std::string file)
 	std::string	location;
 	std::string	filename;
 
-	location.append("/Users/roybakker/Desktop/webserv/html_css_testfiles/test_one.html"); // should be one of location blocks
+	location.append("/home/gijs/Desktop/codam/evals/test/html_css_testfiles/test_one.html"); // should be one of location blocks
 	filename = get_filename(file);
 	printf("filename = %s\n", filename.c_str());
 	if (filename.compare("/") == 0 || filename.compare("/favicon.ico") == 0)
@@ -206,7 +206,7 @@ void    webserver::handle_request() {
         request_headers = handler.read_request(_servers[0]._io_fd);
         int ret = _servers[0].update_request_buffer(_servers[0]._io_fd, request_headers);
         if (ret == valid_) {
-            FD_CLR(_request_fd, &_buffer_read_fds);
+            FD_CLR(_servers[0]._io_fd, &_buffer_read_fds);
 //            handler.parse_request(_servers[0]._request_buffer); //complete request needs parsing
             location = get_location_from_request(_servers[0]._request.get_file());
             _file_fd = _servers[0]._request.open_requested_file(location);
@@ -248,7 +248,7 @@ void    webserver::create_response() {
     {
         _servers[0]._response.create_response_file(_servers[0]._io_fd, _servers[0]._response.get_file());
         FD_CLR(_servers[0]._io_fd, &_buffer_write_fds);
-        close(_request_fd);
+        close(_servers[0]._io_fd);
         _servers[0]._io_fd = -1;
 		_servers[0]._request.clear_file();
 		_servers[0]._response.clear_file();
