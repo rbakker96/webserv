@@ -48,7 +48,7 @@ public:
 
     int    		check_server_block(std::vector<std::string> server_block);
 
-    //debug-tool
+    //Debug-tool
     void    print_struct();
 };
 
