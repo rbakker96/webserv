@@ -154,7 +154,6 @@ void    webserver::add_sockets_to_read_fds() {
 void    webserver::accept_request() {
     if (FD_ISSET(_servers[0].get_tcp_socket(), &_read_fds))
     {
-        printf("----------------testtttt-----------------\n");
         _request_fd = accept(_servers[0].get_tcp_socket(), (struct sockaddr *)&_servers[0]._addr, (socklen_t *)&_servers[0]._addr_len);
         fcntl(_request_fd, F_SETFL, O_NONBLOCK);
         FD_SET(_request_fd, &_buffer_read_fds);
