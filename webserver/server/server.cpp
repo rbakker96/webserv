@@ -110,34 +110,25 @@ void    server::invalid_element(std::string str) {
 }
 
 //TCP-connection functions
-int server::create_socket() {
-    if ((this->_tcp_socket = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
-        std::cout << "cannot create tcp socket" << std::endl;
-        return 1;
-    }
+void	server::create_socket() {
+    if ((this->_tcp_socket = socket(AF_INET, SOCK_STREAM, 0)) == -1)
+		throw (std::runtime_error("Socket creation failed"));
     fcntl(this->_tcp_socket, F_SETFL, O_NONBLOCK);
-    return 0;
 }
 
-int server::bind_socket_address(int port) {
+void	server::bind_socket_address(int port) {
     memset((char *)&_addr, 0, sizeof(_addr));
     _addr.sin_family = AF_INET;
     _addr.sin_addr.s_addr = htonl(INADDR_ANY);
     _addr.sin_port = htons(port);
 
-    if (bind(this->_tcp_socket, (struct sockaddr *)&_addr, sizeof(_addr)) < 0) {
-        std::cout << "bind failed" << std::endl;
-        return 1;
-    }
-    return 0;
+    if (bind(this->_tcp_socket, (struct sockaddr *)&_addr, sizeof(_addr)) == -1)
+		throw (std::runtime_error("Bind failed"));
 }
 
-int server::create_connection(int backlog) {
-    if (listen(this->_tcp_socket, backlog) < 0) {
-        std::cout << "listen failed" << std::endl;
-        return 1;
-    }
-    return 0;
+void	server::create_connection(int backlog) {
+    if (listen(this->_tcp_socket, backlog) == -1)
+		throw (std::runtime_error("Listen failed"));
 }
 
 //GETTERS

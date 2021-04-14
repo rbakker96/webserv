@@ -80,9 +80,9 @@ public:
     void    invalid_element(std::string str);
 
     //TCP-connection functions
-    int     create_socket(void);
-    int     bind_socket_address(int port);
-    int     create_connection(int backlog);
+    void	create_socket(void);
+    void	bind_socket_address(int port);
+    void	create_connection(int backlog);
 
     //GETTERS
     int                             get_file_size();

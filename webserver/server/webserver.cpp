@@ -67,21 +67,42 @@ void    webserver::load_configuration(char *config_file) {
     int                         ret;
     int                         fd = open(config_file, O_RDONLY);
 
+	if (fd == -1)
+		throw std::invalid_argument("Error opening config file");
     while ((ret = get_next_line(fd, &line)) == 1) {
         server_block.push_back(line);
+        free(line);
         if (check_server_block(server_block)) {
             server.create_new_server(server_block);
             _servers.push_back(server);
             server_block.clear();
         }
-        //free(line); not yet sure if needed?
     }
-    print_struct();                         //  PRINTING STRUCT
+	free(line);
     close(fd);
-//    if (ret == -1)
-//        throw "Reading error occured";
-//    if (!check_server_block(server_block))
-//        throw "Syntax error in config file";
+	if (ret == -1)
+		throw std::runtime_error("Error while reading config file");
+	if (!server_block.empty())
+		throw std::invalid_argument("Error: missing '{' or '}' in config file");
+    print_struct();                         //  PRINTING STRUCT
+}
+
+int     webserver::check_server_block(std::vector <std::string> server_block) {
+    int         open_bracket = 0;
+    int         closing_bracket = 0;
+    std::string str;
+
+    for (std::vector<std::string>::iterator it = server_block.begin(); it != server_block.end(); it++) {
+        str = it->data();
+        if ((int)str.find("{") != -1)
+            open_bracket++;
+        if ((int)str.find("}") != -1)
+            closing_bracket++;
+    }
+    if (open_bracket == closing_bracket && open_bracket != 0) {
+        return 1;
+	}
+    return 0;
 }
 
 void    webserver::establish_connection(){
@@ -99,12 +120,8 @@ void    webserver::run() {
         _write_fds = _buffer_write_fds;
 
         add_sockets_to_read_fds();
-        std::cout << "before select" << std::endl;
-        int	select_value = select(_highest_fd + 1, &_read_fds, &_write_fds, NULL, NULL);
-        if (select_value == -1)
-            std::cout << "select error" << std::endl;
-        else if (select_value == 0)
-            std::cout << "time out" << std::endl;
+        if (select(_highest_fd + 1, &_read_fds, &_write_fds, NULL, NULL) == -1)
+			throw std::runtime_error("Select failed");
         else {
             accept_request();
             handle_request();
@@ -215,21 +232,4 @@ void    webserver::create_response() {
 		_servers[0]._request.clear_file();
 		_servers[0]._response.clear_file();
     }
-}
-
-int     webserver::check_server_block(std::vector <std::string> server_block) {
-    int         open_bracket = 0;
-    int         closing_bracket = 0;
-    std::string str;
-
-    for (std::vector<std::string>::iterator it = server_block.begin(); it != server_block.end(); it++) {
-        str = it->data();
-        if ((int)str.find("{") != -1)
-            open_bracket++;
-        if ((int)str.find("}") != -1)
-            closing_bracket++;
-    }
-    if (open_bracket == closing_bracket && open_bracket != 0)
-        return 1;
-    return 0;
 }

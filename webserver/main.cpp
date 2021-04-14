@@ -15,14 +15,17 @@
 int     main(int argc, char**argv) {
     webserver   webserver;
 
-    if (argc != 2) //only config file is allowed
+    if (argc != 2)
+	{
+		std::cout << "Start the webserver like this: $>./webserv config_file" << std::endl;
         return -1;
+	}
     try {
         webserver.load_configuration(argv[1]);
 		webserver.establish_connection();
 		webserver.run();
     }
-    catch (std::exception& e) {
+    catch (std::exception &e) {
         std::cout << e.what() << std::endl;
     }
 }
