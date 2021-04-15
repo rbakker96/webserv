@@ -6,7 +6,7 @@
 /*   By: roybakker <roybakker@student.codam.nl>       +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2021/03/30 16:30:47 by roybakker     #+#    #+#                 */
-/*   Updated: 2021/04/15 12:08:20 by gbouwen       ########   odam.nl         */
+/*   Updated: 2021/04/15 12:18:27 by gbouwen       ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -126,13 +126,9 @@ void    webserver::run() {
         if (select(_highest_fd + 1, &_read_fds, &_write_fds, NULL, NULL) == -1)
 			throw std::runtime_error("Select failed");
         else {
-			std::cout << "a" << std::endl;
             accept_request();
-			std::cout << "b" << std::endl;
             handle_request();
-			std::cout << "c" << std::endl;
             read_requested_file();
-			std::cout << "d" << std::endl;
             create_response();
         }
     }
@@ -217,12 +213,9 @@ void    webserver::handle_request() {
     request_handler handler;
 	std::string	    location;
 
-	std::cout << "big oof" << std::endl;
-	std::cout << "bakkie: " << _servers[0]._io_fd << std::endl;
 	for (size_t index = 0; index < _servers.size(); index++) {
 		if (_servers[index]._io_fd != -1 && FD_ISSET(_servers[index]._io_fd, &_read_fds))
 		{
-			std::cout << "zoof" << std::endl;
 			request_headers = handler.read_request(_servers[index]._io_fd);
 			int ret = _servers[index].update_request_buffer(_servers[index]._io_fd, request_headers);
 			if (ret == valid_) {
@@ -240,7 +233,6 @@ void    webserver::handle_request() {
 			}
 		}
 	}
-	std::cout << "hieruit?" << std::endl;
 //        _servers[0]._request.read_file(_request_fd);
 //        FD_CLR(_servers[0]._io_fd, &_buffer_read_fds);
 //        //some parsing functions needed to process request
