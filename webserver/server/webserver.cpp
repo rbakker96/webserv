@@ -6,7 +6,7 @@
 /*   By: roybakker <roybakker@student.codam.nl>       +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2021/03/30 16:30:47 by roybakker     #+#    #+#                 */
-/*   Updated: 2021/03/30 16:30:47 by roybakker     ########   odam.nl         */
+/*   Updated: 2021/04/15 11:05:49 by gbouwen       ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -167,42 +167,34 @@ void    webserver::accept_request() {
 // are a work-in-progress, when the request_handler class is better equipped to handle the request headers,
 // we can start working on getting the correct files to the server
 
-std::string	get_root(std::string filename, std::vector<location_context> location)
+//std::string	get_root(std::string filename, std::vector<location_context> location)
+//{
+	//if (filename.compare(location[0].get_location()) == 0)
+		//return (location[0].get_root());
+	//return (location[0].get_root());
+//}
+
+//std::string	get_filename(std::string file)
+//{
+	//std::string	filename;
+	//size_t		start;
+	//size_t		len;
+
+	//start = file.find(' ') + 1;
+	//len = start;
+	//while (file[len] != ' ' && file[len] != '\0')
+		//len++;
+	//filename = file.substr(start, len - start);
+	//return (filename);
+//}
+
+// this function just returns the hardcoded location -> should be a function that retrieves the files dynamically
+
+std::string	get_pathname_from_request()
 {
-	if (filename.compare(location[0].get_location()) == 0)
-		return (location[0].get_root());
-	return (location[0].get_root());
-}
+	std::string pathname;
 
-std::string	get_filename(std::string file)
-{
-	std::string	filename;
-	size_t		start;
-	size_t		len;
-
-	start = file.find(' ') + 1;
-	len = start;
-	while (file[len] != ' ' && file[len] != '\0')
-		len++;
-	filename = file.substr(start, len - start);
-	return (filename);
-}
-
-std::string	webserver::get_pathname_from_request(std::string file)
-{
-	std::string	filename;
-	std::string	pathname;
-
-	std::cout << file << std::endl;
-//	filename = get_filename(file);
-//	pathname.append(get_root(filename, _servers[0]._location));
-	pathname.append("/home/gijs/Desktop/codam/evals/test/html_css_testfiles/test_one.html");
-	if (filename.compare("/") == 0 || filename.compare("/favicon.ico") == 0)
-		pathname.append("/test_one.html"); // get_index_file();
-	else
-		pathname.append(filename);
-	std::cout << "PATHNAME: " << "|" << pathname << "|" << std::endl;
-//	while (1) {}
+	pathname.append("html_css_testfiles/test_one.html");
 	return (pathname);
 }
 
@@ -218,7 +210,7 @@ void    webserver::handle_request() {
         if (ret == valid_) {
             FD_CLR(_servers[0]._io_fd, &_buffer_read_fds);
 //            handler.parse_request(_servers[0]._request_buffer); //complete request needs parsing
-            location = get_pathname_from_request(_servers[0]._request.get_file());
+            location = get_pathname_from_request();
             _file_fd = _servers[0]._request.open_requested_file(location);
             if (_file_fd == -1)
             {
@@ -245,7 +237,7 @@ void    webserver::handle_request() {
 }
 
 void    webserver::read_requested_file() {
-    if (FD_ISSET(_file_fd, &_read_fds))
+    if (_file_fd != -1 && FD_ISSET(_file_fd, &_read_fds))
     {
         _servers[0]._response.read_file(_file_fd);
         FD_CLR(_file_fd, &_buffer_read_fds);

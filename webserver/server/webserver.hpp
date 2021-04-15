@@ -6,7 +6,7 @@
 /*   By: roybakker <roybakker@student.codam.nl>       +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2021/03/30 16:28:34 by roybakker     #+#    #+#                 */
-/*   Updated: 2021/03/30 16:28:34 by roybakker     ########   odam.nl         */
+/*   Updated: 2021/04/15 11:05:35 by gbouwen       ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -47,7 +47,6 @@ public:
 
     void    	accept_request();
     void   		handle_request();
-	std::string	get_pathname_from_request(std::string file);
     void    	read_requested_file();
     void    	create_response();
 
