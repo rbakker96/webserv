@@ -6,7 +6,7 @@
 /*   By: roybakker <roybakker@student.codam.nl>       +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2021/03/30 16:28:34 by roybakker     #+#    #+#                 */
-/*   Updated: 2021/04/15 11:05:35 by gbouwen       ########   odam.nl         */
+/*   Updated: 2021/04/15 11:39:17 by gbouwen       ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,7 +29,7 @@ private:
     std::vector<server>     _servers;
     fd_set			        _read_fds, _write_fds;
     fd_set			        _buffer_read_fds, _buffer_write_fds;
-    int				        _highest_fd, _file_fd;
+    int				        _highest_fd;
 
 public:
     webserver();

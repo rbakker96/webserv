@@ -6,7 +6,7 @@
 /*   By: roybakker <roybakker@student.codam.nl>       +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2021/03/30 13:54:06 by roybakker     #+#    #+#                 */
-/*   Updated: 2021/03/30 13:54:06 by roybakker     ########   odam.nl         */
+/*   Updated: 2021/04/15 11:41:10 by gbouwen       ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,6 +17,8 @@
 server::server() {
     _tcp_socket = 0;
     _addr_len = 0;
+	_io_fd = -1;
+	_file_fd = -1;
 }
 server::~server(){}
 

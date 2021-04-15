@@ -6,7 +6,7 @@
 /*   By: roybakker <roybakker@student.codam.nl>       +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2021/03/30 13:54:18 by roybakker     #+#    #+#                 */
-/*   Updated: 2021/03/30 13:54:18 by roybakker     ########   odam.nl         */
+/*   Updated: 2021/04/15 11:39:29 by gbouwen       ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -51,6 +51,7 @@ public:
 private:
     //Connection
     int                             _io_fd;
+	int								_file_fd;
 
     //Configurations
     int                             _max_file_size;

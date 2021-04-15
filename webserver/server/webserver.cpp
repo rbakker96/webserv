@@ -6,7 +6,7 @@
 /*   By: roybakker <roybakker@student.codam.nl>       +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2021/03/30 16:30:47 by roybakker     #+#    #+#                 */
-/*   Updated: 2021/04/15 11:05:49 by gbouwen       ########   odam.nl         */
+/*   Updated: 2021/04/15 12:08:20 by gbouwen       ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -58,7 +58,7 @@ void webserver::print_struct() {
     }
 }
 
-webserver::webserver() : _servers(0), _highest_fd(-1), _file_fd(-1) {}
+webserver::webserver() : _servers(0), _highest_fd(-1) {}
 webserver::~webserver(){}
 
 void    webserver::load_configuration(char *config_file) {
@@ -107,9 +107,11 @@ int     webserver::check_server_block(std::vector <std::string> server_block) {
 }
 
 void    webserver::establish_connection(){
-        _servers[0].create_socket();
-        _servers[0].bind_socket_address(_servers[0].get_port());
-        _servers[0].create_connection(100); //CHECK LATER
+	for (size_t index = 0; index < _servers.size(); index++) {
+        _servers[index].create_socket();
+        _servers[index].bind_socket_address(_servers[index].get_port());
+        _servers[index].create_connection(100); //CHECK LATER
+	}
 }
 
 void    webserver::run() {
@@ -124,9 +126,13 @@ void    webserver::run() {
         if (select(_highest_fd + 1, &_read_fds, &_write_fds, NULL, NULL) == -1)
 			throw std::runtime_error("Select failed");
         else {
+			std::cout << "a" << std::endl;
             accept_request();
+			std::cout << "b" << std::endl;
             handle_request();
+			std::cout << "c" << std::endl;
             read_requested_file();
+			std::cout << "d" << std::endl;
             create_response();
         }
     }
@@ -140,7 +146,10 @@ void    webserver::initialize_fd_sets() {
 }
 
 void    webserver::initialize_highest_fd() {
-    _highest_fd = _servers[0].get_tcp_socket();
+	for (size_t index = 0; index < _servers.size(); index++) {
+		if (_servers[index].get_tcp_socket() > _highest_fd)
+			_highest_fd = _servers[index].get_tcp_socket();
+	}
 }
 
 int		webserver::highest_fd(int fd_one, int fd_two) {
@@ -150,17 +159,22 @@ int		webserver::highest_fd(int fd_one, int fd_two) {
 }
 
 void    webserver::add_sockets_to_read_fds() {
-    FD_SET(_servers[0].get_tcp_socket(), &_read_fds);
+	for (size_t index = 0; index < _servers.size(); index++) {
+	    FD_SET(_servers[index].get_tcp_socket(), &_read_fds);
+	}
 }
 
 void    webserver::accept_request() {
-    if (FD_ISSET(_servers[0].get_tcp_socket(), &_read_fds))
-    {
-        _servers[0]._io_fd = accept(_servers[0].get_tcp_socket(), (struct sockaddr *)&_servers[0]._addr, (socklen_t *)&_servers[0]._addr_len);
-        fcntl(_servers[0]._io_fd, F_SETFL, O_NONBLOCK);
-        FD_SET(_servers[0]._io_fd, &_buffer_read_fds);
-        _highest_fd = highest_fd(_highest_fd, _servers[0]._io_fd);
-    }
+	for (size_t index = 0; index < _servers.size(); index++)
+	{
+		if (FD_ISSET(_servers[index].get_tcp_socket(), &_read_fds))
+		{
+			_servers[index]._io_fd = accept(_servers[index].get_tcp_socket(), (struct sockaddr *)&_servers[index]._addr, (socklen_t *)&_servers[index]._addr_len);
+			fcntl(_servers[index]._io_fd, F_SETFL, O_NONBLOCK);
+			FD_SET(_servers[index]._io_fd, &_buffer_read_fds);
+			_highest_fd = highest_fd(_highest_fd, _servers[index]._io_fd);
+		}
+	}
 }
 
 // the functions get_root(), get_filename(), and get_pathname_from_request()
@@ -203,24 +217,30 @@ void    webserver::handle_request() {
     request_handler handler;
 	std::string	    location;
 
-    if (FD_ISSET(_servers[0]._io_fd, &_read_fds))
-    {
-        request_headers = handler.read_request(_servers[0]._io_fd);
-        int ret = _servers[0].update_request_buffer(_servers[0]._io_fd, request_headers);
-        if (ret == valid_) {
-            FD_CLR(_servers[0]._io_fd, &_buffer_read_fds);
-//            handler.parse_request(_servers[0]._request_buffer); //complete request needs parsing
-            location = get_pathname_from_request();
-            _file_fd = _servers[0]._request.open_requested_file(location);
-            if (_file_fd == -1)
-            {
-                std::cout << "file not found" << std::endl;
-                // get an error page / favicon / something else
-            }
-            _highest_fd = highest_fd(_highest_fd, _file_fd);
-            FD_SET(_file_fd, &_buffer_read_fds);
-        }
-
+	std::cout << "big oof" << std::endl;
+	std::cout << "bakkie: " << _servers[0]._io_fd << std::endl;
+	for (size_t index = 0; index < _servers.size(); index++) {
+		if (_servers[index]._io_fd != -1 && FD_ISSET(_servers[index]._io_fd, &_read_fds))
+		{
+			std::cout << "zoof" << std::endl;
+			request_headers = handler.read_request(_servers[index]._io_fd);
+			int ret = _servers[index].update_request_buffer(_servers[index]._io_fd, request_headers);
+			if (ret == valid_) {
+				FD_CLR(_servers[index]._io_fd, &_buffer_read_fds);
+	//            handler.parse_request(_servers[0]._request_buffer); //complete request needs parsing
+				location = get_pathname_from_request();
+				_servers[index]._file_fd = _servers[index]._request.open_requested_file(location);
+				if (_servers[index]._file_fd == -1)
+				{
+					std::cout << "file not found" << std::endl;
+					// get an error page / favicon / something else
+				}
+				_highest_fd = highest_fd(_highest_fd, _servers[index]._file_fd);
+				FD_SET(_servers[index]._file_fd, &_buffer_read_fds);
+			}
+		}
+	}
+	std::cout << "hieruit?" << std::endl;
 //        _servers[0]._request.read_file(_request_fd);
 //        FD_CLR(_servers[0]._io_fd, &_buffer_read_fds);
 //        //some parsing functions needed to process request
@@ -233,26 +253,31 @@ void    webserver::handle_request() {
 //		}
 //		_highest_fd = highest_fd(_highest_fd, _file_fd);
 //		FD_SET(_file_fd, &_buffer_read_fds);
-    }
 }
 
 void    webserver::read_requested_file() {
-    if (_file_fd != -1 && FD_ISSET(_file_fd, &_read_fds))
-    {
-        _servers[0]._response.read_file(_file_fd);
-        FD_CLR(_file_fd, &_buffer_read_fds);
-        FD_SET(_servers[0]._io_fd, &_buffer_write_fds);
-    }
+	for (size_t index = 0; index < _servers.size(); index++) {
+		if (_servers[index]._file_fd != -1 && FD_ISSET(_servers[index]._file_fd, &_read_fds))
+		{
+			_servers[index]._response.read_file(_servers[index]._file_fd);
+			FD_CLR(_servers[index]._file_fd, &_buffer_read_fds);
+//			close(_servers[index]._file_fd);
+//			_servers[index]._file_fd = -1;
+			FD_SET(_servers[index]._io_fd, &_buffer_write_fds);
+		}
+	}
 }
 
 void    webserver::create_response() {
-    if (FD_ISSET(_servers[0]._io_fd, &_write_fds))
-    {
-        _servers[0]._response.create_response_file(_servers[0]._io_fd, _servers[0]._response.get_file());
-        FD_CLR(_servers[0]._io_fd, &_buffer_write_fds);
-        close(_servers[0]._io_fd);
-        _servers[0]._io_fd = -1;
-		_servers[0]._request.clear_file();
-		_servers[0]._response.clear_file();
-    }
+	for (size_t index = 0; index < _servers.size(); index++) {
+		if (_servers[index]._io_fd != -1 && FD_ISSET(_servers[index]._io_fd, &_write_fds))
+		{
+			_servers[index]._response.create_response_file(_servers[index]._io_fd, _servers[index]._response.get_file());
+			FD_CLR(_servers[index]._io_fd, &_buffer_write_fds);
+			close(_servers[index]._io_fd);
+			_servers[index]._io_fd = -1;
+			_servers[index]._request.clear_file();
+			_servers[index]._response.clear_file();
+		}
+	}
 }
