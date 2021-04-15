@@ -193,9 +193,10 @@ std::string	webserver::get_pathname_from_request(std::string file)
 	std::string	filename;
 	std::string	pathname;
 
-	filename = get_filename(file);
+	std::cout << file << std::endl;
+//	filename = get_filename(file);
 //	pathname.append(get_root(filename, _servers[0]._location));
-	pathname.append("home/gijs/Desktop/codam/subjects/webserv/html_css_testfiles");
+	pathname.append("/home/gijs/Desktop/codam/evals/test/html_css_testfiles/test_one.html");
 	if (filename.compare("/") == 0 || filename.compare("/favicon.ico") == 0)
 		pathname.append("/test_one.html"); // get_index_file();
 	else
