@@ -20,14 +20,15 @@
 class location_context {
 public:
     typedef     std::vector<std::string>::iterator string_iterator;
-    typedef     void (location_context::*configure)(std::string);
-    enum        location_values{ root_ = 0, method_ = 1, autoindex_ = 2, index_ = 3, unknown_ = 4 };
+    typedef     void (location_context::*configure)(const std::string&);
+    enum        location_values{ root_ = 0, method_ = 1, autoindex_ = 2, index_ = 3, ext_ = 4, unknown_ = 5 };
 
 private:
     std::string                 _location;
     std::string                 _root;
     std::string                 _index;
     std::vector<std::string>    _allowed_method;
+    std::vector<std::string>    _ext;
     bool                        _autoindex;
     //something with the CGI
 
@@ -38,19 +39,21 @@ public:
     //Configure functions
     void    configure_location_context(string_iterator begin, string_iterator end);
     void    clean_location_instance();
-    int     identify_location_value(std::string str);
-    void    configure_location(std::string str);
-    void    configure_root(std::string str);
-    void    configure_allowed_method(std::string str);
-    void    configure_index(std::string str);
-    void    configure_autoindex(std::string str);
-    void    invalid_element(std::string str);
+    int     identify_location_value(const std::string &str);
+    void    configure_location(const std::string &str);
+    void    configure_root(const std::string &str);
+    void    configure_allowed_method(const std::string &str);
+    void    configure_index(const std::string &str);
+    void    configure_autoindex(const std::string &str);
+    void    configure_ext(const std::string &str);
+    void    invalid_element(const std::string &str);
 
     //Getters
     std::string                 get_location();
     std::string                 get_root();
     std::string                 get_index();
     std::vector<std::string>    get_method();
+    std::vector<std::string>    get_ext();
     bool                        get_autoindex();
 
 };
