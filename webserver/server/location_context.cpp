@@ -41,15 +41,15 @@ void    location_context::clean_location_instance() {
 }
 
 int     location_context::identify_location_value(const std::string &str){
-    if ((int)str.find("root") != -1)
+    if (str.find("root") != std::string::npos)
         return root_;
-    else if ((int)str.find("allowed_method") != -1)
+    else if (str.find("allowed_method") != std::string::npos)
         return method_;
-    else if ((int)str.find("autoindex") != -1)
+    else if (str.find("autoindex") != std::string::npos)
         return autoindex_;
-    else if ((int)str.find("index") != -1)
+    else if (str.find("index") != std::string::npos)
         return index_;
-    else if ((int)str.find("ext") != -1)
+    else if (str.find("ext") != std::string::npos)
         return ext_;
     return unknown_;
 }
@@ -74,7 +74,7 @@ void    location_context::configure_allowed_method(const std::string &str){
     std::string                 tmp = str.substr(pos + 1);
     std::string                 value;
 
-    while ((int)(pos =tmp.find_first_of(' ')) != -1) {
+    while ((pos =tmp.find_first_of(' ')) != std::string::npos) {
         value = tmp.substr(0, pos);
         _allowed_method.push_back(value);
         tmp = tmp.substr(pos + 1);
@@ -104,7 +104,7 @@ void    location_context::configure_ext(const std::string &str) {
     std::string                 tmp = str.substr(pos + 1);
     std::string                 value;
 
-    while ((int)(pos =tmp.find_first_of(' ')) != -1) {
+    while ((pos =tmp.find_first_of(' ')) != std::string::npos) {
         value = tmp.substr(0, pos);
         _ext.push_back(value);
         tmp = tmp.substr(pos + 1);

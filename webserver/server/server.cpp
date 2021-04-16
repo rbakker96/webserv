@@ -57,17 +57,17 @@ void    server::clean_server_instance(){
 }
 
 int     server::identify_server_value(std::string str) {
-    if ((int)str.find("port") != -1)
+    if (str.find("port") != std::string::npos)
         return port_;
-    else if ((int)str.find("host") != -1)
+    else if (str.find("host") != std::string::npos)
         return host_;
-    else if ((int)str.find("server_name") != -1)
+    else if (str.find("server_name") != std::string::npos)
         return server_name_;
-    else if ((int)str.find("error_page") != -1)
+    else if (str.find("error_page") != std::string::npos)
         return error_page_;
-    else if ((int)str.find("max_file_size") != -1)
+    else if (str.find("max_file_size") != std::string::npos)
         return max_file_size_;
-    else if ((int)str.find("location") != -1)
+    else if (str.find("location") != std::string::npos)
         return location_;
     return unknown_;
 }

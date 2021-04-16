@@ -97,9 +97,9 @@ int     webserver::check_server_block(std::vector <std::string> server_block) {
 
     for (std::vector<std::string>::iterator it = server_block.begin(); it != server_block.end(); it++) {
         str = it->data();
-        if ((int)str.find("{") != -1)
+        if (str.find("{") != std::string::npos)
             open_bracket++;
-        if ((int)str.find("}") != -1)
+        if (str.find("}") != std::string::npos)
             closing_bracket++;
     }
     if (open_bracket == closing_bracket && open_bracket != 0) {
