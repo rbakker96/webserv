@@ -26,8 +26,8 @@ public:
 private:
     std::string                 _location;
     std::string                 _root;
+    std::string                 _index;
     std::vector<std::string>    _allowed_method;
-    std::vector<std::string>    _index;
     bool                        _autoindex;
     //something with the CGI
 
@@ -49,8 +49,8 @@ public:
     //Getters
     std::string                 get_location();
     std::string                 get_root();
+    std::string                 get_index();
     std::vector<std::string>    get_method();
-    std::vector<std::string>    get_index();
     bool                        get_autoindex();
 
 };

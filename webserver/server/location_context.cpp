@@ -12,7 +12,7 @@
 
 #include "location_context.hpp"
 
-location_context::location_context() : _root(), _allowed_method(0), _index(0), _autoindex(false) {}
+location_context::location_context() : _location(), _root(), _index(), _allowed_method(0), _autoindex(false) {}
 location_context::~location_context(){}
 
 void location_context::configure_location_context(string_iterator it, string_iterator end) {
@@ -80,17 +80,10 @@ void    location_context::configure_allowed_method(std::string str){
 }
 
 void    location_context::configure_index(std::string str){
-    size_t                      start = str.find_first_not_of(' ');
-    size_t                      pos = str.find_first_of(' ', start);
-    std::string                 tmp = str.substr(pos + 1);
-    std::string                 value;
+    size_t start = str.find_first_not_of(' ');
+    size_t pos = str.find_first_of(' ', start);
 
-    while ((int)(pos =tmp.find_first_of(' ')) != -1) {
-        value = tmp.substr(0, pos);
-        _index.push_back(value);
-        tmp = tmp.substr(pos + 1);
-    }
-    _index.push_back(tmp);
+    _index = str.substr(pos + 1);
 }
 
 void    location_context::configure_autoindex(std::string str){
@@ -112,6 +105,6 @@ void    location_context::invalid_element(std::string str) {
 //Getters
 std::string                 location_context::get_location() {return _location;}
 std::string                 location_context::get_root() {return _root;}
+std::string                 location_context::get_index() {return _index;}
 std::vector<std::string>    location_context::get_method() {return _allowed_method;}
-std::vector<std::string>    location_context::get_index() {return _index;}
 bool                        location_context::get_autoindex() {return _autoindex;}

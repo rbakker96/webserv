@@ -45,13 +45,7 @@ void webserver::print_struct() {
             }
             std::cout << "\n";
 
-            std::vector<std::string> indexen = location.get_index();
-            std::cout << "  Index = ";
-            for (std::vector<std::string>::iterator it2 = indexen.begin(); it2 != indexen.end(); it2++) {
-                std::string index = *it2;
-                std::cout << index << " ";
-            }
-            std::cout << "\n";
+            std::cout << "  Index = " << location.get_index() << std::endl;
             std::cout << "  Autoindex = " << location.get_autoindex() << std::endl;
         }
         std::cout << "------------- END SERVER BLOCK -------------\n\n";
