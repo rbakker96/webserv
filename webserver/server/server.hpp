@@ -25,9 +25,7 @@
 
 //custom includes
 #include "location_context.hpp"
-#include "handlers/handler.hpp"
-#include "handlers/request_handler.hpp"
-#include "handlers/response_handler.hpp"
+#include "handler.hpp"
 
 //tcp-connection includes
 #include <netinet/in.h>
@@ -36,8 +34,6 @@
 class server {
 public:
 	friend class handler;
-	friend class response_handler;
-	friend class request_handler;
 	friend class webserver;
 
 public:
@@ -65,10 +61,9 @@ private:
     int		                        _addr_len;
     struct	sockaddr_in             _addr;
 
-    //Handlers
+    //Handler
     std::map<int, std::string>      _request_buffer;
-    request_handler                 _request;
-    response_handler                _response;
+    handler                         _handler;
 
 public:
     server();

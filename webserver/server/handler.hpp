@@ -21,17 +21,24 @@
 #include <fcntl.h>
 
 //Custom includes
-#include "../location_context.hpp"
-#include "../../helper/helper.hpp"
+#include "location_context.hpp"
+#include "../helper/helper.hpp"
 
 class handler {
 public:
+    typedef     std::vector<std::string>                vector;
     typedef     std::vector<std::string>::iterator      vector_iterator;
+    typedef     std::map<int, std::string>              map;
     typedef     std::map<int, std::string>::iterator    map_iterator;
+    typedef     std::vector<location_context>           location_vector;
     typedef     std::vector<location_context>::iterator location_iterator;
+
+    typedef     void (handler::*parse)(const std::string &str);
+
     enum        location_values{ host_ = 0, user_agent_ = 1, language_ = 2, authorization_ = 3, referer_ = 4, body_ = 5,
                                  content_length_ = 6, content_type_ = 7, content_language_ = 8, content_location_ = 9,
                                  allow_ = 10, unknown_ = 11};
+
 protected:
     //Entity headers
     int             _content_length;
@@ -40,17 +47,34 @@ protected:
     std::string     _content_location;
     std::string     _allow;
 
-    std::string     _file; //local now?
+    //Request headers
+    std::string     _method;
+    std::string     _location;
+    std::string     _protocol;
+    std::string     _host;
+    std::string     _user_agent;
+    std::string     _accept_language;
+    std::string     _authorization;
+    std::string     _referer;
+    std::string     _body;
+
+    std::string     _requested_file;
 
 public:
     handler();
-    virtual ~handler();
+    ~handler();
 
-    //Base class functions
-    std::string     read_request(int fd);
-    void            read_file(int fd); //old
+    //Parse request functions
+    void            parse_request(location_vector location, int fd, map request_buffer);
+    void            parse_first_line(const std::string &str);
+    void            parse_host(const std::string &str);
+    void            parse_user_agent(const std::string &str);
+    void            parse_language(const std::string &str);
+    void            parse_authorization(const std::string &str);
+    void            parse_referer(const std::string &str);
+    void            parse_body(const std::string &str);
+    int             identify_request_value(const std::string &str);
 
-    //Parse functions
     void            parse_content_length(const std::string &str);
     void            parse_content_type(const std::string &str);
     void            parse_content_language(const std::string &str);
@@ -58,8 +82,18 @@ public:
     void            parse_allow(const std::string &str);
     void            invalid_argument(const std::string &str);
 
+    //Create response functions
+    void            create_response_file(int request_fd, std::string response_file);
+
+
     //Helper functions
-    void		    clear_file();
+    std::string     read_browser_request(int fd);
+    void            read_requested_file(int fd);
+    int             open_requested_file(std::string location);
+    vector          str_to_vector(std::string request);
+    void            configure_location(location_vector location);
+    void		    clear_requested_file();
+    void            clear_atributes();
 
     //GETTER
     int             get_content_length();
@@ -67,7 +101,19 @@ public:
     std::string     get_content_language();
     std::string     get_content_location();
     std::string     get_allow();
-	std::string	    get_file();
+	std::string	    get_requested_file();
+    std::string     get_method();
+    std::string     get_location();
+    std::string     get_protocol();
+    std::string     get_host();
+    std::string     get_user_agent();
+    std::string     get_accept_language();
+    std::string     get_authorization();
+    std::string     get_referer();
+    std::string     get_body();
+
+    //Debug tool
+    void            print_request(); //DELETE LATER
 };
 
 #endif //WEBSERV_HANDLER_HPP

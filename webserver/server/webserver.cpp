@@ -13,7 +13,7 @@
 #include "../gnl/get_next_line.hpp"
 #include "webserver.hpp"
 #include "server.hpp"
-#include <stdio.h>
+#include <stdio.h> //REMOVE LATER!!!
 
 #include <iostream>
 void webserver::print_struct() {
@@ -96,10 +96,10 @@ int     webserver::check_server_block(std::vector <std::string> server_block) {
     std::string str;
 
     for (std::vector<std::string>::iterator it = server_block.begin(); it != server_block.end(); it++) {
-        str = it->data();
-        if (str.find("{") != std::string::npos)
+        str = *it;
+        if (str.find('{') != std::string::npos)
             open_bracket++;
-        if (str.find("}") != std::string::npos)
+        if (str.find('}') != std::string::npos)
             closing_bracket++;
     }
     if (open_bracket == closing_bracket && open_bracket != 0) {
@@ -125,7 +125,7 @@ void    webserver::run() {
         _write_fds = _buffer_write_fds;
 
         add_sockets_to_read_fds();
-        if (select(_highest_fd + 1, &_read_fds, &_write_fds, NULL, NULL) == -1)
+        if (select(_highest_fd + 1, &_read_fds, &_write_fds, nullptr, nullptr) == -1)
 			throw std::runtime_error("Select failed");
         else {
             accept_request();
@@ -182,12 +182,12 @@ void    webserver::handle_request() {
 	for (size_t index = 0; index < _servers.size(); index++) {
 		if (_servers[index]._io_fd != -1 && FD_ISSET(_servers[index]._io_fd, &_read_fds))
 		{
-			request_headers = _servers[index]._request.read_request(_servers[index]._io_fd);
+			request_headers = _servers[index]._handler.read_browser_request(_servers[index]._io_fd); //read
 			int ret = _servers[index].update_request_buffer(_servers[index]._io_fd, request_headers);
 			if (ret == valid_) {
 				FD_CLR(_servers[index]._io_fd, &_buffer_read_fds);
-                _servers[index]._request.parse_request(_servers[index]._location, _servers[index]._io_fd, _servers[0]._request_buffer);
-				_servers[index]._file_fd = _servers[index]._request.open_requested_file(_servers[index]._request.get_location());
+                _servers[index]._handler.parse_request(_servers[index]._location, _servers[index]._io_fd, _servers[0]._request_buffer);
+				_servers[index]._file_fd = _servers[index]._handler.open_requested_file(_servers[index]._handler.get_location());
 				if (_servers[index]._file_fd == -1)
 				{
 					std::cout << "file not found" << std::endl;
@@ -205,7 +205,7 @@ void    webserver::read_requested_file() {
 	for (size_t index = 0; index < _servers.size(); index++) {
 		if (_servers[index]._file_fd != -1 && FD_ISSET(_servers[index]._file_fd, &_read_fds))
 		{
-			_servers[index]._response.read_file(_servers[index]._file_fd);
+			_servers[index]._handler.read_requested_file(_servers[index]._file_fd);
 			FD_CLR(_servers[index]._file_fd, &_buffer_read_fds);
 //			close(_servers[index]._file_fd);
 //			_servers[index]._file_fd = -1;
@@ -218,12 +218,11 @@ void    webserver::create_response() {
 	for (size_t index = 0; index < _servers.size(); index++) {
 		if (_servers[index]._io_fd != -1 && FD_ISSET(_servers[index]._io_fd, &_write_fds))
 		{
-			_servers[index]._response.create_response_file(_servers[index]._io_fd, _servers[index]._response.get_file());
+			_servers[index]._handler.create_response_file(_servers[index]._io_fd, _servers[index]._handler.get_requested_file());
 			FD_CLR(_servers[index]._io_fd, &_buffer_write_fds);
 			close(_servers[index]._io_fd);
 			_servers[index]._io_fd = -1;
-			_servers[index]._request.clear_file();
-			_servers[index]._response.clear_file();
+			_servers[index]._handler.clear_requested_file();
 		}
 	}
 }
