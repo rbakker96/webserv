@@ -163,6 +163,12 @@ int     server::update_request_buffer(int fd, std::string request) {
     return (valid_request(it->second));
 }
 
+void    server::clear_handled_request(int used_fd){
+    map_iterator request = _request_buffer.find(used_fd);
+
+    _request_buffer.erase(request);
+}
+
 int     server::valid_request(std::string request) {
     int header_size;
     int pos;

@@ -175,33 +175,6 @@ void    webserver::accept_request() {
 	}
 }
 
-// the functions get_root(), get_filename(), and get_pathname_from_request()
-// are a work-in-progress, when the request_handler class is better equipped to handle the request headers,
-// we can start working on getting the correct files to the server
-
-//std::string	get_root(std::string filename, std::vector<location_context> location)
-//{
-	//if (filename.compare(location[0].get_location()) == 0)
-		//return (location[0].get_root());
-	//return (location[0].get_root());
-//}
-
-//std::string	get_filename(std::string file)
-//{
-	//std::string	filename;
-	//size_t		start;
-	//size_t		len;
-
-	//start = file.find(' ') + 1;
-	//len = start;
-	//while (file[len] != ' ' && file[len] != '\0')
-		//len++;
-	//filename = file.substr(start, len - start);
-	//return (filename);
-//}
-
-// this function just returns the hardcoded location -> should be a function that retrieves the files dynamically
-
 std::string	get_pathname_from_request()
 {
 	std::string pathname;
@@ -222,15 +195,15 @@ void    webserver::handle_request() {
 			int ret = _servers[index].update_request_buffer(_servers[index]._io_fd, request_headers);
 			if (ret == valid_) {
 				FD_CLR(_servers[index]._io_fd, &_buffer_read_fds);
-	//            handler.parse_request(_servers[0]._request_buffer); //complete request needs parsing
-				location = get_pathname_from_request();
-				_servers[index]._file_fd = _servers[index]._request.open_requested_file(location);
+	            handler.parse_request(_servers[0]._location, _servers[index]._io_fd, _servers[0]._request_buffer);
+				_servers[index]._file_fd = _servers[index]._request.open_requested_file(handler.get_location());
 				if (_servers[index]._file_fd == -1)
 				{
 					std::cout << "file not found" << std::endl;
 					// get an error page / favicon / something else
 				}
 				_highest_fd = highest_fd(_highest_fd, _servers[index]._file_fd);
+				_servers[index].clear_handled_request(_servers[index]._io_fd);
 				FD_SET(_servers[index]._file_fd, &_buffer_read_fds);
 			}
 		}

@@ -43,7 +43,8 @@ public:
 	friend class webserver;
 
 public:
-    typedef     std::vector<std::string>::iterator string_iterator;
+    typedef     std::vector<std::string>::iterator      string_iterator;
+    typedef     std::map<int, std::string>::iterator    map_iterator;
     typedef     void (server::*configure)(std::string);
     enum        server_values{ port_ = 0, host_ = 1, server_name_ = 2, error_page_ = 3,
                                 max_file_size_ = 4, unknown_ = 5, location_ = 6, valid_ = 7, invalid_ = 8 };
@@ -94,6 +95,7 @@ public:
     //Helper functions
     int     location_size(string_iterator it, string_iterator end);
     int     update_request_buffer(int fd, std::string request);
+    void    clear_handled_request(int used_fd);
     int     valid_request(std::string);
 
     //Getters
