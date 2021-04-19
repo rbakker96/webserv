@@ -215,7 +215,14 @@ std::string	handler::generate_content_length(void)
 std::string	handler::generate_content_type(void)
 {
 	std::string	location = get_location();
-	std::string	result = "Content-Type: text/html; charset=UTF-8\n";
+	size_t 		start = location.find(".");
+	std::string	extension = location.substr(start, std::string::npos);
+	std::string	result = "Content-Type: ";
+
+	if (extension.compare(".html") || extension.compare(".ico") == 0)
+		result.append("text/html; charset=UTF-8\n");
+	else if (extension.compare(".css") == 0)
+		result.append("text/css; charset=UTF-8\n");
 
 	return (result);
 }
@@ -287,16 +294,13 @@ void        handler::read_requested_file(int fd) {
     char    buff[3000];
     int     ret = 1;
 
-	std::cout << "FD: " << fd << std::endl;
     while (ret > 0) {
         ret = read(fd, buff, 3000);
-		std::cout << "BUFF: " << buff << std::endl;
         _requested_file.append(buff, ret);
         if (ret < 3000)
             break;
     }
     if (ret == -1) {
-		std::cout << "ERROR" << std::endl;
         return ; //need some error checking method
     }
 }
