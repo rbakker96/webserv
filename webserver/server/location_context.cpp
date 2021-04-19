@@ -15,7 +15,7 @@
 location_context::location_context() : _location(), _root(), _index(), _allowed_method(0), _ext(0), _autoindex(false) {}
 location_context::~location_context(){}
 
-void location_context::configure_location_context(string_iterator it, string_iterator end) {
+void location_context::configure_location_context(vector_iterator it, vector_iterator end) {
     configure configure_array[6] = { &location_context::configure_root,
                                      &location_context::configure_allowed_method,
                                      &location_context::configure_autoindex,

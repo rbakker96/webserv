@@ -26,9 +26,9 @@
 
 class handler {
 public:
-    typedef     std::vector<std::string>::iterator      vector_iterator; //fix ererywhere
+    typedef     std::vector<std::string>::iterator      vector_iterator;
     typedef     std::map<int, std::string>::iterator    map_iterator;
-    typedef     std::vector<location_context>::iterator loc_iterator;
+    typedef     std::vector<location_context>::iterator location_iterator;
     enum        location_values{ host_ = 0, user_agent_ = 1, language_ = 2, authorization_ = 3, referer_ = 4, body_ = 5,
                                  content_length_ = 6, content_type_ = 7, content_language_ = 8, content_location_ = 9,
                                  allow_ = 10, unknown_ = 11};

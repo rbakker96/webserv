@@ -32,7 +32,7 @@
 #include "request_handler.hpp"
 
 void request_handler::print_request() {
-    std::cout << "------------- REQUEST -------------\n\n";
+    std::cout << "------------- REQUEST -------------\n";
 
     std::cout << "Entity headers\n";
     std::cout << "  Content length = " << get_content_length() << std::endl;
@@ -182,28 +182,24 @@ std::vector<std::string>    request_handler::str_to_vector(std::string request) 
 }
 
 void    request_handler::configure_location(std::vector<location_context> location) {
-    // /style.css -> right location not found
+    std::string request_location;
+    if (_location[_location.length() - 1] == '/')
+        request_location = _location;
+    else {
+        size_t pos = _location.find_last_of('/');
+        request_location = _location.substr(0, pos+1); //only add 1 at index 0 or every time check later!
+    }
 
-    for(loc_iterator it = location.begin(); it != location.end(); it++) {
-//        std::vector<std::string> extensions = it->get_ext();
-//        for (vector_iterator it1 = extensions.begin(); it1 != extensions.end(); it1++) {
-//            std::string tmp = *it1;
-//            if (_location.find(tmp) != std::string::npos)
-//                return;
-//        }
-
-        if (it->get_location() == _location) {
-            _location = it->get_root().append(_location);
-            std::cout << "temp location = " << _location << std::endl;
-            std::vector<std::string> extensions = it->get_ext();
-            for (vector_iterator it2 = extensions.begin(); it2 != extensions.end(); it2++) {
-                std::string tmp = *it2;
+    for(location_iterator loc = location.begin(); loc != location.end(); loc++) {
+        if (loc->get_location() == request_location) {
+            _location = loc->get_root().append(_location);
+            std::vector<std::string> extensions = loc->get_ext();
+            for (vector_iterator ext = extensions.begin(); ext != extensions.end(); ext++) {
+                std::string tmp = *ext;
                 if (_location.find(tmp) != std::string::npos)
                     return;
             }
-            if (_location.back() != '/')
-                _location = _location.append("/");
-            _location = _location.append(it->get_index());
+            _location = _location.append(loc->get_index());
             return;
         }
     }

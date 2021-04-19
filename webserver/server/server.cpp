@@ -77,7 +77,7 @@ void    server::configure_port(std::string str) {
     size_t pos = str.find_first_of(' ', start);
     std::string temp = str.substr(pos + 1);
 
-    _port = atoi(temp.c_str()); //NOT ALLOWED
+    _port = ft_atoi(temp.c_str());
 }
 
 void    server::configure_host(std::string str) {
@@ -106,7 +106,7 @@ void    server::configure_max_file_size(std::string str) {
     size_t pos = str.find_first_of(' ', start);
     std::string temp = str.substr(pos + 1);
 
-    _max_file_size = atoi(temp.c_str()); //NOT ALLOWED
+    _max_file_size = ft_atoi(temp.c_str());
 }
 
 void    server::invalid_element(std::string str) {
@@ -139,7 +139,7 @@ void	server::create_connection(int backlog) {
 }
 
 //------Helper functions------
-int    server::location_size(string_iterator it, string_iterator end) {
+int    server::location_size(vector_iterator it, vector_iterator end) {
     for (int i = 0; it != end; it++) {
         std::string str = it->data();
 

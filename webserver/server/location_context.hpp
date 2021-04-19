@@ -19,7 +19,7 @@
 
 class location_context {
 public:
-    typedef     std::vector<std::string>::iterator string_iterator;
+    typedef     std::vector<std::string>::iterator vector_iterator;
     typedef     void (location_context::*configure)(const std::string&);
     enum        location_values{ root_ = 0, method_ = 1, autoindex_ = 2, index_ = 3, ext_ = 4, unknown_ = 5 };
 
@@ -37,7 +37,7 @@ public:
     ~location_context();
 
     //Configure functions
-    void    configure_location_context(string_iterator begin, string_iterator end);
+    void    configure_location_context(vector_iterator begin, vector_iterator end);
     void    clean_location_instance();
     int     identify_location_value(const std::string &str);
     void    configure_location(const std::string &str);

@@ -175,28 +175,19 @@ void    webserver::accept_request() {
 	}
 }
 
-std::string	get_pathname_from_request()
-{
-	std::string pathname;
-
-	pathname.append("html_css_testfiles/test_one.html");
-	return (pathname);
-}
-
 void    webserver::handle_request() {
     std::string     request_headers;
-    request_handler handler;
 	std::string	    location;
 
 	for (size_t index = 0; index < _servers.size(); index++) {
 		if (_servers[index]._io_fd != -1 && FD_ISSET(_servers[index]._io_fd, &_read_fds))
 		{
-			request_headers = handler.read_request(_servers[index]._io_fd);
+			request_headers = _servers[index]._request.read_request(_servers[index]._io_fd);
 			int ret = _servers[index].update_request_buffer(_servers[index]._io_fd, request_headers);
 			if (ret == valid_) {
 				FD_CLR(_servers[index]._io_fd, &_buffer_read_fds);
-	            handler.parse_request(_servers[0]._location, _servers[index]._io_fd, _servers[0]._request_buffer);
-				_servers[index]._file_fd = _servers[index]._request.open_requested_file(handler.get_location());
+                _servers[index]._request.parse_request(_servers[index]._location, _servers[index]._io_fd, _servers[0]._request_buffer);
+				_servers[index]._file_fd = _servers[index]._request.open_requested_file(_servers[index]._request.get_location());
 				if (_servers[index]._file_fd == -1)
 				{
 					std::cout << "file not found" << std::endl;
@@ -208,18 +199,6 @@ void    webserver::handle_request() {
 			}
 		}
 	}
-//        _servers[0]._request.read_file(_request_fd);
-//        FD_CLR(_servers[0]._io_fd, &_buffer_read_fds);
-//        //some parsing functions needed to process request
-//		location = get_location_from_request(_servers[0]._request.get_file());
-//        _file_fd = _servers[0]._request.open_requested_file(location);
-//		if (_file_fd == -1)
-//		{
-//			std::cout << "file not found" << std::endl;
-//			// get an error page / favicon / something else
-//		}
-//		_highest_fd = highest_fd(_highest_fd, _file_fd);
-//		FD_SET(_file_fd, &_buffer_read_fds);
 }
 
 void    webserver::read_requested_file() {

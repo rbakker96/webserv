@@ -19,11 +19,9 @@
 #include <vector>
 #include <map>
 #include <iostream>
-#include <errno.h>
 #include <unistd.h>
 #include <exception>
 #include <fcntl.h>
-#include <cstdlib> // REMOVE WITH ATOI REMOVAL
 
 //custom includes
 #include "location_context.hpp"
@@ -43,7 +41,7 @@ public:
 	friend class webserver;
 
 public:
-    typedef     std::vector<std::string>::iterator      string_iterator;
+    typedef     std::vector<std::string>::iterator      vector_iterator;
     typedef     std::map<int, std::string>::iterator    map_iterator;
     typedef     void (server::*configure)(std::string);
     enum        server_values{ port_ = 0, host_ = 1, server_name_ = 2, error_page_ = 3,
@@ -93,7 +91,7 @@ public:
     void	create_connection(int backlog);
 
     //Helper functions
-    int     location_size(string_iterator it, string_iterator end);
+    int     location_size(vector_iterator it, vector_iterator end);
     int     update_request_buffer(int fd, std::string request);
     void    clear_handled_request(int used_fd);
     int     valid_request(std::string);
