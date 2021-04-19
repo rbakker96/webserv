@@ -219,7 +219,7 @@ std::string	handler::generate_content_type(void)
 	std::string	extension = location.substr(start, std::string::npos);
 	std::string	result = "Content-Type: ";
 
-	if (extension.compare(".html") || extension.compare(".ico") == 0)
+	if (extension.compare(".html") == 0 || extension.compare(".ico") == 0)
 		result.append("text/html; charset=UTF-8\n");
 	else if (extension.compare(".css") == 0)
 		result.append("text/css; charset=UTF-8\n");
@@ -267,10 +267,8 @@ void    handler::create_response_file(int io_fd, std::vector<std::string> header
 	for (vector_iterator it = headers.begin(); it != headers.end(); it++)
 	{
 		std::string	header = *it;
-		std::cout << "HEADERRR: " << header << std::endl;
 		write(io_fd, header.c_str(), header.size());
 	}
-	std::cout << "FILEEE: " << this->get_requested_file() << std::endl;
     write(io_fd, this->get_requested_file().c_str(), this->get_requested_file().size());
 }
 
