@@ -215,7 +215,6 @@ std::string	handler::generate_content_length(void)
 std::string	handler::generate_content_type(void)
 {
 	std::string	location = get_location();
-	std::cout << "location: " << location << std::endl;
 	std::string	result = "Content-Type: text/html; charset=UTF-8\n";
 
 	return (result);
@@ -288,13 +287,16 @@ void        handler::read_requested_file(int fd) {
     char    buff[3000];
     int     ret = 1;
 
+	std::cout << "FD: " << fd << std::endl;
     while (ret > 0) {
         ret = read(fd, buff, 3000);
+		std::cout << "BUFF: " << buff << std::endl;
         _requested_file.append(buff, ret);
         if (ret < 3000)
             break;
     }
     if (ret == -1) {
+		std::cout << "ERROR" << std::endl;
         return ; //need some error checking method
     }
 }
@@ -337,16 +339,13 @@ void        handler::configure_location(handler::location_vector location) {
     for (location_iterator loc = location.begin(); loc != location.end(); loc++) {
         if (loc->get_location() == request_location) {
             _location = loc->get_root().append(_location);
-            if (get_file_extension(loc->get_ext()).compare("ext not found") == 0)
-			{
-				std::cout << "LOACITON: " << _location << std::endl;
-				_location = _location.append(loc->get_index());
+			std::vector<std::string> extensions = loc->get_ext();
+			for (vector_iterator ext = extensions.begin(); ext != extensions.end(); ext++) {
+				std::string tmp = *ext;
+				if (_location.find(tmp) != std::string::npos)
+					return;
 			}
-			else
-			{
-
-				std::cout << "LOACITON: " << _location << std::endl;
-			}
+			_location = _location.append(loc->get_index());
             return;
         }
     }
