@@ -215,10 +215,13 @@ void    webserver::read_requested_file() {
 }
 
 void    webserver::create_response() {
+	std::vector<std::string>	headers;
+
 	for (size_t index = 0; index < _servers.size(); index++) {
 		if (_servers[index]._io_fd != -1 && FD_ISSET(_servers[index]._io_fd, &_write_fds))
 		{
-			_servers[index]._handler.create_response_file(_servers[index]._io_fd, _servers[index]._handler.get_requested_file());
+			headers = _servers[index]._handler.create_response_headers();
+			_servers[index]._handler.create_response_file(_servers[index]._io_fd, headers);
 			FD_CLR(_servers[index]._io_fd, &_buffer_write_fds);
 			close(_servers[index]._io_fd);
 			_servers[index]._io_fd = -1;

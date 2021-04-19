@@ -191,30 +191,82 @@ void        handler::invalid_argument(const std::string &str) {
 
 
 //Create response functions
-void        handler::create_response_file(int request_fd, std::string response_file) {
-    int		len = 0;
-    char	*len_str;
 
-    while (response_file[len] != '\0')
-        len++;
-    len_str = ft_itoa(len);
-    std::cout << len << std::endl;
-    std::cout << len_str << std::endl;
+// Need to check later how to send correct response code
 
-    std::cout << "writing response..." << std::endl;
-    std::string	header1 = "HTTP/1.1 200 OK\n";
-    std::string	header2 = "Content-Type: text/html; charset=UTF-8\n";
-    std::string	header3 = "Content-Length: ";
-    header3.append(len_str);
-    header3.append("\n\n");
+std::string	handler::generate_response_code(void)
+{
+	std::string	result = "HTTP/1.1 200 OK\n";
 
-    std::cout << "LEN: " << len << std::endl;
-    write(request_fd, header1.c_str(), header1.length());
-    write(request_fd, header2.c_str(), header2.length());
-    write(request_fd, header3.c_str(), header3.length());
-    write(request_fd, response_file.c_str(), len);
+	return (result);
 }
 
+std::string	handler::generate_content_length(void)
+{
+	std::string	result = "Content-Length: ";
+
+	result.append(ft_itoa(this->get_requested_file().size()));
+	result.append("\n");
+	return (result);
+}
+
+// Need to make dynamic
+
+std::string	handler::generate_content_type(void)
+{
+	std::string	location = get_location();
+	std::cout << "location: " << location << std::endl;
+	std::string	result = "Content-Type: text/html; charset=UTF-8\n";
+
+	return (result);
+}
+
+//std::string	handler::generate_last_modified(void)
+//{
+	//int			fd;
+	//struct stat	statbuf;
+	//struct tm	*info;
+	//char		timestamp[36];
+	//char		*result;
+
+	//fd = open(location, O_RDONLY);
+	//if (fd == -1)
+		//// error
+	//if (fstat(fd, &statbuf) == -1)
+		//// error
+	//info = localtime(&statbuf.st_mtime);
+	//strftime(timestamp, 36, "%a, %d %m %Y %H:%M:%S GMT", timestamp);
+	//result.append(timestamp);
+	//return (result);
+//}
+
+handler::vector	handler::create_response_headers(void)
+{
+	vector		headers;
+	std::string	temp;
+
+	temp = generate_response_code();
+	headers.push_back(temp);
+	temp = generate_content_length();
+	headers.push_back(temp);
+	temp = generate_content_type();
+	headers.push_back(temp);
+	temp = "\n";
+	headers.push_back(temp);
+	return (headers);
+}
+
+void    handler::create_response_file(int io_fd, std::vector<std::string> headers)
+{
+	for (vector_iterator it = headers.begin(); it != headers.end(); it++)
+	{
+		std::string	header = *it;
+		std::cout << "HEADERRR: " << header << std::endl;
+		write(io_fd, header.c_str(), header.size());
+	}
+	std::cout << "FILEEE: " << this->get_requested_file() << std::endl;
+    write(io_fd, this->get_requested_file().c_str(), this->get_requested_file().size());
+}
 
 //Helper functions
 std::string    handler::read_browser_request(int fd) {
@@ -282,16 +334,19 @@ void        handler::configure_location(handler::location_vector location) {
         request_location = _location.substr(0, pos+1); //only add 1 at index 0 or every time check later!
     }
 
-    for(location_iterator loc = location.begin(); loc != location.end(); loc++) {
+    for (location_iterator loc = location.begin(); loc != location.end(); loc++) {
         if (loc->get_location() == request_location) {
             _location = loc->get_root().append(_location);
-            std::vector<std::string> extensions = loc->get_ext();
-            for (vector_iterator ext = extensions.begin(); ext != extensions.end(); ext++) {
-                std::string tmp = *ext;
-                if (_location.find(tmp) != std::string::npos)
-                    return;
-            }
-            _location = _location.append(loc->get_index());
+            if (get_file_extension(loc->get_ext()).compare("ext not found") == 0)
+			{
+				std::cout << "LOACITON: " << _location << std::endl;
+				_location = _location.append(loc->get_index());
+			}
+			else
+			{
+
+				std::cout << "LOACITON: " << _location << std::endl;
+			}
             return;
         }
     }
@@ -314,6 +369,18 @@ void        handler::clear_atributes() {
     _content_language.clear();
     _content_location.clear();
     _allow.clear();
+}
+
+std::string	handler::get_file_extension(handler::vector extensions)
+{
+	std::string	tmp = "ext not found";
+
+	for (vector_iterator ext = extensions.begin(); ext != extensions.end(); ext++) {
+		tmp = *ext;
+		if (_location.find(tmp) != std::string::npos)
+			return (tmp);
+	}
+	return (tmp);
 }
 
 //Getter
