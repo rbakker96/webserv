@@ -12,7 +12,7 @@
 
 #include "server.hpp"
 #include "../helper/helper.hpp"
-#include <stdio.h>
+#include <stdio.h> //REMOVE LATER
 
 server::server() {
     _tcp_socket = 0;
@@ -32,7 +32,7 @@ void    server::create_new_server(std::vector <std::string> server_config) {
                                      &server::invalid_element };
 
     clean_server_instance();
-    for (std::vector<std::string>::iterator it = server_config.begin(); it != server_config.end(); it++) {
+    for (vector_iterator it = server_config.begin(); it != server_config.end(); it++) {
         int config_id = identify_server_value(*it);
         if (config_id == location_) {
             location.configure_location_context(it, (it + location_size(it, server_config.end())));
@@ -56,7 +56,7 @@ void    server::clean_server_instance(){
     _location.clear();
 }
 
-int     server::identify_server_value(std::string str) {
+int     server::identify_server_value(const std::string& str) {
     if (str.find("port") != std::string::npos)
         return port_;
     else if (str.find("host") != std::string::npos)
@@ -72,7 +72,7 @@ int     server::identify_server_value(std::string str) {
     return unknown_;
 }
 
-void    server::configure_port(std::string str) {
+void    server::configure_port(const std::string& str) {
     size_t start = str.find_first_not_of(' ');
     size_t pos = str.find_first_of(' ', start);
     std::string temp = str.substr(pos + 1);
@@ -80,28 +80,28 @@ void    server::configure_port(std::string str) {
     _port = ft_atoi(temp.c_str());
 }
 
-void    server::configure_host(std::string str) {
+void    server::configure_host(const std::string& str) {
     size_t start = str.find_first_not_of(' ');
     size_t pos = str.find_first_of(' ', start);
 
     _host = str.substr(pos + 1);
 }
 
-void    server::configure_server_name(std::string str) {
+void    server::configure_server_name(const std::string& str) {
     size_t start = str.find_first_not_of(' ');
     size_t pos = str.find_first_of(' ', start);
 
     _server_name = str.substr(pos + 1);
 }
 
-void    server::configure_error_page(std::string str) {
+void    server::configure_error_page(const std::string& str) {
     size_t start = str.find_first_not_of(' ');
     size_t pos = str.find_first_of(' ', start);
 
     _error_page = str.substr(pos + 1);
 }
 
-void    server::configure_max_file_size(std::string str) {
+void    server::configure_max_file_size(const std::string& str) {
     size_t start = str.find_first_not_of(' ');
     size_t pos = str.find_first_of(' ', start);
     std::string temp = str.substr(pos + 1);
@@ -109,10 +109,9 @@ void    server::configure_max_file_size(std::string str) {
     _max_file_size = ft_atoi(temp.c_str());
 }
 
-void    server::invalid_element(std::string str) {
+void    server::invalid_element(const std::string& str) {
     if (str == "0")
         return;
-    return;
 }
 
 
@@ -150,7 +149,7 @@ int    server::location_size(vector_iterator it, vector_iterator end) {
     return 0;
 }
 
-int     server::update_request_buffer(int fd, std::string request) {
+int     server::update_request_buffer(int fd, const std::string& request) {
     std::map<int, std::string>::iterator it;
 
     it = _request_buffer.find(fd);
@@ -169,7 +168,7 @@ void    server::clear_handled_request(int used_fd){
     _request_buffer.erase(request);
 }
 
-int     server::valid_request(std::string request) {
+int     server::valid_request(const std::string& request) {
     int header_size;
     int pos;
 
@@ -187,12 +186,12 @@ int     server::valid_request(std::string request) {
 }
 
 //------Getters------
-int                             server::get_file_size(){return _max_file_size;}
-int                             server::get_port(){return _port;}
+int                             server::get_file_size() {return _max_file_size;}
+int                             server::get_port() {return _port;}
 std::string                     server::get_host(){return _host;}
 std::string                     server::get_server_name(){return _server_name;}
 std::string                     server::get_error_page(){return _error_page;}
 std::vector<location_context>   server::get_location(){return _location;}
-int                             server::get_tcp_socket(){return _tcp_socket;}
+int                             server::get_tcp_socket() {return _tcp_socket;}
 int                             server::get_addr_len() {return _addr_len;}
 struct	sockaddr_in             server::get_addr(){return _addr;}
