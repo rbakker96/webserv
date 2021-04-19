@@ -25,9 +25,7 @@
 
 //custom includes
 #include "location_context.hpp"
-#include "handlers/handler.hpp"
-#include "handlers/request_handler.hpp"
-#include "handlers/response_handler.hpp"
+#include "handler.hpp"
 
 //tcp-connection includes
 #include <netinet/in.h>
@@ -36,14 +34,12 @@
 class server {
 public:
 	friend class handler;
-	friend class response_handler;
-	friend class request_handler;
 	friend class webserver;
 
 public:
     typedef     std::vector<std::string>::iterator      vector_iterator;
     typedef     std::map<int, std::string>::iterator    map_iterator;
-    typedef     void (server::*configure)(std::string);
+    typedef     void (server::*configure)(const std::string&);
     enum        server_values{ port_ = 0, host_ = 1, server_name_ = 2, error_page_ = 3,
                                 max_file_size_ = 4, unknown_ = 5, location_ = 6, valid_ = 7, invalid_ = 8 };
 
@@ -65,10 +61,9 @@ private:
     int		                        _addr_len;
     struct	sockaddr_in             _addr;
 
-    //Handlers
+    //Handler
     std::map<int, std::string>      _request_buffer;
-    request_handler                 _request;
-    response_handler                _response;
+    handler                         _handler;
 
 public:
     server();
@@ -76,14 +71,14 @@ public:
 
     //Configure functions
     void    clean_server_instance();
-    int     identify_server_value(std::string str);
+    int     identify_server_value(const std::string& str);
     void    create_new_server(std::vector<std::string> server_config);
-    void    configure_port(std::string str);
-    void    configure_host(std::string str);
-    void    configure_server_name(std::string str);
-    void    configure_max_file_size(std::string str);
-    void    configure_error_page(std::string str);
-    void    invalid_element(std::string str);
+    void    configure_port(const std::string& str);
+    void    configure_host(const std::string& str);
+    void    configure_server_name(const std::string& str);
+    void    configure_max_file_size(const std::string& str);
+    void    configure_error_page(const std::string& str);
+    void    invalid_element(const std::string& str);
 
     //TCP-connection functions
     void	create_socket(void);
@@ -92,9 +87,9 @@ public:
 
     //Helper functions
     int     location_size(vector_iterator it, vector_iterator end);
-    int     update_request_buffer(int fd, std::string request);
+    int     update_request_buffer(int fd, const std::string& request);
     void    clear_handled_request(int used_fd);
-    int     valid_request(std::string);
+    int     valid_request(const std::string&);
 
     //Getters
     int                             get_file_size();
