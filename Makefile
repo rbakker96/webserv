@@ -28,7 +28,7 @@ OBJECTS 		=	${SOURCES:%.c=%.o}
 
 FLAGS 			=	-Wall -Wextra -Werror
 
-COMPILE			=	clang++ -std=c++98
+COMPILE			=	clang++ #-std=c++98
 
 GREEN 			= 	\033[38;5;46m
 WHITE 			= 	\033[38;5;15m
