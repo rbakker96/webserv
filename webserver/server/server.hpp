@@ -81,7 +81,7 @@ public:
     void    invalid_element(const std::string& str);
 
     //TCP-connection functions
-    void	create_socket(void);
+    void	create_socket();
     void	bind_socket_address(int port);
     void	create_connection(int backlog);
 

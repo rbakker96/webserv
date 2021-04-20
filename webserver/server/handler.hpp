@@ -35,11 +35,14 @@ public:
 
     typedef     void (handler::*parse)(const std::string &str);
 
-    enum        location_values{ host_ = 0, user_agent_ = 1, language_ = 2, authorization_ = 3, referer_ = 4, body_ = 5,
+    enum        location_values{ requested_host_ = 0, user_agent_ = 1, language_ = 2, authorization_ = 3, referer_ = 4, body_ = 5,
                                  content_length_ = 6, content_type_ = 7, content_language_ = 8, content_location_ = 9,
                                  allow_ = 10, unknown_ = 11};
 
 protected:
+    //status
+    int             _status;
+
     //Entity headers
     int             _content_length;
     std::string     _content_type;
@@ -51,7 +54,7 @@ protected:
     std::string     _method;
     std::string     _location;
     std::string     _protocol;
-    std::string     _host;
+    std::string     _requested_host;
     std::string     _user_agent;
     std::string     _accept_language;
     std::string     _authorization;
@@ -67,7 +70,7 @@ public:
     //Parse request functions
     void            parse_request(location_vector location, int fd, map request_buffer);
     void            parse_first_line(const std::string &str);
-    void            parse_host(const std::string &str);
+    void            parse_requested_host(const std::string &str);
     void            parse_user_agent(const std::string &str);
     void            parse_language(const std::string &str);
     void            parse_authorization(const std::string &str);
@@ -97,12 +100,11 @@ public:
     void            read_requested_file(int fd);
     int             open_requested_file(std::string location);
     vector          str_to_vector(std::string request);
-    void            configure_location(location_vector location);
+    void            configure_location(location_vector location_blocks);
     void		    clear_requested_file();
     void            clear_atributes();
-	std::string		get_file_extension(vector extensions);
 
-    //GETTER
+    //Getter
     int             get_content_length();
     std::string     get_content_type();
     std::string     get_content_language();
@@ -112,7 +114,7 @@ public:
     std::string     get_method();
     std::string     get_location();
     std::string     get_protocol();
-    std::string     get_host();
+    std::string     get_requested_host();
     std::string     get_user_agent();
     std::string     get_accept_language();
     std::string     get_authorization();

@@ -14,12 +14,8 @@
 #include "../helper/helper.hpp"
 #include <stdio.h> //REMOVE LATER
 
-server::server() {
-    _tcp_socket = 0;
-    _addr_len = 0;
-	_io_fd = -1;
-	_file_fd = -1;
-}
+server::server() : _io_fd(-1), _file_fd(-1), _max_file_size(0), _port(0), _host(), _server_name(), _error_page(), _location(), _tcp_socket(0),
+                    _addr_len(0), _addr(), _request_buffer(), _handler() {}
 server::~server(){}
 
 void    server::create_new_server(std::vector <std::string> server_config) {

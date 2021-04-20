@@ -27,7 +27,7 @@ void handler::print_request() {
     std::cout << "  Method = " << get_method() << std::endl;
     std::cout << "  Location = " << get_location() << std::endl;
     std::cout << "  Protocol = " << get_protocol() << std::endl;
-    std::cout << "  Host = " << get_host() << std::endl;
+    std::cout << "  Host = " << get_requested_host() << std::endl;
     std::cout << "  User agent = " << get_user_agent() << std::endl;
     std::cout << "  Accept language = " << get_accept_language() << std::endl;
     std::cout << "  Authorization = " << get_authorization() << std::endl;
@@ -39,15 +39,15 @@ void handler::print_request() {
 //------------------------------------------------------------
 
 
-handler::handler() : _content_length(0), _content_type(), _content_language(), _content_location(), _allow(),
-                     _method(), _location(), _protocol(), _host(), _user_agent(), _accept_language(), _authorization(), _referer(), _body(), _requested_file() {}
+handler::handler() : _status(200), _content_length(0), _content_type("text/"), _content_language("en"), _content_location(), _allow(),
+                     _method(), _location(), _protocol(), _requested_host(), _user_agent(), _accept_language(), _authorization(), _referer(), _body(), _requested_file() {}
 handler::~handler(){}
 
 //Parse request functions
 void        handler::parse_request(handler::location_vector location, int fd, handler::map request_buffer) {
     map_iterator request                        = request_buffer.find(fd);
     vector request_elements                     = str_to_vector(request->second);
-    parse parse_array[12]                       = { &handler::parse_host,
+    parse parse_array[12]                       = { &handler::parse_requested_host,
                                                     &handler::parse_user_agent,
                                                     &handler::parse_language,
                                                     &handler::parse_authorization,
@@ -74,7 +74,7 @@ void        handler::parse_request(handler::location_vector location, int fd, ha
 
 int         handler::identify_request_value(const std::string &str) {
     if (str.find("Host") != std::string::npos)
-        return host_;
+        return requested_host_;
     else if (str.find("User-Agent") != std::string::npos)
         return user_agent_;
     else if (str.find("Accept-Language") != std::string::npos)
@@ -109,11 +109,11 @@ void        handler::parse_first_line(const std::string &str) {
     _protocol = str.substr(end + 1);
 }
 
-void        handler::parse_host(const std::string &str) {
+void        handler::parse_requested_host(const std::string &str) {
     size_t start = str.find_first_not_of(' ');
     size_t pos = str.find_first_of(' ', start);
 
-    _host = str.substr(pos + 1);
+	_requested_host = str.substr(pos + 1);
 }
 
 void        handler::parse_user_agent(const std::string &str) {
@@ -210,20 +210,8 @@ std::string	handler::generate_content_length(void)
 	return (result);
 }
 
-// Need to make dynamic
-
-std::string	handler::generate_content_type(void)
-{
-	std::string	location = get_location();
-	size_t 		start = location.find(".");
-	std::string	extension = location.substr(start, std::string::npos);
-	std::string	result = "Content-Type: ";
-
-	if (extension.compare(".html") == 0 || extension.compare(".ico") == 0)
-		result.append("text/html; charset=UTF-8\n");
-	else if (extension.compare(".css") == 0)
-		result.append("text/css; charset=UTF-8\n");
-
+std::string	handler::generate_content_type(void) {
+	std::string result = _content_type.append("; charset=UTF-8\n");
 	return (result);
 }
 
@@ -264,8 +252,7 @@ handler::vector	handler::create_response_headers(void)
 
 void    handler::create_response_file(int io_fd, std::vector<std::string> headers)
 {
-	for (vector_iterator it = headers.begin(); it != headers.end(); it++)
-	{
+	for (vector_iterator it = headers.begin(); it != headers.end(); it++) {
 		std::string	header = *it;
 		write(io_fd, header.c_str(), header.size());
 	}
@@ -320,33 +307,44 @@ handler::vector    handler::str_to_vector(std::string request) {
     size_t      pos;
     std::string value;
 
-    while ((int)(pos = request.find_first_of('\n')) != -1) {
+    while ((int)(pos = request.find_first_of('\r')) != -1) {
         value = request.substr(0, pos);
         request_elements.push_back(value);
-        request = request. substr(pos + 1);
+        request = request. substr(pos + 2);
     }
     request_elements.push_back(request);
     return request_elements;
 }
 
-void        handler::configure_location(handler::location_vector location) {
+void        handler::configure_location(handler::location_vector location_blocks) {
     std::string request_location;
-    if (_location[_location.length() - 1] == '/')
+    size_t pos;
+
+    if (!_referer.empty()) {
+        pos = _referer.find(_requested_host);
+        request_location = _referer.substr(pos + _requested_host.length());
+    }
+    else if (_location[_location.length() - 1] == '/')
         request_location = _location;
     else {
-        size_t pos = _location.find_last_of('/');
+        pos = _location.find_last_of('/');
         request_location = _location.substr(0, pos+1); //only add 1 at index 0 or every time check later!
     }
 
-    for (location_iterator loc = location.begin(); loc != location.end(); loc++) {
+    for (location_iterator loc = location_blocks.begin(); loc != location_blocks.end(); loc++) {
+		std::string locc = loc->get_location();
         if (loc->get_location() == request_location) {
             _location = loc->get_root().append(_location);
-			std::vector<std::string> extensions = loc->get_ext();
-			for (vector_iterator ext = extensions.begin(); ext != extensions.end(); ext++) {
-				std::string tmp = *ext;
-				if (_location.find(tmp) != std::string::npos)
-					return;
+			std::vector<std::string> accepted_exts = loc->get_ext();
+			for (vector_iterator ext = accepted_exts.begin(); ext != accepted_exts.end(); ext++) {
+				if (_location.find(*ext) != std::string::npos) {
+				    if (*ext == "png")
+				        _content_type = "image/";
+				    _content_type = _content_type.append(*ext);
+                    return;
+				}
 			}
+			_content_type = _content_type.append("html");
 			_location = _location.append(loc->get_index());
             return;
         }
@@ -360,7 +358,7 @@ void        handler::clear_atributes() {
     _method.clear();
     _location.clear();
     _protocol.clear();
-    _host.clear();
+    _requested_host.clear();
     _user_agent.clear();
     _accept_language.clear();
     _authorization.clear();
@@ -370,18 +368,6 @@ void        handler::clear_atributes() {
     _content_language.clear();
     _content_location.clear();
     _allow.clear();
-}
-
-std::string	handler::get_file_extension(handler::vector extensions)
-{
-	std::string	tmp = "ext not found";
-
-	for (vector_iterator ext = extensions.begin(); ext != extensions.end(); ext++) {
-		tmp = *ext;
-		if (_location.find(tmp) != std::string::npos)
-			return (tmp);
-	}
-	return (tmp);
 }
 
 //Getter
@@ -394,7 +380,7 @@ std::string	    handler::get_requested_file() { return (_requested_file);}
 std::string     handler::get_method() { return _method;}
 std::string     handler::get_location() { return _location;}
 std::string     handler::get_protocol() { return _protocol;}
-std::string     handler::get_host() { return _host;}
+std::string     handler::get_requested_host() { return _requested_host;}
 std::string     handler::get_user_agent() { return _user_agent;}
 std::string     handler::get_accept_language() { return _accept_language;}
 std::string     handler::get_authorization() { return _authorization;}
