@@ -25,7 +25,7 @@
 
 //custom includes
 #include "location_context.hpp"
-#include "handler.hpp"
+#include "header_handler.hpp"
 
 //tcp-connection includes
 #include <netinet/in.h>
@@ -54,7 +54,7 @@ private:
     std::string                     _host;
     std::string                     _server_name;
     std::string                     _error_page;
-    std::vector<location_context>   _location;
+    std::vector<location_context>   _location_blocks;
 
     //TCP conection
     int 	                        _tcp_socket;
@@ -63,7 +63,7 @@ private:
 
     //Handler
     std::map<int, std::string>      _request_buffer;
-    handler                         _handler;
+    header_handler                  _handler;
 
 public:
     server();
@@ -97,7 +97,7 @@ public:
     std::string                     get_host();
     std::string                     get_server_name();
     std::string                     get_error_page();
-    std::vector<location_context>   get_location();
+    std::vector<location_context>   get_location_blocks();
     int                             get_tcp_socket();
     int                             get_addr_len();
     struct	sockaddr_in             get_addr();

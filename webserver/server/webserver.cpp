@@ -29,12 +29,12 @@ void webserver::print_struct() {
         std::cout << "Server name = " << current.get_server_name() << std::endl;
         std::cout << "Error page = " << current.get_error_page() << std::endl;
 
-        std::vector<location_context> locations = current.get_location();
+        std::vector<location_context> locations = current.get_location_blocks();
         for (std::vector<location_context>::iterator it = locations.begin(); it != locations.end(); it++) {
             location_context location = *it;
 
             std::cout << "\n  ------------- location block -------------\n";
-            std::cout << "  location = " << location.get_location() << std::endl;
+            std::cout << "  location = " << location.get_location_context() << std::endl;
             std::cout << "  Root = " << location.get_root() << std::endl;
 
             std::vector<std::string> methods = location.get_method();
@@ -125,7 +125,7 @@ void    webserver::run() {
         _write_fds = _buffer_write_fds;
 
         add_sockets_to_read_fds();
-        if (select(_highest_fd + 1, &_read_fds, &_write_fds, nullptr, nullptr) == -1)
+        if (select(_highest_fd + 1, &_read_fds, &_write_fds, NULL, NULL) == -1)
 			throw std::runtime_error("Select failed");
         else {
             accept_request();
@@ -186,9 +186,12 @@ void    webserver::handle_request() {
 			int ret = _servers[index].update_request_buffer(_servers[index]._io_fd, request_headers);
 			if (ret == valid_) {
 				FD_CLR(_servers[index]._io_fd, &_buffer_read_fds);
-                _servers[index]._handler.parse_request(_servers[index]._location, _servers[index]._io_fd, _servers[0]._request_buffer);
-				_servers[index]._file_fd = _servers[index]._handler.open_requested_file(_servers[index]._handler.get_location());
-				if (_servers[index]._file_fd == -1) {
+                _servers[index]._handler.parse_request(_servers[index]._location_blocks, _servers[index]._io_fd, _servers[index]._request_buffer);
+				_servers[index]._file_fd = _servers[index]._handler.open_requested_file(
+						_servers[index]._handler.get_file_location());
+				if (_servers[index]._file_fd == -1)
+				{
+
 					std::cout << "file not found" << std::endl;
 					// get an error page / favicon / something else
 				}
@@ -206,8 +209,8 @@ void    webserver::read_requested_file() {
 		{
 			_servers[index]._handler.read_requested_file(_servers[index]._file_fd);
 			FD_CLR(_servers[index]._file_fd, &_buffer_read_fds);
-//			close(_servers[index]._file_fd);
-//			_servers[index]._file_fd = -1;
+			close(_servers[index]._file_fd);
+			_servers[index]._file_fd = -1;
 			FD_SET(_servers[index]._io_fd, &_buffer_write_fds);
 		}
 	}

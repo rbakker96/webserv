@@ -24,7 +24,7 @@
 #include "location_context.hpp"
 #include "../helper/helper.hpp"
 
-class handler {
+class header_handler {
 public:
     typedef     std::vector<std::string>                vector;
     typedef     std::vector<std::string>::iterator      vector_iterator;
@@ -33,7 +33,7 @@ public:
     typedef     std::vector<location_context>           location_vector;
     typedef     std::vector<location_context>::iterator location_iterator;
 
-    typedef     void (handler::*parse)(const std::string &str);
+    typedef     void (header_handler::*parse)(const std::string &str);
 
     enum        location_values{ requested_host_ = 0, user_agent_ = 1, language_ = 2, authorization_ = 3, referer_ = 4, body_ = 5,
                                  content_length_ = 6, content_type_ = 7, content_language_ = 8, content_location_ = 9,
@@ -52,7 +52,7 @@ protected:
 
     //Request headers
     std::string     _method;
-    std::string     _location;
+    std::string     _file_location;
     std::string     _protocol;
     std::string     _requested_host;
     std::string     _user_agent;
@@ -64,8 +64,8 @@ protected:
     std::string     _requested_file;
 
 public:
-    handler();
-    ~handler();
+    header_handler();
+    ~header_handler();
 
     //Parse request functions
     void            parse_request(location_vector location, int fd, map request_buffer);
@@ -112,7 +112,7 @@ public:
     std::string     get_allow();
 	std::string	    get_requested_file();
     std::string     get_method();
-    std::string     get_location();
+    std::string     get_file_location();
     std::string     get_protocol();
     std::string     get_requested_host();
     std::string     get_user_agent();
