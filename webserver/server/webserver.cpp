@@ -205,9 +205,7 @@ void    webserver::read_requested_file() {
 	for (size_t index = 0; index < _servers.size(); index++) {
 		if (_servers[index]._file_fd != -1 && FD_ISSET(_servers[index]._file_fd, &_read_fds))
 		{
-			std::cout << "1" << std::endl;
 			_servers[index]._handler.read_requested_file(_servers[index]._file_fd);
-			std::cout << "2" << std::endl;
 			FD_CLR(_servers[index]._file_fd, &_buffer_read_fds);
 //			close(_servers[index]._file_fd);
 //			_servers[index]._file_fd = -1;
