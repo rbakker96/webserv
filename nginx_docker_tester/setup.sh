@@ -2,7 +2,7 @@
 docker build -t nginx_docker .
 
 # run docker image & expose ports
-docker run -it -p 80:80 -p 443:443 nginx_docker
+docker run -it -p 80:80 nginx_docker
 
 # remove all stopped containers
 # docker rm $(docker ps --filter status=exited -q)

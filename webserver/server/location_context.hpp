@@ -24,7 +24,7 @@ public:
     enum        location_values{ root_ = 0, method_ = 1, autoindex_ = 2, index_ = 3, ext_ = 4, unknown_ = 5 };
 
 private:
-    std::string                 _location;
+    std::string                 _location_context;
     std::string                 _root;
     std::string                 _index;
     std::vector<std::string>    _allowed_method;
@@ -49,7 +49,7 @@ public:
     void    invalid_element(const std::string &str);
 
     //Getters
-    std::string                 get_location();
+    std::string                 get_location_context();
     std::string                 get_root();
     std::string                 get_index();
     std::vector<std::string>    get_method();

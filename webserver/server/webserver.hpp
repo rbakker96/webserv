@@ -51,7 +51,7 @@ public:
     int    		check_server_block(std::vector<std::string> server_block);
 
     //Debug-tool
-    void    print_struct();
+    void        print_struct();
 };
 
 #endif //WEBSERV_WEBSERVER_HPP

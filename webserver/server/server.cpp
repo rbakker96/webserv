@@ -14,12 +14,8 @@
 #include "../helper/helper.hpp"
 #include <stdio.h> //REMOVE LATER
 
-server::server() {
-    _tcp_socket = 0;
-    _addr_len = 0;
-	_io_fd = -1;
-	_file_fd = -1;
-}
+server::server() : _io_fd(-1), _file_fd(-1), _max_file_size(0), _port(0), _host(), _server_name(), _error_page(), _location_blocks(), _tcp_socket(0),
+                    _addr_len(0), _addr(), _request_buffer(), _handler() {}
 server::~server(){}
 
 void    server::create_new_server(std::vector <std::string> server_config) {
@@ -36,7 +32,7 @@ void    server::create_new_server(std::vector <std::string> server_config) {
         int config_id = identify_server_value(*it);
         if (config_id == location_) {
             location.configure_location_context(it, (it + location_size(it, server_config.end())));
-            _location.push_back(location);
+            _location_blocks.push_back(location);
         }
         else {
             configure function = configure_array[config_id];
@@ -53,7 +49,7 @@ void    server::clean_server_instance(){
     _host.clear();
     _server_name.clear();
     _error_page.clear();
-    _location.clear();
+    _location_blocks.clear();
 }
 
 int     server::identify_server_value(const std::string& str) {
@@ -191,7 +187,7 @@ int                             server::get_port() {return _port;}
 std::string                     server::get_host(){return _host;}
 std::string                     server::get_server_name(){return _server_name;}
 std::string                     server::get_error_page(){return _error_page;}
-std::vector<location_context>   server::get_location(){return _location;}
+std::vector<location_context>   server::get_location_blocks(){return _location_blocks;}
 int                             server::get_tcp_socket() {return _tcp_socket;}
 int                             server::get_addr_len() {return _addr_len;}
 struct	sockaddr_in             server::get_addr(){return _addr;}
