@@ -18,7 +18,7 @@ SOURCES			=	webserver/main.cpp \
                     webserver/server/location_context.cpp \
                     webserver/server/server.cpp \
                     webserver/server/webserver.cpp \
-                    webserver/server/handler.cpp \
+                    webserver/server/header_handler.cpp \
 					webserver/helper/ft_itoa.cpp \
 					webserver/helper/ft_atoi.cpp
 

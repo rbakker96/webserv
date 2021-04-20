@@ -34,7 +34,7 @@ void webserver::print_struct() {
             location_context location = *it;
 
             std::cout << "\n  ------------- location block -------------\n";
-            std::cout << "  location = " << location.get_location() << std::endl;
+            std::cout << "  location = " << location.get_file_location() << std::endl;
             std::cout << "  Root = " << location.get_root() << std::endl;
 
             std::vector<std::string> methods = location.get_method();

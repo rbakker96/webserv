@@ -25,7 +25,7 @@
 
 //custom includes
 #include "location_context.hpp"
-#include "handler.hpp"
+#include "header_handler.hpp"
 
 //tcp-connection includes
 #include <netinet/in.h>
@@ -63,7 +63,7 @@ private:
 
     //Handler
     std::map<int, std::string>      _request_buffer;
-    handler                         _handler;
+    header_handler                         _handler;
 
 public:
     server();
