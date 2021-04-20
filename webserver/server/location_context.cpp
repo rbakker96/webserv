@@ -12,7 +12,7 @@
 
 #include "location_context.hpp"
 
-location_context::location_context() : _file_location(), _root(), _index(), _allowed_method(0), _ext(0), _autoindex(false) {}
+location_context::location_context() : _location_context(), _root(), _index(), _allowed_method(0), _ext(0), _autoindex(false) {}
 location_context::~location_context(){}
 
 void location_context::configure_location_context(vector_iterator it, vector_iterator end) {
@@ -58,7 +58,7 @@ void    location_context::configure_location(const std::string &str) {
     size_t start = str.find_first_of('/');
     size_t end = str.find_first_of(' ', start);
 
-	_file_location = str.substr(start, end - start);
+	_location_context = str.substr(start, end - start);
 }
 
 void    location_context::configure_root(const std::string &str){
@@ -118,7 +118,7 @@ void    location_context::invalid_element(const std::string &str) {
 }
 
 //Getters
-std::string                 location_context::get_file_location() {return _file_location;}
+std::string                 location_context::get_location_context() {return _location_context;}
 std::string                 location_context::get_root() {return _root;}
 std::string                 location_context::get_index() {return _index;}
 std::vector<std::string>    location_context::get_method() {return _allowed_method;}

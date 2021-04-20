@@ -54,7 +54,7 @@ private:
     std::string                     _host;
     std::string                     _server_name;
     std::string                     _error_page;
-    std::vector<location_context>   _location;
+    std::vector<location_context>   _location_blocks;
 
     //TCP conection
     int 	                        _tcp_socket;

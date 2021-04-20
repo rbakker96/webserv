@@ -25,7 +25,7 @@ void header_handler::print_request() {
 
     std::cout << "Request headers\n";
     std::cout << "  Method = " << get_method() << std::endl;
-    std::cout << "  Location = " << get_location() << std::endl;
+    std::cout << "  Location = " << get_file_location() << std::endl;
     std::cout << "  Protocol = " << get_protocol() << std::endl;
     std::cout << "  Host = " << get_host() << std::endl;
     std::cout << "  User agent = " << get_user_agent() << std::endl;
@@ -40,7 +40,7 @@ void header_handler::print_request() {
 
 
 header_handler::header_handler() : _content_length(0), _content_type(), _content_language(), _content_location(), _allow(),
-								   _method(), _location(), _protocol(), _host(), _user_agent(), _accept_language(), _authorization(), _referer(), _body(), _requested_file() {}
+								   _method(), _file_location(), _protocol(), _host(), _user_agent(), _accept_language(), _authorization(), _referer(), _body(), _requested_file() {}
 header_handler::~header_handler(){}
 
 //Parse request functions
@@ -105,7 +105,7 @@ void        header_handler::parse_first_line(const std::string &str) {
 
     start = end + 1;
     end = str.find_first_of(' ', start);
-    _location = str.substr(start, end - start);
+	_file_location = str.substr(start, end - start);
     _protocol = str.substr(end + 1);
 }
 
@@ -214,7 +214,7 @@ std::string	header_handler::generate_content_length(void)
 
 std::string	header_handler::generate_content_type(void)
 {
-	std::string	location = get_location();
+	std::string	location = get_file_location();
 	size_t 		start = location.find(".");
 	std::string	extension = location.substr(start, std::string::npos);
 	std::string	result = "Content-Type: ";
@@ -331,23 +331,23 @@ header_handler::vector    header_handler::str_to_vector(std::string request) {
 
 void        header_handler::configure_location(header_handler::location_vector location) {
     std::string request_location;
-    if (_location[_location.length() - 1] == '/')
-        request_location = _location;
+    if (_file_location[_file_location.length() - 1] == '/')
+        request_location = _file_location;
     else {
-        size_t pos = _location.find_last_of('/');
-        request_location = _location.substr(0, pos+1); //only add 1 at index 0 or every time check later!
+        size_t pos = _file_location.find_last_of('/');
+        request_location = _file_location.substr(0, pos + 1); //only add 1 at index 0 or every time check later!
     }
 
     for (location_iterator loc = location.begin(); loc != location.end(); loc++) {
-        if (loc->get_file_location() == request_location) {
-            _location = loc->get_root().append(_location);
+        if (loc->get_location_context() == request_location) {
+			_file_location = loc->get_root().append(_file_location);
 			std::vector<std::string> extensions = loc->get_ext();
 			for (vector_iterator ext = extensions.begin(); ext != extensions.end(); ext++) {
 				std::string tmp = *ext;
-				if (_location.find(tmp) != std::string::npos)
+				if (_file_location.find(tmp) != std::string::npos)
 					return;
 			}
-			_location = _location.append(loc->get_index());
+			_file_location = _file_location.append(loc->get_index());
             return;
         }
     }
@@ -358,7 +358,7 @@ void		header_handler::clear_requested_file() {_requested_file.clear();}
 void        header_handler::clear_atributes() {
     _content_length = 0;
     _method.clear();
-    _location.clear();
+    _file_location.clear();
     _protocol.clear();
     _host.clear();
     _user_agent.clear();
@@ -378,7 +378,7 @@ std::string	header_handler::get_file_extension(header_handler::vector extensions
 
 	for (vector_iterator ext = extensions.begin(); ext != extensions.end(); ext++) {
 		tmp = *ext;
-		if (_location.find(tmp) != std::string::npos)
+		if (_file_location.find(tmp) != std::string::npos)
 			return (tmp);
 	}
 	return (tmp);
@@ -392,7 +392,7 @@ std::string     header_handler::get_content_location() { return _content_locatio
 std::string     header_handler::get_allow() { return _allow;}
 std::string	    header_handler::get_requested_file() { return (_requested_file);}
 std::string     header_handler::get_method() { return _method;}
-std::string     header_handler::get_location() { return _location;}
+std::string     header_handler::get_file_location() { return _file_location;}
 std::string     header_handler::get_protocol() { return _protocol;}
 std::string     header_handler::get_host() { return _host;}
 std::string     header_handler::get_user_agent() { return _user_agent;}

@@ -34,7 +34,7 @@ void webserver::print_struct() {
             location_context location = *it;
 
             std::cout << "\n  ------------- location block -------------\n";
-            std::cout << "  location = " << location.get_file_location() << std::endl;
+            std::cout << "  location = " << location.get_location_context() << std::endl;
             std::cout << "  Root = " << location.get_root() << std::endl;
 
             std::vector<std::string> methods = location.get_method();
@@ -186,8 +186,9 @@ void    webserver::handle_request() {
 			int ret = _servers[index].update_request_buffer(_servers[index]._io_fd, request_headers);
 			if (ret == valid_) {
 				FD_CLR(_servers[index]._io_fd, &_buffer_read_fds);
-                _servers[index]._handler.parse_request(_servers[index]._location, _servers[index]._io_fd, _servers[index]._request_buffer);
-				_servers[index]._file_fd = _servers[index]._handler.open_requested_file(_servers[index]._handler.get_location());
+                _servers[index]._handler.parse_request(_servers[index]._location_blocks, _servers[index]._io_fd, _servers[index]._request_buffer);
+				_servers[index]._file_fd = _servers[index]._handler.open_requested_file(
+						_servers[index]._handler.get_file_location());
 				if (_servers[index]._file_fd == -1)
 				{
 					std::cout << "file not found" << std::endl;

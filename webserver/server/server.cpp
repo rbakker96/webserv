@@ -36,7 +36,7 @@ void    server::create_new_server(std::vector <std::string> server_config) {
         int config_id = identify_server_value(*it);
         if (config_id == location_) {
             location.configure_location_context(it, (it + location_size(it, server_config.end())));
-            _location.push_back(location);
+            _location_blocks.push_back(location);
         }
         else {
             configure function = configure_array[config_id];
@@ -53,7 +53,7 @@ void    server::clean_server_instance(){
     _host.clear();
     _server_name.clear();
     _error_page.clear();
-    _location.clear();
+    _location_blocks.clear();
 }
 
 int     server::identify_server_value(const std::string& str) {
@@ -191,7 +191,7 @@ int                             server::get_port() {return _port;}
 std::string                     server::get_host(){return _host;}
 std::string                     server::get_server_name(){return _server_name;}
 std::string                     server::get_error_page(){return _error_page;}
-std::vector<location_context>   server::get_location(){return _location;}
+std::vector<location_context>   server::get_location(){return _location_blocks;}
 int                             server::get_tcp_socket() {return _tcp_socket;}
 int                             server::get_addr_len() {return _addr_len;}
 struct	sockaddr_in             server::get_addr(){return _addr;}

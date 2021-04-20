@@ -49,7 +49,7 @@ protected:
 
     //Request headers
     std::string     _method;
-    std::string     _location;
+    std::string     _file_location;
     std::string     _protocol;
     std::string     _host;
     std::string     _user_agent;
@@ -110,7 +110,7 @@ public:
     std::string     get_allow();
 	std::string	    get_requested_file();
     std::string     get_method();
-    std::string     get_location();
+    std::string     get_file_location();
     std::string     get_protocol();
     std::string     get_host();
     std::string     get_user_agent();
