@@ -33,6 +33,7 @@ WHITE 			= 	\033[38;5;15m
 GREY 			= 	\033[38;5;8m
 ORANGE 			= 	\033[38;5;202m
 RED 			= 	\033[38;5;160m
+RESET			= 	\033[0m
 
 all: $(NAME)
 
@@ -40,7 +41,7 @@ $(NAME): $(OBJECTS)
 	@echo "$(GREEN)----------------------------------------------------"
 	@$(COMPILE) $(FLAGS) -o $(NAME) $(OBJECTS)
 	@echo "Executable				./webserv"
-	@echo "$(GREEN)----------------------------------------------------"
+	@echo "----------------------------------------------------$(RESET)"
 
 %.o: %.cpp
 	@echo "$(GREY)Compiling...				$(WHITE)$<"

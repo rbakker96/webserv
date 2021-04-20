@@ -186,7 +186,7 @@ void    webserver::handle_request() {
 			int ret = _servers[index].update_request_buffer(_servers[index]._io_fd, request_headers);
 			if (ret == valid_) {
 				FD_CLR(_servers[index]._io_fd, &_buffer_read_fds);
-                _servers[index]._handler.parse_request(_servers[index]._location, _servers[index]._io_fd, _servers[0]._request_buffer);
+                _servers[index]._handler.parse_request(_servers[index]._location, _servers[index]._io_fd, _servers[index]._request_buffer);
 				_servers[index]._file_fd = _servers[index]._handler.open_requested_file(_servers[index]._handler.get_location());
 				if (_servers[index]._file_fd == -1)
 				{
@@ -205,12 +205,10 @@ void    webserver::read_requested_file() {
 	for (size_t index = 0; index < _servers.size(); index++) {
 		if (_servers[index]._file_fd != -1 && FD_ISSET(_servers[index]._file_fd, &_read_fds))
 		{
-			std::cout << "1" << std::endl;
 			_servers[index]._handler.read_requested_file(_servers[index]._file_fd);
-			std::cout << "2" << std::endl;
 			FD_CLR(_servers[index]._file_fd, &_buffer_read_fds);
-//			close(_servers[index]._file_fd);
-//			_servers[index]._file_fd = -1;
+			close(_servers[index]._file_fd);
+			_servers[index]._file_fd = -1;
 			FD_SET(_servers[index]._io_fd, &_buffer_write_fds);
 		}
 	}
