@@ -125,7 +125,7 @@ void    webserver::run() {
         _write_fds = _buffer_write_fds;
 
         add_sockets_to_read_fds();
-        if (select(_highest_fd + 1, &_read_fds, &_write_fds, nullptr, nullptr) == -1)
+        if (select(_highest_fd + 1, &_read_fds, &_write_fds, NULL, NULL) == -1)
 			throw std::runtime_error("Select failed");
         else {
             accept_request();
