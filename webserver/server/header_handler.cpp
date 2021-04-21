@@ -59,11 +59,11 @@ void        header_handler::parse_request(header_handler::location_vector locati
                                                     &header_handler::parse_allow,
                                                     &header_handler::invalid_argument};
 
-    clear_atributes();
+	clear_attributes();
     parse_first_line(*request_elements.begin());
     for (vector_iterator it = request_elements.begin(); it != request_elements.end(); it++) {
-        int config_id = identify_request_value(*it);
-        parse function = parse_array[config_id];
+        int request_value = identify_request_value(*it);
+        parse function = parse_array[request_value];
         (this->*function)(*it);
     }
     configure_location(location);
@@ -188,32 +188,43 @@ void        header_handler::invalid_argument(const std::string &str) {
         return;
 }
 
-
-//Create response functions
-
+// Create response functions
 // Need to check later how to send correct response code
 
-std::string	header_handler::generate_response_code(void)
+void header_handler::send_response(int io_fd)
 {
-	std::string	result = "HTTP/1.1 200 OK\n";
+	std::string response;
+	
+	generate_status_line(response);
+	generate_content_length(response);
+	generate_content_type(response);
+	response.append("\r\n");
 
-	return (result);
+	write(io_fd, response.c_str(), response.size());
+	write(io_fd, this->get_requested_file().c_str(), this->get_requested_file().size());
+
 }
 
-std::string	header_handler::generate_content_length(void)
+void	header_handler::generate_status_line(std::string &response)
 {
-	std::string	result = "Content-Length: ";
-
-	result.append(ft_itoa(this->get_requested_file().size()));
-	result.append("\n");
-	return (result);
+	std::string	status_line = "HTTP/1.1 200 OK";
+	status_line.append("\r\n");
+	response.append(status_line);
 }
 
+void	header_handler::generate_content_length(std::string &response)
+{
+	std::string	content_length = "Content-Length: ";
 
-std::string	header_handler::generate_content_type() {
-	std::string result = _content_type.append("; charset=UTF-8\n");
+	content_length.append(ft_itoa(this->get_requested_file().size()));
+	content_length.append("\r\n");
+	response.append(content_length);
+}
 
-	return (result);
+void	header_handler::generate_content_type(std::string &response) {
+	std::string content_type = _content_type.append("; charset=UTF-8\n");
+	content_type.append("\r\n");
+	response.append(content_type);
 }
 
 //std::string	handler::generate_last_modified(void)
@@ -234,31 +245,6 @@ std::string	header_handler::generate_content_type() {
 	//result.append(timestamp);
 	//return (result);
 //}
-
-header_handler::vector	header_handler::create_response_headers(void)
-{
-	vector		headers;
-	std::string	temp;
-
-	temp = generate_response_code();
-	headers.push_back(temp);
-	temp = generate_content_length();
-	headers.push_back(temp);
-	temp = generate_content_type();
-	headers.push_back(temp);
-	temp = "\n";
-	headers.push_back(temp);
-	return (headers);
-}
-
-void    header_handler::create_response_file(int io_fd, std::vector<std::string> headers)
-{
-	for (vector_iterator it = headers.begin(); it != headers.end(); it++) {
-		std::string	header = *it;
-		write(io_fd, header.c_str(), header.size());
-	}
-    write(io_fd, this->get_requested_file().c_str(), this->get_requested_file().size());
-}
 
 //Helper functions
 std::string    header_handler::read_browser_request(int fd) {
@@ -333,7 +319,7 @@ void        header_handler::configure_location(header_handler::location_vector l
     }
 
     for (location_iterator loc = location_blocks.begin(); loc != location_blocks.end(); loc++) {
-		std::string locc = loc->get_location_context();
+//		std::string locc = loc->get_location_context(); // not used
         if (loc->get_location_context() == request_location) {
 			_file_location = loc->get_root().append(_file_location);
 			std::vector<std::string> accepted_exts = loc->get_ext();
@@ -354,7 +340,7 @@ void        header_handler::configure_location(header_handler::location_vector l
 
 void		header_handler::clear_requested_file() {_requested_file.clear();}
 
-void        header_handler::clear_atributes() {
+void        header_handler::clear_attributes() {
     _content_length = 0;
     _method.clear();
     _file_location.clear();

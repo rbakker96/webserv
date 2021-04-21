@@ -85,7 +85,7 @@ void    webserver::load_configuration(char *config_file) {
     close(fd);
 	if (ret == -1)
 		throw std::runtime_error("Error while reading config file");
-	if (!server_block.empty())
+	if (!server_block.empty()) // WHY
 		throw std::invalid_argument("Error: missing '{' or '}' in config file");
     print_struct();                         //  PRINTING STRUCT
 }
@@ -222,8 +222,7 @@ void    webserver::create_response() {
 	for (size_t index = 0; index < _servers.size(); index++) {
 		if (_servers[index]._io_fd != -1 && FD_ISSET(_servers[index]._io_fd, &_write_fds))
 		{
-			headers = _servers[index]._handler.create_response_headers();
-			_servers[index]._handler.create_response_file(_servers[index]._io_fd, headers);
+			_servers[index]._handler.send_response(_servers[index]._io_fd);
 			FD_CLR(_servers[index]._io_fd, &_buffer_write_fds);
 			close(_servers[index]._io_fd);
 			_servers[index]._io_fd = -1;
