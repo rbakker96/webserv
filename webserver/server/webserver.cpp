@@ -115,7 +115,7 @@ void    webserver::establish_connection(){
         _servers[index].create_connection(100); //CHECK LATER
 	}
 }
-
+#include <errno.h>
 void    webserver::run() {
     initialize_fd_sets();
     initialize_highest_fd();
@@ -125,8 +125,10 @@ void    webserver::run() {
         _write_fds = _buffer_write_fds;
 
         add_sockets_to_read_fds();
-        if (select(_highest_fd + 1, &_read_fds, &_write_fds, NULL, NULL) == -1)
-			throw std::runtime_error("Select failed");
+        if (select((_highest_fd + 1), &_read_fds, &_write_fds, 0, 0) == -1) {
+			std::cout << strerror(errno) << std::endl;
+        	throw std::runtime_error("Select failed");
+        }
         else {
             accept_request();
             handle_request();
@@ -165,8 +167,11 @@ void    webserver::add_sockets_to_read_fds() {
 void    webserver::accept_request() {
 	for (size_t index = 0; index < _servers.size(); index++)
 	{
+		printf("ACCEPT REQUEST\n");
+		printf("socket = %d\n", _servers[index].get_tcp_socket());
 		if (FD_ISSET(_servers[index].get_tcp_socket(), &_read_fds))
 		{
+			printf("ACCEPTED REQUEST\n");
 			_servers[index]._io_fd = accept(_servers[index].get_tcp_socket(), (struct sockaddr *)&_servers[index]._addr, (socklen_t *)&_servers[index]._addr_len);
 			fcntl(_servers[index]._io_fd, F_SETFL, O_NONBLOCK);
 			FD_SET(_servers[index]._io_fd, &_buffer_read_fds);
@@ -182,6 +187,7 @@ void    webserver::handle_request() {
 	for (size_t index = 0; index < _servers.size(); index++) {
 		if (_servers[index]._io_fd != -1 && FD_ISSET(_servers[index]._io_fd, &_read_fds))
 		{
+			printf("HANDLE REQUEST\n");
 			request_headers = _servers[index]._handler.read_browser_request(_servers[index]._io_fd);
 			int ret = _servers[index].update_request_buffer(_servers[index]._io_fd, request_headers);
 			if (ret == valid_) {
@@ -207,6 +213,7 @@ void    webserver::read_requested_file() {
 	for (size_t index = 0; index < _servers.size(); index++) {
 		if (_servers[index]._file_fd != -1 && FD_ISSET(_servers[index]._file_fd, &_read_fds))
 		{
+			printf("READ REQUEST\n");
 			_servers[index]._handler.read_requested_file(_servers[index]._file_fd);
 			FD_CLR(_servers[index]._file_fd, &_buffer_read_fds);
 			close(_servers[index]._file_fd);
@@ -222,7 +229,16 @@ void    webserver::create_response() {
 	for (size_t index = 0; index < _servers.size(); index++) {
 		if (_servers[index]._io_fd != -1 && FD_ISSET(_servers[index]._io_fd, &_write_fds))
 		{
+			printf("CREATE RESPONSE\n");
 			headers = _servers[index]._handler.create_response_headers();
+
+			printf("-----------RESPONS HEADER-----------\n");
+			for (std::vector<std::string>::iterator it = headers.begin(); it != headers.end(); it++) {
+				std::string	header = *it;
+				write(STDOUT_FILENO, header.c_str(), header.size());
+			}
+			printf("-----------------------------------\n");
+
 			_servers[index]._handler.create_response_file(_servers[index]._io_fd, headers);
 			FD_CLR(_servers[index]._io_fd, &_buffer_write_fds);
 			close(_servers[index]._io_fd);

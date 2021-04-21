@@ -68,47 +68,12 @@ int     server::identify_server_value(const std::string& str) {
     return unknown_;
 }
 
-void    server::configure_port(const std::string& str) {
-    size_t start = str.find_first_not_of(' ');
-    size_t pos = str.find_first_of(' ', start);
-    std::string temp = str.substr(pos + 1);
-
-    _port = ft_atoi(temp.c_str());
-}
-
-void    server::configure_host(const std::string& str) {
-    size_t start = str.find_first_not_of(' ');
-    size_t pos = str.find_first_of(' ', start);
-
-    _host = str.substr(pos + 1);
-}
-
-void    server::configure_server_name(const std::string& str) {
-    size_t start = str.find_first_not_of(' ');
-    size_t pos = str.find_first_of(' ', start);
-
-    _server_name = str.substr(pos + 1);
-}
-
-void    server::configure_error_page(const std::string& str) {
-    size_t start = str.find_first_not_of(' ');
-    size_t pos = str.find_first_of(' ', start);
-
-    _error_page = str.substr(pos + 1);
-}
-
-void    server::configure_max_file_size(const std::string& str) {
-    size_t start = str.find_first_not_of(' ');
-    size_t pos = str.find_first_of(' ', start);
-    std::string temp = str.substr(pos + 1);
-
-    _max_file_size = ft_atoi(temp.c_str());
-}
-
-void    server::invalid_element(const std::string& str) {
-    if (str == "0")
-        return;
-}
+void    server::configure_port(const std::string& str) {_port = parse_number(str);}
+void    server::configure_host(const std::string& str) {_host = parse_string(str);}
+void    server::configure_server_name(const std::string& str) {_server_name = parse_string(str);}
+void    server::configure_error_page(const std::string& str) {_error_page = parse_string(str);}
+void    server::configure_max_file_size(const std::string& str) {_max_file_size = parse_number(str);}
+void    server::invalid_element(const std::string& str) {parse_invalid(str);}
 
 
 //------TCP-connection functions------

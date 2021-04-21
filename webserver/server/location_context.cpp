@@ -11,6 +11,7 @@
 /* ************************************************************************** */
 
 #include "location_context.hpp"
+#include "../helper/helper.hpp"
 
 location_context::location_context() : _location_context(), _root(), _index(), _allowed_method(0), _ext(0), _autoindex(false) {}
 location_context::~location_context(){}
@@ -61,61 +62,18 @@ void    location_context::configure_location(const std::string &str) {
 	_location_context = str.substr(start, end - start);
 }
 
-void    location_context::configure_root(const std::string &str){
-    size_t start = str.find_first_not_of(' ');
-    size_t pos = str.find_first_of(' ', start);
-
-    _root = str.substr(pos + 1);
-}
-
-void    location_context::configure_allowed_method(const std::string &str){
-    size_t                      start = str.find_first_not_of(' ');
-    size_t                      pos = str.find_first_of(' ', start);
-    std::string                 tmp = str.substr(pos + 1);
-    std::string                 value;
-
-    while ((pos =tmp.find_first_of(' ')) != std::string::npos) {
-        value = tmp.substr(0, pos);
-        _allowed_method.push_back(value);
-        tmp = tmp.substr(pos + 1);
-    }
-    _allowed_method.push_back(tmp);
-}
-
-void    location_context::configure_index(const std::string &str){
-    size_t start = str.find_first_not_of(' ');
-    size_t pos = str.find_first_of(' ', start);
-
-    _index = str.substr(pos + 1);
-}
+void    location_context::configure_root(const std::string &str){_root = parse_string(str);}
+void    location_context::configure_allowed_method(const std::string &str){_allowed_method = parse_vector(str);}
+void    location_context::configure_index(const std::string &str){_index = parse_string(str);}
+void    location_context::configure_ext(const std::string &str) {_ext = parse_vector(str);}
+void    location_context::invalid_element(const std::string &str) {parse_invalid(str);}
 
 void    location_context::configure_autoindex(const std::string &str){
-    size_t start = str.find_first_not_of(' ');
-    size_t pos = str.find_first_of(' ', start);
-    std::string tmp = str.substr(pos + 1);
-
-    if (tmp == "on")
+	if (parse_string(str) == "on")
         _autoindex = true;
 }
 
-void    location_context::configure_ext(const std::string &str) {
-    size_t                      start = str.find_first_not_of(' ');
-    size_t                      pos = str.find_first_of(' ', start);
-    std::string                 tmp = str.substr(pos + 1);
-    std::string                 value;
 
-    while ((pos =tmp.find_first_of(' ')) != std::string::npos) {
-        value = tmp.substr(0, pos);
-        _ext.push_back(value);
-        tmp = tmp.substr(pos + 1);
-    }
-    _ext.push_back(tmp);
-}
-
-void    location_context::invalid_element(const std::string &str) {
-    if (str == "0")
-        return;
-}
 
 //Getters
 std::string                 location_context::get_location_context() {return _location_context;}

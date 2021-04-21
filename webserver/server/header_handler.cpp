@@ -108,94 +108,26 @@ void        header_handler::parse_first_line(const std::string &str) {
     _protocol = str.substr(end + 1);
 }
 
-void        header_handler::parse_requested_host(const std::string &str) {
-    size_t start = str.find_first_not_of(' ');
-    size_t pos = str.find_first_of(' ', start);
-
-	_requested_host = str.substr(pos + 1);
-}
-
-void        header_handler::parse_user_agent(const std::string &str) {
-    size_t start = str.find_first_not_of(' ');
-    size_t pos = str.find_first_of(' ', start);
-
-    _user_agent = str.substr(pos + 1);
-}
-
-void        header_handler::parse_language(const std::string &str) {
-    size_t start = str.find_first_not_of(' ');
-    size_t pos = str.find_first_of(' ', start);
-
-    _accept_language = str.substr(pos + 1);
-}
-
-void        header_handler::parse_authorization(const std::string &str) {
-    size_t start = str.find_first_not_of(' ');
-    size_t pos = str.find_first_of(' ', start);
-
-    _authorization = str.substr(pos + 1);
-}
-
-void        header_handler::parse_referer(const std::string &str) {
-    size_t start = str.find_first_not_of(' ');
-    size_t pos = str.find_first_of(' ', start);
-
-    _referer = str.substr(pos + 1);
-}
-
-void        header_handler::parse_body(const std::string &str) {
-    _body = str;
-}
-
-void        header_handler::parse_content_length(const std::string &str) {
-    size_t start = str.find_first_not_of(' ');
-    size_t pos = str.find_first_of(' ', start);
-
-    std::string tmp = str.substr(pos + 1);
-    _content_length = ft_atoi(tmp.c_str());
-}
-
-void        header_handler::parse_content_type(const std::string &str) {
-    size_t start = str.find_first_not_of(' ');
-    size_t pos = str.find_first_of(' ', start);
-
-    _content_type = str.substr(pos + 1);
-}
-
-void        header_handler::parse_content_language(const std::string &str) {
-    size_t start = str.find_first_not_of(' ');
-    size_t pos = str.find_first_of(' ', start);
-
-    _content_language = str.substr(pos + 1);
-}
-
-void        header_handler::parse_content_location(const std::string &str) {
-    size_t start = str.find_first_not_of(' ');
-    size_t pos = str.find_first_of(' ', start);
-
-    _content_location = str.substr(pos + 1);
-}
-
-void        header_handler::parse_allow(const std::string &str) {
-    size_t start = str.find_first_not_of(' ');
-    size_t pos = str.find_first_of(' ', start);
-
-    _allow = str.substr(pos + 1);
-}
-
-void        header_handler::invalid_argument(const std::string &str) {
-    if (str == "0")
-        return;
-}
+void        header_handler::parse_requested_host(const std::string &str) {_requested_host = parse_string(str);}
+void        header_handler::parse_user_agent(const std::string &str) {_user_agent = parse_string(str);}
+void        header_handler::parse_language(const std::string &str) {_accept_language = parse_string(str);}
+void        header_handler::parse_authorization(const std::string &str) {_authorization = parse_string(str);}
+void        header_handler::parse_referer(const std::string &str) {_referer = parse_string(str);}
+void        header_handler::parse_body(const std::string &str) {_body = str;}
+void        header_handler::parse_content_length(const std::string &str) {_content_length = parse_number(str);}
+void        header_handler::parse_content_type(const std::string &str) {_content_type = parse_string(str);}
+void        header_handler::parse_content_language(const std::string &str) {_content_language = parse_string(str);}
+void        header_handler::parse_content_location(const std::string &str) {_content_location = parse_string(str);}
+void        header_handler::parse_allow(const std::string &str) {_allow = parse_string(str);}
+void        header_handler::invalid_argument(const std::string &str) {parse_invalid(str);}
 
 
 //Create response functions
 
 // Need to check later how to send correct response code
-
 std::string	header_handler::generate_response_code(void)
 {
-	std::string	result = "HTTP/1.1 200 OK\n";
+	std::string	result = "HTTP/1.1 200 OK\r\n";
 
 	return (result);
 }
@@ -204,14 +136,14 @@ std::string	header_handler::generate_content_length(void)
 {
 	std::string	result = "Content-Length: ";
 
-	result.append(ft_itoa(this->get_requested_file().size()));
-	result.append("\n");
+	result.append(ft_itoa(get_requested_file().size()));
+	result.append("\r\n");
 	return (result);
 }
 
 
 std::string	header_handler::generate_content_type() {
-	std::string result = _content_type.append("; charset=UTF-8\n");
+	std::string result = _content_type.append("; charset=UTF-8\r\n");
 
 	return (result);
 }
@@ -246,7 +178,7 @@ header_handler::vector	header_handler::create_response_headers(void)
 	headers.push_back(temp);
 	temp = generate_content_type();
 	headers.push_back(temp);
-	temp = "\n";
+	temp = "\r\n";
 	headers.push_back(temp);
 	return (headers);
 }
@@ -365,8 +297,8 @@ void        header_handler::clear_atributes() {
     _authorization.clear();
     _referer.clear();
     _body.clear();
-    _content_type.clear();
-    _content_language.clear();
+	_content_type = "text/";
+    _content_language = "en";
     _content_location.clear();
     _allow.clear();
 }
