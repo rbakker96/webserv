@@ -45,8 +45,8 @@ public:
 
 private:
     //Connection
-    int                             _io_fd;
-	int								_file_fd;
+    int                             _activeFD;
+	int								_fileFD;
 
     //Configurations
     int                             _max_file_size;
