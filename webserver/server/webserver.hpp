@@ -21,13 +21,15 @@
 
 class webserver {
 public:
-    enum        webserver_values{ valid_ = 7, invalid_ = 8 };
+	typedef     std::vector<std::string>      			vector;
+	typedef     std::vector<std::string>::iterator      vector_iterator;
+    enum        webserver_values{ unused_ = -1, ready_for_use_ = -1, valid_ = 7, invalid_ = 8 };
 
 private:
     std::vector<server>     _servers;
     fd_set			        _read_fds, _write_fds;
     fd_set			        _buffer_read_fds, _buffer_write_fds;
-    int				        _highest_fd;
+    int				        _maxFD;
 
 public:
     webserver();
@@ -37,18 +39,13 @@ public:
     void    	establish_connection();
     void    	run();
 
-    //helper functions
-    void    	initialize_fd_sets();
+    //Helper functions
+	void    	sychronize_FD_sets();
+    void    	initialize_FD_sets();
     void    	initialize_highest_fd();
-    int			highest_fd(int fd_one, int fd_two);
-    void    	add_sockets_to_read_fds();
-
-    void    	accept_request();
-    void   		handle_request();
-    void    	read_requested_file();
-    void    	create_response();
-
-    int    		check_server_block(std::vector<std::string> server_block);
+    void		set_maxFD(int fd);
+	int			get_maxFD();
+    int    		check_server_block(vector server_block);
 
     //Debug-tool
     void        print_struct();

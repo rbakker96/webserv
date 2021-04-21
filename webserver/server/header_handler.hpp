@@ -92,15 +92,15 @@ public:
 	void			generate_content_type(std::string &response);
 //	std::string		generate_last_modified(void);
 
-
     //Helper functions
     std::string     read_browser_request(int fd);
     void            read_requested_file(int fd);
     int             open_requested_file(std::string location);
     vector          str_to_vector(std::string request);
     void            configure_location(location_vector location_blocks);
+    std::string 	requested_location_block();
     void		    clear_requested_file();
-    void            clear_attributes();
+    void            reset_handler_atributes();
 
     //Getter
     int             get_content_length();

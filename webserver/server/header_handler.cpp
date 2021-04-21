@@ -42,7 +42,7 @@ header_handler::header_handler() : _content_length(0), _content_type("Content-Ty
 								   _method(), _file_location(), _protocol(), _requested_host(), _user_agent(), _accept_language(), _authorization(), _referer(), _body(), _requested_file() {}
 header_handler::~header_handler(){}
 
-//Parse request functions
+//------Parse request functions------
 void        header_handler::parse_request(header_handler::location_vector location, int fd, header_handler::map request_buffer) {
     map_iterator request                        = request_buffer.find(fd);
     vector request_elements                     = str_to_vector(request->second);
@@ -59,7 +59,7 @@ void        header_handler::parse_request(header_handler::location_vector locati
                                                     &header_handler::parse_allow,
                                                     &header_handler::invalid_argument};
 
-	clear_attributes();
+    reset_handler_atributes();
     parse_first_line(*request_elements.begin());
     for (vector_iterator it = request_elements.begin(); it != request_elements.end(); it++) {
         int request_value = identify_request_value(*it);
@@ -121,10 +121,8 @@ void        header_handler::parse_content_location(const std::string &str) {_con
 void        header_handler::parse_allow(const std::string &str) {_allow = parse_string(str);}
 void        header_handler::invalid_argument(const std::string &str) {parse_invalid(str);}
 
-// Create response functions
+//------Create response functions------
 // Need to check later how to send correct response code
-
-
 void header_handler::send_response(int io_fd) {
 	std::string response;
 	
@@ -135,6 +133,7 @@ void header_handler::send_response(int io_fd) {
 
 	write(io_fd, response.c_str(), response.size());
 	write(io_fd, this->get_requested_file().c_str(), this->get_requested_file().size());
+	clear_requested_file();
 }
 
 void	header_handler::generate_status_line(std::string &response) {
@@ -175,7 +174,8 @@ void	header_handler::generate_content_type(std::string &response) {
 	//return (result);
 //}
 
-//Helper functions
+
+//------Helper functions------
 std::string    header_handler::read_browser_request(int fd) {
     std::string tmp;
     char        buff[3000];
@@ -187,7 +187,7 @@ std::string    header_handler::read_browser_request(int fd) {
             break;
     }
     if (ret == -1)
-        return NULL; //need some error checking method
+        throw std::runtime_error("Read failed");
     return tmp;
 }
 
@@ -201,9 +201,8 @@ void        header_handler::read_requested_file(int fd) {
         if (ret < 3000)
             break;
     }
-    if (ret == -1) {
-        return ; //need some error checking method
-    }
+    if (ret == -1)
+        throw std::runtime_error("Read failed");
 }
 
 int         header_handler::open_requested_file(std::string location) {
@@ -233,22 +232,9 @@ header_handler::vector    header_handler::str_to_vector(std::string request) {
 }
 
 void        header_handler::configure_location(header_handler::location_vector location_blocks) {
-    std::string request_location;
-    size_t pos;
-
-    if (!_referer.empty()) {
-        pos = _referer.find(_requested_host);
-        request_location = _referer.substr(pos + _requested_host.length());
-    }
-    else if (_file_location[_file_location.length() - 1] == '/')
-        request_location = _file_location;
-    else {
-        pos = _file_location.find_last_of('/');
-        request_location = _file_location.substr(0, pos+1);
-    }
+    std::string request_location = requested_location_block();
 
     for (location_iterator loc = location_blocks.begin(); loc != location_blocks.end(); loc++) {
-//		std::string locc = loc->get_location_context(); // not used
         if (loc->get_location_context() == request_location) {
 			_file_location = loc->get_root().append(_file_location);
 			std::vector<std::string> accepted_exts = loc->get_ext();
@@ -267,9 +253,27 @@ void        header_handler::configure_location(header_handler::location_vector l
     }
 }
 
+std::string header_handler::requested_location_block() {
+    std::string request_location;
+    size_t pos;
+
+    if (!_referer.empty()) {
+        pos = _referer.find(_requested_host);
+        request_location = _referer.substr(pos + _requested_host.length());
+    }
+    else if (_file_location[_file_location.length() - 1] == '/')
+        request_location = _file_location;
+    else {
+        pos = _file_location.find_last_of('/');
+        request_location = _file_location.substr(0, pos+1);
+    }
+
+    return request_location;
+}
+
 void		header_handler::clear_requested_file() {_requested_file.clear();}
 
-void        header_handler::clear_attributes() {
+void        header_handler::reset_handler_atributes() {
     _content_length = 0;
     _method.clear();
     _file_location.clear();
@@ -280,13 +284,13 @@ void        header_handler::clear_attributes() {
     _authorization.clear();
     _referer.clear();
     _body.clear();
-	_content_type = "text/";
+	_content_type = "Content-Type: text/";
     _content_language = "en";
     _content_location.clear();
     _allow.clear();
 }
 
-//Getter
+//------Getter------
 int             header_handler::get_content_length() { return _content_length;}
 std::string     header_handler::get_content_type() { return _content_type;}
 std::string     header_handler::get_content_language() { return _content_language;}

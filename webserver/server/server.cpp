@@ -14,7 +14,7 @@
 #include "../helper/helper.hpp"
 #include <stdio.h> //REMOVE LATER
 
-server::server() : _activeFD(-1), _file_fd(-1), _max_file_size(0), _port(0), _host(), _server_name(), _error_page(), _location_blocks(), _tcp_socket(0),
+server::server() : _activeFD(-1), _fileFD(-1), _max_file_size(0), _port(0), _host(), _server_name(), _error_page(), _location_blocks(), _tcp_socket(0),
 				   _addr_len(0), _addr(), _request_buffer(), _handler() {}
 server::~server(){}
 
@@ -97,6 +97,7 @@ void	server::create_connection(int backlog) {
     if (listen(this->_tcp_socket, backlog) == -1)
 		throw (std::runtime_error("Listen failed"));
 }
+
 
 //------Helper functions------
 int    server::location_size(vector_iterator it, vector_iterator end) {
