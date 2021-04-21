@@ -16,7 +16,7 @@
 location_context::location_context() : _location_context(), _root(), _index(), _allowed_method(0), _ext(0), _autoindex(false) {}
 location_context::~location_context(){}
 
-void location_context::configure_location_context(vector_iterator it, vector_iterator end) {
+void location_context::configure_location_block(vector_iterator it, vector_iterator end) {
     configure configure_array[6] = { &location_context::configure_root,
                                      &location_context::configure_allowed_method,
                                      &location_context::configure_autoindex,
@@ -25,10 +25,10 @@ void location_context::configure_location_context(vector_iterator it, vector_ite
                                      &location_context::invalid_element };
 
     clean_location_instance();
-    configure_location(*it);
+	configure_location_context(*it);
     for(; it != end; it++) {
-        int config_id = identify_location_value(*it);
-        configure function = configure_array[config_id];
+        int location_value = identify_location_value(*it);
+        configure function = configure_array[location_value];
         (this->*function)(*it);
     }
 }
@@ -55,7 +55,7 @@ int     location_context::identify_location_value(const std::string &str){
     return unknown_;
 }
 
-void    location_context::configure_location(const std::string &str) {
+void    location_context::configure_location_context(const std::string &str) {
     size_t start = str.find_first_of('/');
     size_t end = str.find_first_of(' ', start);
 

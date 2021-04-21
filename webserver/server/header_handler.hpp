@@ -86,13 +86,11 @@ public:
     void            invalid_argument(const std::string &str);
 
     //Create response functions
-	vector			create_response_headers(void);
-	std::string		generate_response_code(void);
-	std::string		generate_content_length(void);
-	std::string		generate_content_type(void);
-	std::string		generate_last_modified(void);
-
-    void            create_response_file(int io_fd, vector headers);
+	void 			send_response(int io_fd);
+	void			generate_status_line(std::string &response);
+	void			generate_content_length(std::string &response);
+	void			generate_content_type(std::string &response);
+//	std::string		generate_last_modified(void);
 
 
     //Helper functions
@@ -102,7 +100,7 @@ public:
     vector          str_to_vector(std::string request);
     void            configure_location(location_vector location_blocks);
     void		    clear_requested_file();
-    void            clear_atributes();
+    void            clear_attributes();
 
     //Getter
     int             get_content_length();
