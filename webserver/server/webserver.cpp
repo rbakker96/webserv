@@ -209,8 +209,8 @@ void    webserver::read_requested_file() {
 		{
 			_servers[index]._handler.read_requested_file(_servers[index]._file_fd);
 			FD_CLR(_servers[index]._file_fd, &_buffer_read_fds);
-			close(_servers[index]._file_fd);
-			_servers[index]._file_fd = -1;
+			//close(_servers[index]._file_fd);
+			/*_servers[index]._file_fd = -1;*/
 			FD_SET(_servers[index]._io_fd, &_buffer_write_fds);
 		}
 	}
@@ -222,8 +222,10 @@ void    webserver::create_response() {
 	for (size_t index = 0; index < _servers.size(); index++) {
 		if (_servers[index]._io_fd != -1 && FD_ISSET(_servers[index]._io_fd, &_write_fds))
 		{
-			headers = _servers[index]._handler.create_response_headers();
+			headers = _servers[index]._handler.create_response_headers(_servers[index]._file_fd);
 			_servers[index]._handler.create_response_file(_servers[index]._io_fd, headers);
+			close(_servers[index]._file_fd);
+			_servers[index]._file_fd = -1;
 			FD_CLR(_servers[index]._io_fd, &_buffer_write_fds);
 			close(_servers[index]._io_fd);
 			_servers[index]._io_fd = -1;

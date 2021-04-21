@@ -19,6 +19,8 @@
 #include <iostream>
 #include <unistd.h>
 #include <fcntl.h>
+#include <sys/types.h>
+#include <sys/stat.h>
 
 //Custom includes
 #include "location_context.hpp"
@@ -86,11 +88,11 @@ public:
     void            invalid_argument(const std::string &str);
 
     //Create response functions
-	vector			create_response_headers(void);
+	vector			create_response_headers(int io_fd);
 	std::string		generate_response_code(void);
 	std::string		generate_content_length(void);
 	std::string		generate_content_type(void);
-	std::string		generate_last_modified(void);
+	std::string		generate_last_modified(int io_fd);
 
     void            create_response_file(int io_fd, vector headers);
 

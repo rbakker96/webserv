@@ -195,7 +195,7 @@ void        header_handler::invalid_argument(const std::string &str) {
 
 std::string	header_handler::generate_response_code(void)
 {
-	std::string	result = "HTTP/1.1 200 OK\n";
+	std::string	result = "HTTP/1.1 200 OK\r\n";
 
 	return (result);
 }
@@ -205,37 +205,39 @@ std::string	header_handler::generate_content_length(void)
 	std::string	result = "Content-Length: ";
 
 	result.append(ft_itoa(this->get_requested_file().size()));
-	result.append("\n");
+	result.append("\r\n");
 	return (result);
 }
 
 
 std::string	header_handler::generate_content_type() {
-	std::string result = _content_type.append("; charset=UTF-8\n");
+	std::string	result = "Content-Type: ";
 
+	if (_content_type.compare("png") == 0)
+		result.append("image/");
+	else
+		result.append("text/");
+	result.append(_content_type);
+	result.append("\r\n");
 	return (result);
 }
 
-//std::string	handler::generate_last_modified(void)
-//{
-	//int			fd;
-	//struct stat	statbuf;
-	//struct tm	*info;
-	//char		timestamp[36];
-	//char		*result;
+std::string	header_handler::generate_last_modified(int fd)
+{
+	struct stat	statbuf;
+	struct tm	*info;
+	char		timestamp[36];
+	std::string	result = "Last-Modified: ";
 
-	//fd = open(location, O_RDONLY);
-	//if (fd == -1)
-		//// error
-	//if (fstat(fd, &statbuf) == -1)
-		//// error
-	//info = localtime(&statbuf.st_mtime);
-	//strftime(timestamp, 36, "%a, %d %m %Y %H:%M:%S GMT", timestamp);
-	//result.append(timestamp);
-	//return (result);
-//}
+	fstat(fd, &statbuf);
+	info = localtime(&statbuf.st_mtime);
+	strftime(timestamp, 36, "%a, %d %h %Y %H:%M:%S GMT", info);
+	result.append(timestamp);
+	result.append("\r\n");
+	return (result);
+}
 
-header_handler::vector	header_handler::create_response_headers(void)
+header_handler::vector	header_handler::create_response_headers(int fd)
 {
 	vector		headers;
 	std::string	temp;
@@ -246,7 +248,9 @@ header_handler::vector	header_handler::create_response_headers(void)
 	headers.push_back(temp);
 	temp = generate_content_type();
 	headers.push_back(temp);
-	temp = "\n";
+	temp = generate_last_modified(fd);
+	headers.push_back(temp);
+	temp = "\r\n";
 	headers.push_back(temp);
 	return (headers);
 }
