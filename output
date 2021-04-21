@@ -1,0 +1,42 @@
+Content of struct
+------------- BEGIN SERVER BLOCK -------------
+Port = 8080
+Host = localhost
+File size = 1000000
+Server name = webserv/1.1
+Error page = server_files/www/error_pages/
+
+  ------------- location block -------------
+  location = /
+  Root = server_files/www
+  Allowed methods = GET #HEAD POST PUT DELETE CONNECT OPTIONS TRACE 
+  Index = index.html
+  Autoindex = 0
+  Ext = html php css ico png 
+
+  ------------- location block -------------
+  location = /downloads/
+  Root = server_files/www/TEST
+  Allowed methods = POSTASDasd 
+  Index = index.html
+  Autoindex = 1
+  Ext = html php css ico png 
+------------- END SERVER BLOCK -------------
+
+------------- BEGIN SERVER BLOCK -------------
+Port = 7070
+Host = something_else
+File size = 7777777
+Server name = test_server_block
+Error page = erver_files/www/error_pages/
+
+  ------------- location block -------------
+  location = /
+  Root = server_files/www/something_else
+  Allowed methods = GET 
+  Index = index.html
+  Autoindex = 0
+  Ext = html php css ico png 
+------------- END SERVER BLOCK -------------
+
+Bind failed

@@ -85,7 +85,7 @@ void    webserver::load_configuration(char *config_file) {
     close(fd);
 	if (ret == -1)
 		throw std::runtime_error("Error while reading config file");
-	if (!server_block.empty())
+	if (!server_block.empty()) // WHY
 		throw std::invalid_argument("Error: missing '{' or '}' in config file");
     print_struct();                         //  PRINTING STRUCT
 }
@@ -125,11 +125,21 @@ void    webserver::run() {
         _write_fds = _buffer_write_fds;
 
         add_sockets_to_read_fds();
+		for (int i = 0; i < _highest_fd + 1; i++)
+		{
+			if (FD_ISSET(i, &_read_fds)) {
+				std::cout << i << " IS PART OF READ_FDS" << std::endl;
+			}
+			if (FD_ISSET(i, &_write_fds))
+				std::cout << i << " IS PART OF WRITE_FDS" << std::endl;
+		}
         if (select((_highest_fd + 1), &_read_fds, &_write_fds, 0, 0) == -1) {
 			std::cout << strerror(errno) << std::endl;
         	throw std::runtime_error("Select failed");
         }
         else {
+			std::cout << "sockets server[0] = " << _servers[0].get_tcp_socket() << std::endl;
+			std::cout << "socket server [1] = " << _servers[1].get_tcp_socket() << std::endl;
             accept_request();
             handle_request();
             read_requested_file();
@@ -163,19 +173,22 @@ void    webserver::add_sockets_to_read_fds() {
 	    FD_SET(_servers[index].get_tcp_socket(), &_read_fds);
 	}
 }
-
+#include <errno.h>
 void    webserver::accept_request() {
 	for (size_t index = 0; index < _servers.size(); index++)
 	{
-		printf("ACCEPT REQUEST\n");
-		printf("socket = %d\n", _servers[index].get_tcp_socket());
 		if (FD_ISSET(_servers[index].get_tcp_socket(), &_read_fds))
 		{
-			printf("ACCEPTED REQUEST\n");
-			_servers[index]._io_fd = accept(_servers[index].get_tcp_socket(), (struct sockaddr *)&_servers[index]._addr, (socklen_t *)&_servers[index]._addr_len);
-			fcntl(_servers[index]._io_fd, F_SETFL, O_NONBLOCK);
-			FD_SET(_servers[index]._io_fd, &_buffer_read_fds);
-			_highest_fd = highest_fd(_highest_fd, _servers[index]._io_fd);
+			std::cout << "ACCEPT REQUEST" << " ON FD " << _servers[index].get_tcp_socket() << "--------\n";
+			if (_servers[index]._activeFD == -1) {
+				_servers[index]._activeFD = accept(_servers[index].get_tcp_socket(),
+												   (struct sockaddr *) &_servers[index]._addr,
+												   (socklen_t *) &_servers[index]._addr_len);
+				std::cout << "IO FD = " << _servers[index]._activeFD << std::endl;
+				fcntl(_servers[index]._activeFD, F_SETFL, O_NONBLOCK);
+				FD_SET(_servers[index]._activeFD, &_buffer_read_fds);
+				_highest_fd = highest_fd(_highest_fd, _servers[index]._activeFD);
+			}
 		}
 	}
 }
@@ -185,16 +198,16 @@ void    webserver::handle_request() {
 	std::string	    location;
 
 	for (size_t index = 0; index < _servers.size(); index++) {
-		if (_servers[index]._io_fd != -1 && FD_ISSET(_servers[index]._io_fd, &_read_fds))
+		if (_servers[index]._activeFD != -1 && FD_ISSET(_servers[index]._activeFD, &_read_fds))
 		{
-			printf("HANDLE REQUEST\n");
-			request_headers = _servers[index]._handler.read_browser_request(_servers[index]._io_fd);
-			int ret = _servers[index].update_request_buffer(_servers[index]._io_fd, request_headers);
+			std::cout << "HANDLE REQUEST" << " ON FD " << _servers[index].get_tcp_socket() << "--------\n";
+			request_headers = _servers[index]._handler.read_browser_request(_servers[index]._activeFD);
+			int ret = _servers[index].update_request_buffer(_servers[index]._activeFD, request_headers);
 			if (ret == valid_) {
-				FD_CLR(_servers[index]._io_fd, &_buffer_read_fds);
-                _servers[index]._handler.parse_request(_servers[index]._location_blocks, _servers[index]._io_fd, _servers[index]._request_buffer);
-				_servers[index]._file_fd = _servers[index]._handler.open_requested_file(
-						_servers[index]._handler.get_file_location());
+				FD_CLR(_servers[index]._activeFD, &_buffer_read_fds);
+                _servers[index]._handler.parse_request(_servers[index]._location_blocks, _servers[index]._activeFD, _servers[index]._request_buffer);
+				_servers[index]._file_fd = _servers[index]._handler.open_requested_file(_servers[index]._handler.get_file_location());
+				std::cout << "FILE FD = " << _servers[index]._file_fd << std::endl;
 				if (_servers[index]._file_fd == -1)
 				{
 
@@ -202,7 +215,7 @@ void    webserver::handle_request() {
 					// get an error page / favicon / something else
 				}
 				_highest_fd = highest_fd(_highest_fd, _servers[index]._file_fd);
-				_servers[index].clear_handled_request(_servers[index]._io_fd);
+				_servers[index].clear_handled_request(_servers[index]._activeFD);
 				FD_SET(_servers[index]._file_fd, &_buffer_read_fds);
 			}
 		}
@@ -213,12 +226,12 @@ void    webserver::read_requested_file() {
 	for (size_t index = 0; index < _servers.size(); index++) {
 		if (_servers[index]._file_fd != -1 && FD_ISSET(_servers[index]._file_fd, &_read_fds))
 		{
-			printf("READ REQUEST\n");
+			std::cout << "READ REQUEST" << " ON FD " << _servers[index].get_tcp_socket() << "--------\n";
 			_servers[index]._handler.read_requested_file(_servers[index]._file_fd);
 			FD_CLR(_servers[index]._file_fd, &_buffer_read_fds);
 			close(_servers[index]._file_fd);
 			_servers[index]._file_fd = -1;
-			FD_SET(_servers[index]._io_fd, &_buffer_write_fds);
+			FD_SET(_servers[index]._activeFD, &_buffer_write_fds);
 		}
 	}
 }
@@ -227,22 +240,13 @@ void    webserver::create_response() {
 	std::vector<std::string>	headers;
 
 	for (size_t index = 0; index < _servers.size(); index++) {
-		if (_servers[index]._io_fd != -1 && FD_ISSET(_servers[index]._io_fd, &_write_fds))
+		if (_servers[index]._activeFD != -1 && FD_ISSET(_servers[index]._activeFD, &_write_fds))
 		{
-			printf("CREATE RESPONSE\n");
-			headers = _servers[index]._handler.create_response_headers();
-
-			printf("-----------RESPONS HEADER-----------\n");
-			for (std::vector<std::string>::iterator it = headers.begin(); it != headers.end(); it++) {
-				std::string	header = *it;
-				write(STDOUT_FILENO, header.c_str(), header.size());
-			}
-			printf("-----------------------------------\n");
-
-			_servers[index]._handler.create_response_file(_servers[index]._io_fd, headers);
-			FD_CLR(_servers[index]._io_fd, &_buffer_write_fds);
-			close(_servers[index]._io_fd);
-			_servers[index]._io_fd = -1;
+			std::cout << "CREATE RESPONSE" << " ON FD " << _servers[index].get_tcp_socket() << "--------\n";
+			_servers[index]._handler.send_response(_servers[index]._activeFD);
+			FD_CLR(_servers[index]._activeFD, &_buffer_write_fds);
+			close(_servers[index]._activeFD);
+			_servers[index]._activeFD = -1;
 			_servers[index]._handler.clear_requested_file();
 		}
 	}

@@ -45,7 +45,7 @@ public:
 
 private:
     //Connection
-    int                             _io_fd;
+    int                             _activeFD;
 	int								_file_fd;
 
     //Configurations

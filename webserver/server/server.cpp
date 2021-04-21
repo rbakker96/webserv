@@ -14,8 +14,8 @@
 #include "../helper/helper.hpp"
 #include <stdio.h> //REMOVE LATER
 
-server::server() : _io_fd(-1), _file_fd(-1), _max_file_size(0), _port(0), _host(), _server_name(), _error_page(), _location_blocks(), _tcp_socket(0),
-                    _addr_len(0), _addr(), _request_buffer(), _handler() {}
+server::server() : _activeFD(-1), _file_fd(-1), _max_file_size(0), _port(0), _host(), _server_name(), _error_page(), _location_blocks(), _tcp_socket(0),
+				   _addr_len(0), _addr(), _request_buffer(), _handler() {}
 server::~server(){}
 
 void    server::create_new_server(std::vector <std::string> server_config) {
@@ -29,13 +29,13 @@ void    server::create_new_server(std::vector <std::string> server_config) {
 
     clean_server_instance();
     for (vector_iterator it = server_config.begin(); it != server_config.end(); it++) {
-        int config_id = identify_server_value(*it);
-        if (config_id == location_) {
-            location.configure_location_context(it, (it + location_size(it, server_config.end())));
+        int server_value = identify_server_value(*it);
+        if (server_value == location_) {
+			location.configure_location_block(it, (it + location_size(it, server_config.end())));
             _location_blocks.push_back(location);
         }
         else {
-            configure function = configure_array[config_id];
+            configure function = configure_array[server_value];
             (this->*function)(*it);
         }
     }
@@ -101,9 +101,9 @@ void	server::create_connection(int backlog) {
 //------Helper functions------
 int    server::location_size(vector_iterator it, vector_iterator end) {
     for (int i = 0; it != end; it++) {
-        std::string str = it->data();
+        std::string str = *it;
 
-        if ((int)str.find("}") != -1)
+        if (str.find("}") != std::string::npos)
             return i;
         i++;
     }

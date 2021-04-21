@@ -37,10 +37,10 @@ public:
     ~location_context();
 
     //Configure functions
-    void    configure_location_context(vector_iterator begin, vector_iterator end);
+    void    configure_location_block(vector_iterator it, vector_iterator end);
     void    clean_location_instance();
     int     identify_location_value(const std::string &str);
-    void    configure_location(const std::string &str);
+    void    configure_location_context(const std::string &str);
     void    configure_root(const std::string &str);
     void    configure_allowed_method(const std::string &str);
     void    configure_index(const std::string &str);
