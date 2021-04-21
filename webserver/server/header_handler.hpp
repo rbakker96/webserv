@@ -93,6 +93,7 @@ public:
 	std::string		generate_content_length(void);
 	std::string		generate_content_type(void);
 	std::string		generate_last_modified(int io_fd);
+	std::string		generate_date(void);
 
     void            create_response_file(int io_fd, vector headers);
 

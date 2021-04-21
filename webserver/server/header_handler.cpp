@@ -237,6 +237,21 @@ std::string	header_handler::generate_last_modified(int fd)
 	return (result);
 }
 
+std::string	header_handler::generate_date(void)
+{
+	time_t		timer;
+	struct tm	*info;
+	char		timestamp[36];
+	std::string	result = "Date: ";
+
+	timer = time(NULL);
+	info = localtime(&timer);
+	strftime(timestamp, 36, "%a, %d %h %Y %H:%M:%S GMT", info);
+	result.append(timestamp);
+	result.append("\r\n");
+	return (result);
+}
+
 header_handler::vector	header_handler::create_response_headers(int fd)
 {
 	vector		headers;
@@ -249,6 +264,8 @@ header_handler::vector	header_handler::create_response_headers(int fd)
 	temp = generate_content_type();
 	headers.push_back(temp);
 	temp = generate_last_modified(fd);
+	headers.push_back(temp);
+	temp = generate_date();
 	headers.push_back(temp);
 	temp = "\r\n";
 	headers.push_back(temp);
