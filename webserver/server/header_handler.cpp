@@ -329,7 +329,7 @@ void        header_handler::configure_location(header_handler::location_vector l
         request_location = _file_location;
     else {
         pos = _file_location.find_last_of('/');
-        request_location = _file_location.substr(0, pos+1); //only add 1 at index 0 or every time check later!
+        request_location = _file_location.substr(0, pos+1);
     }
 
     for (location_iterator loc = location_blocks.begin(); loc != location_blocks.end(); loc++) {
