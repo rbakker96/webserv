@@ -60,7 +60,7 @@ void webserver::print_struct() {
     }
 }
 
-webserver::webserver() : _servers(), _read_fds(), _write_fds(), _buffer_read_fds(), _buffer_write_fds(), _maxFD(-1) {}
+webserver::webserver() : _servers(), _readFDS(), _writeFDS(), _buffer_readFDS(), _buffer_writeFDS(), _maxFD(-1) {}
 webserver::~webserver(){}
 
 void    webserver::load_configuration(char *config_file) {
@@ -104,29 +104,29 @@ void    webserver::run() {
     while (true)
     {
 		sychronize_FD_sets();
-        if (select(get_maxFD(), &_read_fds, &_write_fds, 0, 0) == -1)
+        if (select(get_maxFD(), &_readFDS, &_writeFDS, 0, 0) == -1)
         	throw std::runtime_error("Select failed");
         for (size_t index = 0; index < _servers.size(); index++) {
 			server *server = &_servers[index];
 
-			if (FD_ISSET(server->get_tcp_socket(), &_read_fds)) //accept request
+			if (FD_ISSET(server->get_tcp_socket(), &_readFDS)) //accept request
 			{
 				if (server->_activeFD == ready_for_use_ )
 				{
 					server->_activeFD = accept(server->get_tcp_socket(), (struct sockaddr *) &server->_addr, (socklen_t *) &server->_addr_len);
 					fcntl(server->_activeFD, F_SETFL, O_NONBLOCK);
-					FD_SET(server->_activeFD, &_buffer_read_fds);
+					FD_SET(server->_activeFD, &_buffer_readFDS);
 					set_maxFD(server->_activeFD);
 				}
 			}
 
-			if (server->_activeFD != unused_ && FD_ISSET(server->_activeFD, &_read_fds)) //handle request
+			if (server->_activeFD != unused_ && FD_ISSET(server->_activeFD, &_readFDS)) //handle request
 			{
 				std::string request_headers = server->_handler.read_browser_request(server->_activeFD);
 				int ret = server->update_request_buffer(server->_activeFD, request_headers);
 				if (ret == valid_)
 				{
-					FD_CLR(_servers[index]._activeFD, &_buffer_read_fds);
+					FD_CLR(_servers[index]._activeFD, &_buffer_readFDS);
 					server->_handler.parse_request(server->_location_blocks, server->_activeFD, server->_request_buffer);
 					server->_fileFD = server->_handler.open_requested_file(server->_handler.get_file_location());
 					if (server->_fileFD == -1)
@@ -136,23 +136,23 @@ void    webserver::run() {
 					}
 					set_maxFD(server->_fileFD);
 					server->clear_handled_request(server->_activeFD);
-					FD_SET(server->_fileFD, &_buffer_read_fds);
+					FD_SET(server->_fileFD, &_buffer_readFDS);
 				}
 			}
 
-			if (server->_fileFD != unused_ && FD_ISSET(server->_fileFD, &_read_fds)) //read requested file
+			if (server->_fileFD != unused_ && FD_ISSET(server->_fileFD, &_readFDS)) //read requested file
 			{
 				server->_handler.read_requested_file(server->_fileFD);
-				FD_CLR(server->_fileFD, &_buffer_read_fds);
+				FD_CLR(server->_fileFD, &_buffer_readFDS);
 				close(server->_fileFD);
 				server->_fileFD = unused_;
-				FD_SET(server->_activeFD, &_buffer_write_fds);
+				FD_SET(server->_activeFD, &_buffer_writeFDS);
 			}
 
-			if (server->_activeFD != unused_ && FD_ISSET(_servers[index]._activeFD, &_write_fds)) //create response
+			if (server->_activeFD != unused_ && FD_ISSET(_servers[index]._activeFD, &_writeFDS)) //create response
 			{
 				server->_handler.send_response(server->_activeFD);
-				FD_CLR(server->_activeFD, &_buffer_write_fds);
+				FD_CLR(server->_activeFD, &_buffer_writeFDS);
 				close(server->_activeFD);
 				server->_activeFD = ready_for_use_;
 			}
@@ -163,19 +163,19 @@ void    webserver::run() {
 
 //------Helper functions------
 void    webserver::sychronize_FD_sets() {
-	_read_fds = _buffer_read_fds;
-	_write_fds = _buffer_write_fds;
+	_readFDS = _buffer_readFDS;
+	_writeFDS = _buffer_writeFDS;
 
 	for (size_t index = 0; index < _servers.size(); index++) {
-		FD_SET(_servers[index].get_tcp_socket(), &_read_fds);
+		FD_SET(_servers[index].get_tcp_socket(), &_readFDS);
 	}
 }
 
 void    webserver::initialize_FD_sets() {
-    FD_ZERO(&_read_fds);
-    FD_ZERO(&_write_fds);
-    FD_ZERO(&_buffer_read_fds);
-    FD_ZERO(&_buffer_write_fds);
+    FD_ZERO(&_readFDS);
+    FD_ZERO(&_writeFDS);
+    FD_ZERO(&_buffer_readFDS);
+    FD_ZERO(&_buffer_writeFDS);
 
 }
 

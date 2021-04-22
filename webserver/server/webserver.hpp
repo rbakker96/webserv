@@ -27,8 +27,8 @@ public:
 
 private:
     std::vector<server>     _servers;
-    fd_set			        _read_fds, _write_fds;
-    fd_set			        _buffer_read_fds, _buffer_write_fds;
+    fd_set			        _readFDS, _writeFDS;
+    fd_set			        _buffer_readFDS, _buffer_writeFDS;
     int				        _maxFD;
 
 public:
