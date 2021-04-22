@@ -6,7 +6,7 @@
 /*   By: roybakker <roybakker@student.codam.nl>       +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2021/03/30 16:30:47 by roybakker     #+#    #+#                 */
-/*   Updated: 2021/04/22 13:38:58 by gbouwen       ########   odam.nl         */
+/*   Updated: 2021/04/22 13:51:10 by gbouwen       ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -146,7 +146,7 @@ void    webserver::run() {
 
 			if (server->_activeFD != unused_ && FD_ISSET(_servers[index]._activeFD, &_writeFDS)) //create response
 			{
-				server->_handler.send_response(server->_activeFD, server->_fileFD);
+				server->_handler.send_response(server->_activeFD, server->_fileFD, server->_server_name);
 				close(server->_fileFD);
 				server->_fileFD = unused_;
 				FD_CLR(server->_activeFD, &_buffer_writeFDS);
@@ -172,7 +172,6 @@ void    webserver::initialize_FD_sets() {
     FD_ZERO(&_writeFDS);
     FD_ZERO(&_buffer_readFDS);
     FD_ZERO(&_buffer_writeFDS);
-
 }
 
 void    webserver::initialize_highest_fd() {

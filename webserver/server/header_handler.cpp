@@ -6,7 +6,7 @@
 /*   By: roybakker <roybakker@student.codam.nl>       +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2021/04/07 13:10:33 by roybakker     #+#    #+#                 */
-/*   Updated: 2021/04/22 13:38:57 by gbouwen       ########   odam.nl         */
+/*   Updated: 2021/04/22 13:50:51 by gbouwen       ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -123,7 +123,7 @@ void        header_handler::invalid_argument(const std::string &str) {parse_inva
 
 //------Send response functions------
 
-void header_handler::send_response(int activeFD, int fileFD) {
+void header_handler::send_response(int activeFD, int fileFD, std::string server_name) {
 	std::string response;
 
 	generate_status_line(response);
@@ -131,6 +131,7 @@ void header_handler::send_response(int activeFD, int fileFD) {
 	generate_content_type(response);
 	generate_last_modified(response, fileFD);
 	generate_date(response);
+	generate_server_name(response, server_name);
 	response.append("\r\n");
 
 	write(activeFD, response.c_str(), response.size());
@@ -195,6 +196,15 @@ void	header_handler::generate_date(std::string &response)
 	date.append(timestamp);
 	date.append("\r\n");
 	response.append(date);
+}
+
+void	header_handler::generate_server_name(std::string &response, std::string server_name)
+{
+	std::string server_header = "Server: ";
+
+	server_header.append(server_name);
+	server_header.append("\r\n");
+	response.append(server_header);
 }
 
 //------Helper functions------
