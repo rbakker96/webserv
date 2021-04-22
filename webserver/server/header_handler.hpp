@@ -6,7 +6,7 @@
 /*   By: roybakker <roybakker@student.codam.nl>       +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2021/04/07 13:23:53 by roybakker     #+#    #+#                 */
-/*   Updated: 2021/04/22 11:00:18 by gbouwen       ########   odam.nl         */
+/*   Updated: 2021/04/22 13:38:59 by gbouwen       ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -87,13 +87,13 @@ public:
     void            parse_allow(const std::string &str);
     void            invalid_argument(const std::string &str);
 
-    //Create response functions
-	void 			send_response(int io_fd);
+    //Send response functions
+	void 			send_response(int activeFD, int fileFD);
 	void			generate_status_line(std::string &response);
 	void			generate_content_length(std::string &response);
 	void			generate_content_type(std::string &response);
-	std::string		generate_last_modified(int file_fd);
-	std::string		generate_date(void);
+	void			generate_last_modified(std::string &response, int file_fd);
+	void			generate_date(std::string &response);
 
     //Helper functions
     std::string     read_browser_request(int fd);

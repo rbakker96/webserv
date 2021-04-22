@@ -6,7 +6,7 @@
 /*   By: roybakker <roybakker@student.codam.nl>       +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2021/03/30 16:30:47 by roybakker     #+#    #+#                 */
-/*   Updated: 2021/04/22 11:19:44 by gbouwen       ########   odam.nl         */
+/*   Updated: 2021/04/22 13:38:58 by gbouwen       ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -141,14 +141,14 @@ void    webserver::run() {
 			{
 				server->_handler.read_requested_file(server->_fileFD);
 				FD_CLR(server->_fileFD, &_buffer_readFDS);
-				close(server->_fileFD);
-				server->_fileFD = unused_;
 				FD_SET(server->_activeFD, &_buffer_writeFDS);
 			}
 
 			if (server->_activeFD != unused_ && FD_ISSET(_servers[index]._activeFD, &_writeFDS)) //create response
 			{
-				server->_handler.send_response(server->_activeFD);
+				server->_handler.send_response(server->_activeFD, server->_fileFD);
+				close(server->_fileFD);
+				server->_fileFD = unused_;
 				FD_CLR(server->_activeFD, &_buffer_writeFDS);
 				close(server->_activeFD);
 				server->_activeFD = ready_for_use_;
