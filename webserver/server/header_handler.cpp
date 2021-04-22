@@ -6,7 +6,7 @@
 /*   By: roybakker <roybakker@student.codam.nl>       +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2021/04/07 13:10:33 by roybakker     #+#    #+#                 */
-/*   Updated: 2021/04/22 11:19:45 by gbouwen       ########   odam.nl         */
+/*   Updated: 2021/04/22 15:02:35 by gbouwen       ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -37,6 +37,7 @@ void header_handler::print_request() {
     std::cout << "------------- END REQUEST -------------\n\n";
 }
 //------------------------------------------------------------
+
 
 header_handler::header_handler() : _status(200), _content_length(0), _content_type("Content-Type: text/"), _content_language("en"), _content_location(), _allow(),
 								   _method(), _file_location(), _protocol(), _requested_host(), _user_agent(), _accept_language(), _authorization(), _referer(), _body(), _requested_file() {}
@@ -122,15 +123,17 @@ void        header_handler::parse_allow(const std::string &str) {_allow = parse_
 void        header_handler::invalid_argument(const std::string &str) {parse_invalid(str);}
 
 
-//------Create response functions------
-// Need to check later how to send correct response code
-
-void header_handler::send_response(int activeFD) {
+//------Send response functions------
+void header_handler::send_response(int activeFD, int fileFD, std::string server_name) {
 	std::string response;
 
 	generate_status_line(response);
 	generate_content_length(response);
 	generate_content_type(response);
+	generate_last_modified(response, fileFD);
+	generate_date(response);
+	generate_server_name(response, server_name);
+	generate_allowed_methods_config(response);
 	response.append("\r\n");
 
 	write(activeFD, response.c_str(), response.size());
@@ -139,6 +142,8 @@ void header_handler::send_response(int activeFD) {
 	reset_status();
 	clear_requested_file();
 }
+
+// Need to check later how to send correct response code
 
 void	header_handler::generate_status_line(std::string &response) {
 	std::string	status_line = "HTTP/1.1 200 OK";
@@ -155,39 +160,72 @@ void	header_handler::generate_content_length(std::string &response){
 }
 
 void	header_handler::generate_content_type(std::string &response) {
-	_content_type.append("\r\n");
-	response.append(_content_type);
+	std::string	content_type_header = "Content-Type: ";
+
+	if (_content_type.compare("html") == 0 || _content_type.compare("css") == 0)
+		content_type_header.append("text/");
+	else if (_content_type.compare("png") == 0)
+		content_type_header.append("image/");
+	content_type_header.append(_content_type);
+	content_type_header.append("\r\n");
+	response.append(content_type_header);
 }
 
-//std::string	header_handler::generate_last_modified(int fd)
-//{
-	//struct stat	statbuf;
-	//struct tm	*info;
-	//char		timestamp[36];
-	//std::string	result = "Last-Modified: ";
+void	header_handler::generate_last_modified(std::string &response, int fileFD)
+{
+	std::string	last_modified = "Last-Modified: ";
+	struct stat	statbuf;
+	struct tm	*info;
+	char		timestamp[36];
 
-	//fstat(fd, &statbuf);
-	//info = localtime(&statbuf.st_mtime);
-	//strftime(timestamp, 36, "%a, %d %h %Y %H:%M:%S GMT", info);
-	//result.append(timestamp);
-	//result.append("\r\n");
-	//return (result);
-//}
+	fstat(fileFD, &statbuf);
+	info = localtime(&statbuf.st_mtime);
+	strftime(timestamp, 36, "%a, %d %h %Y %H:%M:%S GMT", info);
+	last_modified.append(timestamp);
+	last_modified.append("\r\n");
+	response.append(last_modified);
+}
 
-//std::string	header_handler::generate_date(void)
-//{
-	//time_t		timer;
-	//struct tm	*info;
-	//char		timestamp[36];
-	//std::string	result = "Date: ";
+void	header_handler::generate_date(std::string &response)
+{
+	std::string	date = "Date: ";
+	time_t		timer;
+	struct tm	*info;
+	char		timestamp[36];
 
-	//timer = time(NULL);
-	//info = localtime(&timer);
-	//strftime(timestamp, 36, "%a, %d %h %Y %H:%M:%S GMT", info);
-	//result.append(timestamp);
-	//result.append("\r\n");
-	//return (result);
-//}
+	timer = time(NULL);
+	info = localtime(&timer);
+	strftime(timestamp, 36, "%a, %d %h %Y %H:%M:%S GMT", info);
+	date.append(timestamp);
+	date.append("\r\n");
+	response.append(date);
+}
+
+void	header_handler::generate_server_name(std::string &response, std::string server_name)
+{
+	std::string server_header = "Server: ";
+
+	server_header.append(server_name);
+	server_header.append("\r\n");
+	response.append(server_header);
+}
+
+// ONLY SEND WITH "405 Method Not Allowed" RESPONSE CODE!
+
+void	header_handler::generate_allowed_methods_config(std::string &response)
+{
+	std::string allow_header = "Allow: ";
+
+	for (header_handler::vector_iterator it = _allowed_methods_config.begin(); it != _allowed_methods_config.end(); it++)
+	{
+		std::string	method = *it;
+		allow_header.append(method);
+		if (it + 1 != _allowed_methods_config.end())
+			allow_header.append(", ");
+	}
+	allow_header.append("\r\n");
+	response.append(allow_header);
+}
 
 //------Helper functions------
 std::string    header_handler::read_browser_request(int fd) {
@@ -264,17 +302,15 @@ void        header_handler::configure_location(header_handler::location_vector l
                 _file_location = _file_location.append(loc->get_index());
             return;
         }
-        if ((loc + 1) == location_blocks.end()) {
-            size_t pos = _file_location.find("resources");
-            if (pos != std::string::npos) {
-                std::string tmp = _file_location.substr(pos - 1);
-                _file_location = error_page.append(tmp);
-            }
-            else
-                _file_location = error_page.append(_file_location);
-            determine_content_type();
-        }
     }
+    size_t pos = _file_location.find("resources");
+    if (pos != std::string::npos) {
+        std::string tmp = _file_location.substr(pos - 1);
+        _file_location = error_page.append(tmp);
+    }
+    else
+        _file_location = error_page.append(_file_location);
+    determine_content_type();
 }
 
 std::string header_handler::requested_location_block() {
@@ -327,7 +363,7 @@ void        header_handler::reset_handler_atributes() {
     _authorization.clear();
     _referer.clear();
     _body.clear();
-	_content_type = "Content-Type: text/";
+	_content_type.clear();
     _content_language = "en";
     _content_location.clear();
     _allow.clear();
@@ -341,6 +377,7 @@ std::string     header_handler::get_content_type() { return _content_type;}
 std::string     header_handler::get_content_language() { return _content_language;}
 std::string     header_handler::get_content_location() { return _content_location;}
 std::string     header_handler::get_allow() { return _allow;}
+header_handler::vector	header_handler::get_allowed_methods_config() { return _allowed_methods_config; }
 std::string	    header_handler::get_requested_file() { return (_requested_file);}
 std::string     header_handler::get_method() { return _method;}
 std::string     header_handler::get_file_location() { return _file_location;}
