@@ -6,7 +6,7 @@
 /*   By: roybakker <roybakker@student.codam.nl>       +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2021/03/30 16:30:47 by roybakker     #+#    #+#                 */
-/*   Updated: 2021/04/22 10:59:09 by gbouwen       ########   odam.nl         */
+/*   Updated: 2021/04/22 11:19:44 by gbouwen       ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -103,21 +103,18 @@ void    webserver::run() {
     initialize_highest_fd();
     while (true)
     {
-		sychronize_FD_sets();
+		synchronize_FD_sets();
         if (select(get_maxFD(), &_readFDS, &_writeFDS, 0, 0) == -1)
         	throw std::runtime_error("Select failed");
         for (size_t index = 0; index < _servers.size(); index++) {
 			server *server = &_servers[index];
 
-			if (FD_ISSET(server->get_tcp_socket(), &_readFDS)) //accept request
+			if (server->_activeFD == ready_for_use_ && FD_ISSET(server->get_tcp_socket(), &_readFDS)) //accept request
 			{
-				if (server->_activeFD == ready_for_use_)
-				{
-					server->_activeFD = accept(server->get_tcp_socket(), (struct sockaddr *) &server->_addr, (socklen_t *) &server->_addr_len);
-					fcntl(server->_activeFD, F_SETFL, O_NONBLOCK);
-					FD_SET(server->_activeFD, &_buffer_readFDS);
-					set_maxFD(server->_activeFD);
-				}
+				server->_activeFD = accept(server->get_tcp_socket(), (struct sockaddr *) &server->_addr, (socklen_t *) &server->_addr_len);
+				fcntl(server->_activeFD, F_SETFL, O_NONBLOCK);
+				FD_SET(server->_activeFD, &_buffer_readFDS);
+				set_maxFD(server->_activeFD);
 			}
 
 			if (server->_activeFD != unused_ && FD_ISSET(server->_activeFD, &_readFDS)) //handle request
@@ -161,7 +158,7 @@ void    webserver::run() {
 }
 
 //------Helper functions------
-void    webserver::sychronize_FD_sets() {
+void    webserver::synchronize_FD_sets() {
 	_readFDS = _buffer_readFDS;
 	_writeFDS = _buffer_writeFDS;
 

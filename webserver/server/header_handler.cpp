@@ -6,7 +6,7 @@
 /*   By: roybakker <roybakker@student.codam.nl>       +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2021/04/07 13:10:33 by roybakker     #+#    #+#                 */
-/*   Updated: 2021/04/22 10:59:09 by gbouwen       ########   odam.nl         */
+/*   Updated: 2021/04/22 11:19:45 by gbouwen       ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -158,35 +158,35 @@ void	header_handler::generate_content_type(std::string &response) {
 	response.append(_content_type);
 }
 
-std::string	header_handler::generate_last_modified(int fd)
-{
-	struct stat	statbuf;
-	struct tm	*info;
-	char		timestamp[36];
-	std::string	result = "Last-Modified: ";
+//std::string	header_handler::generate_last_modified(int fd)
+//{
+	//struct stat	statbuf;
+	//struct tm	*info;
+	//char		timestamp[36];
+	//std::string	result = "Last-Modified: ";
 
-	fstat(fd, &statbuf);
-	info = localtime(&statbuf.st_mtime);
-	strftime(timestamp, 36, "%a, %d %h %Y %H:%M:%S GMT", info);
-	result.append(timestamp);
-	result.append("\r\n");
-	return (result);
-}
+	//fstat(fd, &statbuf);
+	//info = localtime(&statbuf.st_mtime);
+	//strftime(timestamp, 36, "%a, %d %h %Y %H:%M:%S GMT", info);
+	//result.append(timestamp);
+	//result.append("\r\n");
+	//return (result);
+//}
 
-std::string	header_handler::generate_date(void)
-{
-	time_t		timer;
-	struct tm	*info;
-	char		timestamp[36];
-	std::string	result = "Date: ";
+//std::string	header_handler::generate_date(void)
+//{
+	//time_t		timer;
+	//struct tm	*info;
+	//char		timestamp[36];
+	//std::string	result = "Date: ";
 
-	timer = time(NULL);
-	info = localtime(&timer);
-	strftime(timestamp, 36, "%a, %d %h %Y %H:%M:%S GMT", info);
-	result.append(timestamp);
-	result.append("\r\n");
-	return (result);
-}
+	//timer = time(NULL);
+	//info = localtime(&timer);
+	//strftime(timestamp, 36, "%a, %d %h %Y %H:%M:%S GMT", info);
+	//result.append(timestamp);
+	//result.append("\r\n");
+	//return (result);
+//}
 
 //------Helper functions------
 std::string    header_handler::read_browser_request(int fd) {

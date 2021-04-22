@@ -6,7 +6,7 @@
 /*   By: roybakker <roybakker@student.codam.nl>       +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2021/03/30 16:28:34 by roybakker     #+#    #+#                 */
-/*   Updated: 2021/04/15 11:39:17 by gbouwen       ########   odam.nl         */
+/*   Updated: 2021/04/22 11:10:25 by gbouwen       ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -40,7 +40,7 @@ public:
     void    	run();
 
     //Helper functions
-	void    	sychronize_FD_sets();
+	void    	synchronize_FD_sets();
     void    	initialize_FD_sets();
     void    	initialize_highest_fd();
     void		set_maxFD(int fd);
