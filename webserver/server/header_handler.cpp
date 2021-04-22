@@ -38,12 +38,12 @@ void header_handler::print_request() {
 }
 //------------------------------------------------------------
 
-header_handler::header_handler() : _content_length(0), _content_type("Content-Type: text/"), _content_language("en"), _content_location(), _allow(),
+header_handler::header_handler() : _status(200), _content_length(0), _content_type("Content-Type: text/"), _content_language("en"), _content_location(), _allow(),
 								   _method(), _file_location(), _protocol(), _requested_host(), _user_agent(), _accept_language(), _authorization(), _referer(), _body(), _requested_file() {}
 header_handler::~header_handler(){}
 
 //------Parse request functions------
-void        header_handler::parse_request(header_handler::location_vector location, int fd, header_handler::map request_buffer) {
+void        header_handler::parse_request(int fd, header_handler::map request_buffer) {
     map_iterator request                        = request_buffer.find(fd);
     vector request_elements                     = str_to_vector(request->second);
     parse parse_array[12]                       = { &header_handler::parse_requested_host,
@@ -66,7 +66,7 @@ void        header_handler::parse_request(header_handler::location_vector locati
         parse function = parse_array[request_value];
         (this->*function)(*it);
     }
-    configure_location(location);
+//    configure_location(location);
     std::cout << "-----------\n" << "request buffer = \n" << request->second << "-----------\n" << std::endl; //REMOVE
     print_request(); //REMOVE
 }
@@ -125,7 +125,7 @@ void        header_handler::invalid_argument(const std::string &str) {parse_inva
 //------Create response functions------
 // Need to check later how to send correct response code
 
-void header_handler::send_response(int io_fd) {
+void header_handler::send_response(int activeFD) {
 	std::string response;
 
 	generate_status_line(response);
@@ -133,9 +133,10 @@ void header_handler::send_response(int io_fd) {
 	generate_content_type(response);
 	response.append("\r\n");
 
-	write(io_fd, response.c_str(), response.size());
-	write(io_fd, this->get_requested_file().c_str(), this->get_requested_file().size());
+	write(activeFD, response.c_str(), response.size());
+	write(activeFD, this->get_requested_file().c_str(), this->get_requested_file().size());
 
+	reset_status();
 	clear_requested_file();
 }
 
@@ -218,14 +219,23 @@ void        header_handler::read_requested_file(int fd) {
         throw std::runtime_error("Read failed");
 }
 
-int         header_handler::open_requested_file(std::string location) {
-    char	*path;
-    int		fd;
+int         header_handler::open_requested_file(std::string file_location) {
+    std::string error_page = "server_files/www/error_pages/.html";
+    struct      stat stats;
+    int		    fd;
 
-    path = &location[0];
-    fd = open(path, O_RDONLY);
-    if (fd == -1)
-        return -1; //need some error checking method
+    stat(file_location.c_str(), &stats);
+    if (!(stats.st_mode & S_IRUSR))
+        _status = forbidden_;
+    if ((fd = open(&file_location[0], O_RDONLY)) == -1 )
+        _status = not_found_;
+    if (_status >= error_code_) {
+        _file_location = error_page.insert(29, ft_itoa(_status));
+//        _allow = "put"; something else later?
+        fd = open(&_file_location[0], O_RDONLY);
+        if (fd == -1)
+            throw std::runtime_error("Open failed");
+    }
     fcntl(fd, F_SETFL, O_NONBLOCK);
     return (fd);
 }
@@ -244,24 +254,25 @@ header_handler::vector    header_handler::str_to_vector(std::string request) {
     return request_elements;
 }
 
-void        header_handler::configure_location(header_handler::location_vector location_blocks) {
+void        header_handler::configure_location(header_handler::location_vector location_blocks, std::string error_page) {
     std::string request_location = requested_location_block();
 
     for (location_iterator loc = location_blocks.begin(); loc != location_blocks.end(); loc++) {
         if (loc->get_location_context() == request_location) {
-			_file_location = loc->get_root().append(_file_location);
-			std::vector<std::string> accepted_exts = loc->get_ext();
-			for (vector_iterator ext = accepted_exts.begin(); ext != accepted_exts.end(); ext++) {
-				if (_file_location.find(*ext) != std::string::npos) {
-				    if (*ext == "png")
-				        _content_type = "Content-Type: image/";
-				    _content_type = _content_type.append(*ext);
-                    return;
-				}
-			}
-			_content_type = _content_type.append("html");
-			_file_location = _file_location.append(loc->get_index());
+            _file_location = loc->get_root().append(_file_location);
+            if (determine_content_type() == folder_)
+                _file_location = _file_location.append(loc->get_index());
             return;
+        }
+        if ((loc + 1) == location_blocks.end()) {
+            size_t pos = _file_location.find("resources");
+            if (pos != std::string::npos) {
+                std::string tmp = _file_location.substr(pos - 1);
+                _file_location = error_page.append(tmp);
+            }
+            else
+                _file_location = error_page.append(_file_location);
+            determine_content_type();
         }
     }
 }
@@ -280,12 +291,30 @@ std::string header_handler::requested_location_block() {
         pos = _file_location.find_last_of('/');
         request_location = _file_location.substr(0, pos+1);
     }
-
     return request_location;
 }
 
-void		header_handler::clear_requested_file() {_requested_file.clear();}
+int         header_handler::determine_content_type() {
+    vector extensions;
+    extensions.push_back("html");
+    extensions.push_back("php");
+    extensions.push_back("css");
+    extensions.push_back("ico");
+    extensions.push_back("png");
 
+    for (vector_iterator it = extensions.begin(); it != extensions.end(); it++) {
+        if (_file_location.find(*it) != std::string::npos) {
+//            _content_type = *it;
+            _content_type = _content_type.append(*it);
+            return 1;
+        }
+    }
+//    _content_type = "html";
+    _content_type = _content_type.append("html");
+    return (folder_);
+}
+
+void		header_handler::clear_requested_file() {_requested_file.clear();}
 
 void        header_handler::reset_handler_atributes() {
     _content_length = 0;
@@ -303,6 +332,8 @@ void        header_handler::reset_handler_atributes() {
     _content_location.clear();
     _allow.clear();
 }
+
+void            header_handler::reset_status() {_status = 200;}
 
 //------Getter------
 int             header_handler::get_content_length() { return _content_length;}

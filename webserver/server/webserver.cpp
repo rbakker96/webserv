@@ -120,19 +120,14 @@ void    webserver::run() {
 			if (server->_activeFD != unused_ && FD_ISSET(server->_activeFD, &_readFDS)) //handle request
 			{
 				std::string request_headers = server->_handler.read_browser_request(server->_activeFD);
-				int ret = server->update_request_buffer(server->_activeFD, request_headers);
-				if (ret == valid_)
+				if (server->update_request_buffer(server->_activeFD, request_headers) == valid_)
 				{
 					FD_CLR(_servers[index]._activeFD, &_buffer_readFDS);
-					server->_handler.parse_request(server->_location_blocks, server->_activeFD, server->_request_buffer);
+					server->_handler.parse_request(server->_activeFD, server->_request_buffer);
+                    server->clear_handled_request(server->_activeFD);
+					server->_handler.configure_location(server->_location_blocks, server->get_error_page());
 					server->_fileFD = server->_handler.open_requested_file(server->_handler.get_file_location());
-					if (server->_fileFD == -1)
-					{
-						std::cout << "file not found" << std::endl;
-						// get an error page / favicon / something else
-					}
 					set_maxFD(server->_fileFD);
-					server->clear_handled_request(server->_activeFD);
 					FD_SET(server->_fileFD, &_buffer_readFDS);
 				}
 			}
