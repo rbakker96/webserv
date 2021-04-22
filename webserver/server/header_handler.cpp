@@ -6,7 +6,7 @@
 /*   By: roybakker <roybakker@student.codam.nl>       +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2021/04/07 13:10:33 by roybakker     #+#    #+#                 */
-/*   Updated: 2021/04/22 14:19:18 by gbouwen       ########   odam.nl         */
+/*   Updated: 2021/04/22 14:51:04 by gbouwen       ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -132,6 +132,7 @@ void header_handler::send_response(int activeFD, int fileFD, std::string server_
 	generate_last_modified(response, fileFD);
 	generate_date(response);
 	generate_server_name(response, server_name);
+	generate_allowed_methods_config(response);
 	response.append("\r\n");
 
 	write(activeFD, response.c_str(), response.size());
@@ -207,6 +208,23 @@ void	header_handler::generate_server_name(std::string &response, std::string ser
 	response.append(server_header);
 }
 
+// ONLY SEND WITH "405 Method Not Allowed" RESPONSE CODE!
+
+void	header_handler::generate_allowed_methods_config(std::string &response)
+{
+	std::string allow_header = "Allow: ";
+
+	for (header_handler::vector_iterator it = _allowed_methods_config.begin(); it != _allowed_methods_config.end(); it++)
+	{
+		std::string	method = *it;
+		allow_header.append(method);
+		if (it + 1 != _allowed_methods_config.end())
+			allow_header.append(", ");
+	}
+	allow_header.append("\r\n");
+	response.append(allow_header);
+}
+
 //------Helper functions------
 std::string    header_handler::read_browser_request(int fd) {
     std::string tmp;
@@ -269,6 +287,7 @@ void        header_handler::configure_location(header_handler::location_vector l
     for (location_iterator loc = location_blocks.begin(); loc != location_blocks.end(); loc++) {
         if (loc->get_location_context() == request_location) {
 			_file_location = loc->get_root().append(_file_location);
+			_allowed_methods_config = loc->get_method();
 			std::vector<std::string> accepted_exts = loc->get_ext();
 			for (vector_iterator ext = accepted_exts.begin(); ext != accepted_exts.end(); ext++) {
 				if (_file_location.find(*ext) != std::string::npos) {
@@ -327,6 +346,7 @@ std::string     header_handler::get_content_type() { return _content_type;}
 std::string     header_handler::get_content_language() { return _content_language;}
 std::string     header_handler::get_content_location() { return _content_location;}
 std::string     header_handler::get_allow() { return _allow;}
+header_handler::vector	header_handler::get_allowed_methods_config() { return _allowed_methods_config; }
 std::string	    header_handler::get_requested_file() { return (_requested_file);}
 std::string     header_handler::get_method() { return _method;}
 std::string     header_handler::get_file_location() { return _file_location;}
