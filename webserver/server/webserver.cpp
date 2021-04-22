@@ -6,7 +6,7 @@
 /*   By: roybakker <roybakker@student.codam.nl>       +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2021/03/30 16:30:47 by roybakker     #+#    #+#                 */
-/*   Updated: 2021/04/15 12:18:27 by gbouwen       ########   odam.nl         */
+/*   Updated: 2021/04/22 10:59:09 by gbouwen       ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -111,7 +111,7 @@ void    webserver::run() {
 
 			if (FD_ISSET(server->get_tcp_socket(), &_readFDS)) //accept request
 			{
-				if (server->_activeFD == ready_for_use_ )
+				if (server->_activeFD == ready_for_use_)
 				{
 					server->_activeFD = accept(server->get_tcp_socket(), (struct sockaddr *) &server->_addr, (socklen_t *) &server->_addr_len);
 					fcntl(server->_activeFD, F_SETFL, O_NONBLOCK);
@@ -159,7 +159,6 @@ void    webserver::run() {
 		}
     }
 }
-
 
 //------Helper functions------
 void    webserver::sychronize_FD_sets() {
