@@ -34,6 +34,7 @@ public:
     typedef     std::map<int, std::string>::iterator    map_iterator;
     typedef     std::vector<location_context>           location_vector;
     typedef     std::vector<location_context>::iterator location_iterator;
+    typedef     std::pair<int, std::string>             pair;
 
     typedef     void (header_handler::*parse)(const std::string &str);
 
@@ -66,6 +67,9 @@ protected:
     std::string     _body;
 
     std::string     _requested_file;
+
+    //Status code map
+    std::map<int, std::string>  _status_codes;
 
 public:
     header_handler();
