@@ -50,8 +50,8 @@ header_handler::header_handler() : _status(200), _content_length(0), _content_ty
 //    _status_phrases.insert ( pair(, ""));
 //    _status_phrases.insert ( pair(, ""));
 //    _status_phrases.insert ( pair(, ""));
-
 }
+
 header_handler::~header_handler(){
     _status_phrases.clear();
 }
