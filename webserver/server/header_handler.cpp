@@ -39,8 +39,21 @@ void header_handler::print_request() {
 //------------------------------------------------------------
 
 header_handler::header_handler() : _status(200), _content_length(0), _content_type("Content-Type: text/"), _content_language("en"), _content_location(), _allow(),
-								   _method(), _file_location(), _protocol(), _requested_host(), _user_agent(), _accept_language(), _authorization(), _referer(), _body(), _requested_file() {}
-header_handler::~header_handler(){}
+								   _method(), _file_location(), _protocol(), _requested_host(), _user_agent(), _accept_language(), _authorization(), _referer(), _body(), _requested_file() {
+    _status_codes.insert ( pair(200, "OK"));
+    _status_codes.insert ( pair(400, "Bad Request"));
+    _status_codes.insert ( pair(401, "Unauthorized"));
+    _status_codes.insert ( pair(403, "Forbidden"));
+    _status_codes.insert ( pair(404, "Not Found"));
+    _status_codes.insert ( pair(405, "Method Not Allowed"));
+//    _status_codes.insert ( pair(, ""));
+//    _status_codes.insert ( pair(, ""));
+//    _status_codes.insert ( pair(, ""));
+
+}
+header_handler::~header_handler(){
+    _status_codes.clear();
+}
 
 //------Parse request functions------
 void        header_handler::parse_request(int fd, header_handler::map request_buffer) {
@@ -141,8 +154,15 @@ void header_handler::send_response(int activeFD) {
 }
 
 void	header_handler::generate_status_line(std::string &response) {
-	std::string	status_line = "HTTP/1.1 200 OK";
+	std::string status_line = get_protocol();
+	char *status_code = ft_itoa(_status);
+
+	status_line.append(" ");
+	status_line.append((status_code));
+    status_line.append(" ");
+    status_line.append(_status_codes[_status]);
 	status_line.append("\r\n");
+
 	response.append(status_line);
 }
 
