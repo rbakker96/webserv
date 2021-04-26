@@ -6,7 +6,7 @@
 /*   By: roybakker <roybakker@student.codam.nl>       +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2021/03/30 13:54:06 by roybakker     #+#    #+#                 */
-/*   Updated: 2021/04/15 11:41:10 by gbouwen       ########   odam.nl         */
+/*   Updated: 2021/04/26 11:15:14 by gbouwen       ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -143,6 +143,7 @@ int     server::valid_request(const std::string& request) {
         std::cout << "body = " << body << std::endl;
         if ((int)body.length() == content_length)
             return valid_;
+		return valid_; // need to change this later, now always returns valid
     }
     return invalid_;
 }
