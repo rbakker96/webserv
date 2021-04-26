@@ -136,8 +136,36 @@ void        header_handler::parse_allow(const std::string &str) {_allow = parse_
 void        header_handler::invalid_argument(const std::string &str) {parse_invalid(str);}
 
 
+//------Handle request functions------
+int        header_handler::handle_request() {
+    if (_method == "GET")
+        return get_request();
+    else if (_method == "HEAD")
+        return head_request();
+    else if (_method == "POST")
+        return post_request();
+//    else if (_method == "")
+//        ;
+    return 0;
+}
+
+int        header_handler::get_request() {
+    return (open_requested_file(_file_location));
+}
+
+int         header_handler::head_request() {
+
+    return 0;
+}
+
+int        header_handler::post_request() {
+
+    return 0;
+}
+
+
 //------Send response functions------
-void header_handler::send_response(int activeFD, int fileFD, std::string server_name) {
+void        header_handler::send_response(int activeFD, int fileFD, std::string server_name) {
 	std::string response;
 
 	generate_status_line(response);
@@ -160,10 +188,9 @@ void header_handler::send_response(int activeFD, int fileFD, std::string server_
 
 void	header_handler::generate_status_line(std::string &response) {
 	std::string status_line = get_protocol();
-	char *status_code = ft_itoa(_status);
 
 	status_line.append(" ");
-	status_line.append((status_code));
+	status_line.append((ft_itoa(_status)));
     status_line.append(" ");
     status_line.append(_status_phrases[_status]);
 	status_line.append("\r\n");

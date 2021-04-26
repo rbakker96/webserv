@@ -94,6 +94,11 @@ public:
     void            parse_allow(const std::string &str);
     void            invalid_argument(const std::string &str);
 
+    //Handle request functions
+    int             handle_request();
+    int             get_request();
+    int             head_request();
+    int             post_request();
 
     //Send response functions
 	void 			send_response(int activeFD, int fileFD, std::string server_name);
