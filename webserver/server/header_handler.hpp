@@ -6,7 +6,7 @@
 /*   By: roybakker <roybakker@student.codam.nl>       +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2021/04/07 13:23:53 by roybakker     #+#    #+#                 */
-/*   Updated: 2021/04/22 11:00:18 by gbouwen       ########   odam.nl         */
+/*   Updated: 2021/04/22 14:47:45 by gbouwen       ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -54,6 +54,7 @@ protected:
     std::string     _content_language;
     std::string     _content_location;
     std::string     _allow;
+	vector			_allowed_methods_config;
 
     //Request headers
     std::string     _method;
@@ -93,13 +94,16 @@ public:
     void            parse_allow(const std::string &str);
     void            invalid_argument(const std::string &str);
 
-    //Create response functions
-	void 			send_response(int activeFD);
+
+    //Send response functions
+	void 			send_response(int activeFD, int fileFD, std::string server_name);
 	void			generate_status_line(std::string &response);
 	void			generate_content_length(std::string &response);
 	void			generate_content_type(std::string &response);
-	std::string		generate_last_modified(int file_fd);
-	std::string		generate_date(void);
+	void			generate_last_modified(std::string &response, int file_fd);
+	void			generate_date(std::string &response);
+	void			generate_server_name(std::string &response, std::string server_name);
+	void			generate_allowed_methods_config(std::string &response);
 
     //Helper functions
     std::string     read_browser_request(int fd);
@@ -119,6 +123,7 @@ public:
     std::string     get_content_language();
     std::string     get_content_location();
     std::string     get_allow();
+	vector			get_allowed_methods_config();
 	std::string	    get_requested_file();
     std::string     get_method();
     std::string     get_file_location();

@@ -6,7 +6,7 @@
 /*   By: roybakker <roybakker@student.codam.nl>       +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2021/03/30 13:54:06 by roybakker     #+#    #+#                 */
-/*   Updated: 2021/04/15 11:41:10 by gbouwen       ########   odam.nl         */
+/*   Updated: 2021/04/26 11:22:45 by gbouwen       ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -134,12 +134,12 @@ int     server::valid_request(const std::string& request) {
     int header_size;
     int pos;
 
-    if ((header_size = (int)request.find("\r\n")) != -1) {
+    if ((header_size = (int)request.find_last_of("\r\n")) != -1) {
         if ((pos = (int)request.find("Content-Length:")) == -1)
             return valid_;
         int content_length = ft_atoi(request.c_str() + (pos + 16));
-        printf("conent length = %d\n", content_length); //remove later
-        std::string body = request.substr(header_size+2); //after two linebreaks ??
+        printf("content length = %d\n", content_length); //remove later
+        std::string body = request.substr(header_size + 1); //after two linebreaks ??
         std::cout << "body = " << body << std::endl;
         if ((int)body.length() == content_length)
             return valid_;
