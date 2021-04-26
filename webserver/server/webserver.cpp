@@ -47,14 +47,6 @@ void webserver::print_struct() {
 
             std::cout << "  Index = " << location.get_index() << std::endl;
             std::cout << "  Autoindex = " << location.get_autoindex() << std::endl;
-
-            std::vector<std::string> extensions = location.get_ext();
-            std::cout << "  Ext = ";
-            for (std::vector<std::string>::iterator it2 = extensions.begin(); it2 != extensions.end(); it2++) {
-                std::string ext = *it2;
-                std::cout << ext << " ";
-            }
-            std::cout << "\n";
         }
         std::cout << "------------- END SERVER BLOCK -------------\n\n";
     }
@@ -126,7 +118,6 @@ void    webserver::run() {
 					server->_handler.parse_request(server->_activeFD, server->_request_buffer);
                     server->clear_handled_request(server->_activeFD);
 					server->_handler.configure_location(server->_location_blocks, server->get_error_page());
-
                     server->_fileFD = server->_handler.handle_request();
 
 					//server->_fileFD = server->_handler.open_requested_file(server->_handler.get_file_location());

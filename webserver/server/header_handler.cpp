@@ -154,8 +154,7 @@ int        header_handler::get_request() {
 }
 
 int         header_handler::head_request() {
-
-    return 0;
+    return (open_requested_file(_file_location));
 }
 
 int        header_handler::post_request() {
@@ -178,7 +177,8 @@ void        header_handler::send_response(int activeFD, int fileFD, std::string 
 	response.append("\r\n");
 
 	write(activeFD, response.c_str(), response.size());
-	write(activeFD, this->get_requested_file().c_str(), this->get_requested_file().size());
+	if (_method != "HEAD")
+	    write(activeFD, this->get_requested_file().c_str(), this->get_requested_file().size());
 
 	reset_status();
 	clear_requested_file();

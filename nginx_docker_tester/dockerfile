@@ -7,6 +7,9 @@ RUN apt-get update && apt-get upgrade -y
 # install Nginx
 RUN apt-get install -y nginx openssl
 
+# install PhP
+RUN		apt-get -y install php7.3 php-mysql php-fpm php-cli php-mbstring
+
 # copy nginx config file to the right place
 COPY srcs/nginx.conf /etc/nginx/sites-available/localhost
 COPY srcs/index.html /var/www/html/

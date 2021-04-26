@@ -21,14 +21,13 @@ class location_context {
 public:
     typedef     std::vector<std::string>::iterator vector_iterator;
     typedef     void (location_context::*configure)(const std::string&);
-    enum        location_values{ root_ = 0, method_ = 1, autoindex_ = 2, index_ = 3, ext_ = 4, unknown_ = 5 };
+    enum        location_values{ root_ = 0, method_ = 1, autoindex_ = 2, index_ = 3, unknown_ = 4 };
 
 private:
     std::string                 _location_context;
     std::string                 _root;
     std::string                 _index;
     std::vector<std::string>    _allowed_method;
-    std::vector<std::string>    _ext;
     bool                        _autoindex;
     //something with the CGI
 
@@ -45,7 +44,6 @@ public:
     void    configure_allowed_method(const std::string &str);
     void    configure_index(const std::string &str);
     void    configure_autoindex(const std::string &str);
-    void    configure_ext(const std::string &str);
     void    invalid_element(const std::string &str);
 
     //Getters
@@ -53,7 +51,6 @@ public:
     std::string                 get_root();
     std::string                 get_index();
     std::vector<std::string>    get_method();
-    std::vector<std::string>    get_ext();
     bool                        get_autoindex();
 
 };
