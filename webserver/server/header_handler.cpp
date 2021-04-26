@@ -6,7 +6,7 @@
 /*   By: roybakker <roybakker@student.codam.nl>       +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2021/04/07 13:10:33 by roybakker     #+#    #+#                 */
-/*   Updated: 2021/04/22 15:02:35 by gbouwen       ########   odam.nl         */
+/*   Updated: 2021/04/26 18:04:41 by gbouwen       ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -158,11 +158,23 @@ int         header_handler::head_request() {
     return 0;
 }
 
+// work in progress
+
 int        header_handler::post_request() {
+	char		**args = new char *[3];
+	std::string	temp;
 
-    return 0;
+	temp = "/usr/bin/php";
+	args[0] = ft_strdup(temp.c_str());
+	args[1] = ft_strdup(_file_location.c_str());
+	args[2] = NULL;
+	if (fork() == 0)
+		execve(args[0], const_cast<char **>(reinterpret_cast<char * const *>(args)), NULL);
+	else
+		wait(NULL);
+	delete [] args;
+    return (-1);
 }
-
 
 //------Send response functions------
 void        header_handler::send_response(int activeFD, int fileFD, std::string server_name) {
