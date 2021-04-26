@@ -45,7 +45,8 @@ public:
 
 protected:
     //status
-    int             _status;
+    int                         _status;
+    std::map<int, std::string>  _status_phrases;
 
     //Entity headers
     int             _content_length;
@@ -68,7 +69,7 @@ protected:
     std::string     _requested_file;
 
     //Status code map
-    std::map<int, std::string>  _status_codes;
+
 
 public:
     header_handler();
