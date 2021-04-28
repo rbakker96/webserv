@@ -168,7 +168,6 @@ int        header_handler::post_request(int activeFD) {
 	std::string	temp;
 
 	temp = "/usr/bin/php";
-	fd = open("temp.txt");
 	args[0] = ft_strdup(temp.c_str());
 	args[1] = ft_strdup(_file_location.c_str());
 	args[2] = NULL;
