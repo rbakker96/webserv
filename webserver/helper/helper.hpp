@@ -16,6 +16,7 @@
 #include <string>
 #include <vector>
 #include <cstring>
+#include <stdexcept>
 
 int							ft_atoi(const char *str);
 char						*ft_itoa(int n);
