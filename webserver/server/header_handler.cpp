@@ -137,13 +137,13 @@ void        header_handler::invalid_argument(const std::string &str) {parse_inva
 
 
 //------Handle request functions------
-int        header_handler::handle_request(int activeFD) {
+int        header_handler::handle_request() {
     if (_method == "GET")
         return get_request();
     else if (_method == "HEAD")
         return head_request();
     else if (_method == "POST")
-        return post_request(activeFD);
+        return post_request();
 //    else if (_method == "")
 //        ;
     return 0;
@@ -159,28 +159,29 @@ int         header_handler::head_request() {
 
 // work in progress
 
-int        header_handler::post_request(int activeFD) {
-	write(activeFD, "HTTP/1.1 200 OK\r\n", strlen("HTTP/1.1 200 OK\r\n"));
-	write(activeFD, "Content-Length: 13\r\n", strlen("Content-Length: 13\r\n"));
-	write(activeFD, "\r\n", strlen("\r\n"));
+int        header_handler::post_request() {
+//	write(activeFD, "HTTP/1.1 200 OK\r\n", strlen("HTTP/1.1 200 OK\r\n"));
+//	write(activeFD, "Content-Length: 13\r\n", strlen("Content-Length: 13\r\n"));
+//	write(activeFD, "\r\n", strlen("\r\n"));
 
 	char		**args = new char *[3];
-	std::string	temp;
 
-	temp = "/usr/bin/php";
-	args[0] = ft_strdup(temp.c_str());
+	args[0] = ft_strdup("/usr/bin/php");
 	args[1] = ft_strdup(_file_location.c_str());
 	args[2] = NULL;
 	if (fork() == 0)
 	{
 		close(STDOUT_FILENO);
-		dup(activeFD);
-		execve(args[0], const_cast<char **>(reinterpret_cast<char * const *>(args)), NULL);
+		dup(_cgiFD);
+//		execve(args[0], const_cast<char **>(reinterpret_cast<char * const *>(args)), NULL); //
+		execve(args[0], args, NULL);
 	}
 	else
 		wait(NULL);
+	free(args[0]);
+	free(args[1]);
 	delete [] args;
-    return (-1);
+    return (_cgiFD);
 }
 
 //------Send response functions------
@@ -455,3 +456,11 @@ std::string     header_handler::get_accept_language() { return _accept_language;
 std::string     header_handler::get_authorization() { return _authorization;}
 std::string     header_handler::get_referer() { return _referer;}
 std::string     header_handler::get_body() { return _body;}
+int				header_handler::get_cgiFD() { return _cgiFD; }
+
+//------Setter------
+void			header_handler::set_cgiFD(int fd)
+{
+	_cgiFD = fd;
+	fcntl(_cgiFD, F_SETFL, O_NONBLOCK);
+}

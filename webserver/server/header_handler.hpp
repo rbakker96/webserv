@@ -72,6 +72,8 @@ protected:
 
     //Status code map
 
+	//cgiFD
+	int				_cgiFD;
 
 public:
     header_handler();
@@ -96,10 +98,10 @@ public:
     void            invalid_argument(const std::string &str);
 
     //Handle request functions
-    int             handle_request(int activeFD);
+    int             handle_request();
     int             get_request();
     int             head_request();
-    int             post_request(int activeFD);
+    int             post_request();
 
     //Send response functions
 	void 			send_response(int activeFD, int fileFD, std::string server_name);
@@ -140,6 +142,10 @@ public:
     std::string     get_authorization();
     std::string     get_referer();
     std::string     get_body();
+	int				get_cgiFD();
+
+	//Setter
+	void			set_cgiFD(int fd);
 
     //Debug tool
     void            print_request(); //DELETE LATER

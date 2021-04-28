@@ -46,6 +46,7 @@ public:
     void		set_maxFD(int fd);
 	int			get_maxFD();
     int    		check_server_block(vector server_block);
+	void		initialize_temp_files();
 
     //Debug-tool
     void        print_struct();

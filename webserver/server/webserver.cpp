@@ -92,13 +92,17 @@ void    webserver::establish_connection(){
 
 void    webserver::run() {
 	initialize_FD_sets();
+	initialize_temp_files();
     initialize_highest_fd();
     while (true)
     {
 		synchronize_FD_sets();
 		std::cout << "--- Waiting for activity... ---" << std::endl;
         if (select(get_maxFD(), &_readFDS, &_writeFDS, 0, 0) == -1)
+		{
+			std::cout << strerror(errno) << std::endl;
         	throw std::runtime_error("Select failed");
+		}
         for (size_t index = 0; index < _servers.size(); index++) {
 			server *server = &_servers[index];
 
@@ -119,8 +123,8 @@ void    webserver::run() {
 					server->_handler.parse_request(server->_activeFD, server->_request_buffer);
                     server->clear_handled_request(server->_activeFD);
 					server->_handler.configure_location(server->_location_blocks, server->get_error_page());
-                    server->_fileFD = server->_handler.handle_request(server->_activeFD);
-
+                    server->_fileFD = server->_handler.handle_request();
+					std::cout << "FILE FD " << server->_fileFD << std::endl;
 					//server->_fileFD = server->_handler.open_requested_file(server->_handler.get_file_location());
 					set_maxFD(server->_fileFD);
 					if (server->_fileFD != unused_)
@@ -132,6 +136,7 @@ void    webserver::run() {
 
 			if (server->_fileFD != unused_ && FD_ISSET(server->_fileFD, &_readFDS)) //read requested file
 			{
+				std::cout << "check" << std::endl;
 				server->_handler.read_requested_file(server->_fileFD);
 				FD_CLR(server->_fileFD, &_buffer_readFDS);
 				FD_SET(server->_activeFD, &_buffer_writeFDS);
@@ -140,6 +145,7 @@ void    webserver::run() {
 			if (server->_activeFD != unused_ && FD_ISSET(_servers[index]._activeFD, &_writeFDS)) //create response
 			{
 				server->_handler.send_response(server->_activeFD, server->_fileFD, server->_server_name);
+				std::cout << "response" << std::endl;
 				close(server->_fileFD);
 				server->_fileFD = unused_;
 				FD_CLR(server->_activeFD, &_buffer_writeFDS);
@@ -157,6 +163,8 @@ void    webserver::synchronize_FD_sets() {
 
 	for (size_t index = 0; index < _servers.size(); index++) {
 		FD_SET(_servers[index].get_tcp_socket(), &_readFDS);
+		FD_SET(_servers[index]._handler.get_cgiFD(), &_readFDS);
+		FD_SET(_servers[index]._handler.get_cgiFD(), &_writeFDS);
 	}
 }
 
@@ -171,6 +179,8 @@ void    webserver::initialize_highest_fd() {
 	for (size_t index = 0; index < _servers.size(); index++) {
 		if (_servers[index].get_tcp_socket() > _maxFD)
 			_maxFD = _servers[index].get_tcp_socket();
+		if (_servers[index]._handler.get_cgiFD() > _maxFD)
+			_maxFD = _servers[index]._handler.get_cgiFD();
 	}
 }
 
@@ -199,4 +209,24 @@ int     webserver::check_server_block(webserver::vector server_block) {
 	if (open_bracket == closing_bracket && open_bracket != 0)
 		return 1;
 	return 0;
+}
+
+void	generate_filename(std::string &filename, int index)
+{
+	char	*index_str = ft_itoa(index);
+	filename.append(index_str);
+	free(index_str);
+	filename.append(".txt");
+}
+
+void	webserver::initialize_temp_files()
+{
+	for (size_t index = 0; index < _servers.size(); index++)
+	{
+		std::string	filename_str = "server_files/www/temp";
+		generate_filename(filename_str, index);
+		const char *filename = filename_str.c_str();
+		int	fd = open(filename, O_RDWR);
+		_servers[index]._handler.set_cgiFD(fd);
+	}
 }
