@@ -20,6 +20,7 @@
 #include <unistd.h>
 #include <fcntl.h>
 #include <sys/types.h>
+#include <sys/wait.h>
 #include <sys/stat.h>
 
 //Custom includes
@@ -95,10 +96,10 @@ public:
     void            invalid_argument(const std::string &str);
 
     //Handle request functions
-    int             handle_request();
+    int             handle_request(int activeFD);
     int             get_request();
     int             head_request();
-    int             post_request();
+    int             post_request(int activeFD);
 
     //Send response functions
 	void 			send_response(int activeFD, int fileFD, std::string server_name);

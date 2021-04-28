@@ -6,7 +6,7 @@
 /*   By: roybakker <roybakker@student.codam.nl>       +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2021/03/30 16:30:47 by roybakker     #+#    #+#                 */
-/*   Updated: 2021/04/22 13:51:10 by gbouwen       ########   odam.nl         */
+/*   Updated: 2021/04/26 18:04:40 by gbouwen       ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -96,6 +96,7 @@ void    webserver::run() {
     while (true)
     {
 		synchronize_FD_sets();
+		std::cout << "--- Waiting for activity... ---" << std::endl;
         if (select(get_maxFD(), &_readFDS, &_writeFDS, 0, 0) == -1)
         	throw std::runtime_error("Select failed");
         for (size_t index = 0; index < _servers.size(); index++) {
@@ -118,10 +119,9 @@ void    webserver::run() {
 					server->_handler.parse_request(server->_activeFD, server->_request_buffer);
                     server->clear_handled_request(server->_activeFD);
 					server->_handler.configure_location(server->_location_blocks, server->get_error_page());
-                    server->_fileFD = server->_handler.handle_request();
+                    server->_fileFD = server->_handler.handle_request(server->_activeFD);
 
 					//server->_fileFD = server->_handler.open_requested_file(server->_handler.get_file_location());
-
 					set_maxFD(server->_fileFD);
 					if (server->_fileFD != unused_)
 					    FD_SET(server->_fileFD, &_buffer_readFDS);

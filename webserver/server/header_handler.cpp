@@ -6,7 +6,7 @@
 /*   By: roybakker <roybakker@student.codam.nl>       +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2021/04/07 13:10:33 by roybakker     #+#    #+#                 */
-/*   Updated: 2021/04/22 15:02:35 by gbouwen       ########   odam.nl         */
+/*   Updated: 2021/04/26 18:04:41 by gbouwen       ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -137,13 +137,13 @@ void        header_handler::invalid_argument(const std::string &str) {parse_inva
 
 
 //------Handle request functions------
-int        header_handler::handle_request() {
+int        header_handler::handle_request(int activeFD) {
     if (_method == "GET")
         return get_request();
     else if (_method == "HEAD")
         return head_request();
     else if (_method == "POST")
-        return post_request();
+        return post_request(activeFD);
 //    else if (_method == "")
 //        ;
     return 0;
@@ -157,11 +157,32 @@ int         header_handler::head_request() {
     return (open_requested_file(_file_location));
 }
 
-int        header_handler::post_request() {
+// work in progress
 
-    return 0;
+int        header_handler::post_request(int activeFD) {
+	write(activeFD, "HTTP/1.1 200 OK\r\n", strlen("HTTP/1.1 200 OK\r\n"));
+	write(activeFD, "Content-Length: 13\r\n", strlen("Content-Length: 13\r\n"));
+	write(activeFD, "\r\n", strlen("\r\n"));
+
+	char		**args = new char *[3];
+	std::string	temp;
+
+	temp = "/usr/bin/php";
+	fd = open("temp.txt");
+	args[0] = ft_strdup(temp.c_str());
+	args[1] = ft_strdup(_file_location.c_str());
+	args[2] = NULL;
+	if (fork() == 0)
+	{
+		close(STDOUT_FILENO);
+		dup(activeFD);
+		execve(args[0], const_cast<char **>(reinterpret_cast<char * const *>(args)), NULL);
+	}
+	else
+		wait(NULL);
+	delete [] args;
+    return (-1);
 }
-
 
 //------Send response functions------
 void        header_handler::send_response(int activeFD, int fileFD, std::string server_name) {
