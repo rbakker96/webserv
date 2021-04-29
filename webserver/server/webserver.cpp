@@ -126,12 +126,23 @@ void    webserver::run() {
 					if (server->_fileFD != unused_)
 					    FD_SET(server->_fileFD, &_buffer_readFDS);
 					else
-                        FD_SET(server->_activeFD, &_buffer_writeFDS);
+					    FD_SET(server->_activeFD, &_buffer_writeFDS);
+
+					//_fileFD also needs to be added to buffer_writeFD in php cases
 				}
 			}
 
 			if (server->_fileFD != unused_ && FD_ISSET(server->_fileFD, &_readFDS)) //read requested file
 			{
+			    if (FD_ISSET(server->_fileFD, &_writeFDS)) {
+                    //(create CGI class for this)
+                    //set php params
+                    //dup2 _fileFD to STDOUT
+                    //execve php file
+                    //FD_CLR _fileFD form buffer_writeFDS in php cases
+			    }
+			    //regular cases with already present files on server ready to be read
+
 				server->_handler.read_requested_file(server->_fileFD);
 				FD_CLR(server->_fileFD, &_buffer_readFDS);
 				FD_SET(server->_activeFD, &_buffer_writeFDS);
