@@ -96,10 +96,12 @@ public:
     void            invalid_argument(const std::string &str);
 
     //Handle request functions
-    int             handle_request(int activeFD);
-    int             get_request();
-    int             post_request(int activeFD);
+    int             handle_request(location_vector location_blocks, std::string error_page, int activeFD);
     int             put_request();
+
+    void            verify_file_location(location_vector location_blocks, std::string error_page);
+
+
 
     //Send response functions
 	void 			send_response(int activeFD, int fileFD, std::string server_name);
@@ -113,12 +115,9 @@ public:
 
     //Helper functions
     std::string     read_browser_request(int fd);
-    void            read_requested_file(int fd);
-    int             open_requested_file(std::string file_location);
+    std::string     verify_content_type();
     vector          str_to_vector(std::string request);
-    void            configure_location(location_vector location_blocks, std::string error_page);
-    std::string 	requested_location_block();
-    int             determine_content_type();
+    void            read_requested_file(int fd);
     void		    clear_requested_file();
     void            reset_handler_atributes();
     void            reset_status();
