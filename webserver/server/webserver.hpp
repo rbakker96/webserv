@@ -6,7 +6,7 @@
 /*   By: roybakker <roybakker@student.codam.nl>       +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2021/03/30 16:28:34 by roybakker     #+#    #+#                 */
-/*   Updated: 2021/04/26 18:04:41 by gbouwen       ########   odam.nl         */
+/*   Updated: 2021/04/29 16:14:59 by gbouwen       ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -46,7 +46,7 @@ public:
     void		set_maxFD(int fd);
 	int			get_maxFD();
     int    		check_server_block(vector server_block);
-	void		initialize_temp_files();
+	void		initialize_handler_indexes();
 
     //Debug-tool
     void        print_struct();

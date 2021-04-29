@@ -6,7 +6,7 @@
 /*   By: roybakker <roybakker@student.codam.nl>       +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2021/03/30 16:30:47 by roybakker     #+#    #+#                 */
-/*   Updated: 2021/04/29 15:58:17 by gbouwen       ########   odam.nl         */
+/*   Updated: 2021/04/29 16:17:51 by gbouwen       ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -92,7 +92,7 @@ void    webserver::establish_connection(){
 
 void    webserver::run() {
 	initialize_FD_sets();
-	initialize_temp_files();
+	initialize_handler_indexes();
     initialize_highest_fd();
     while (true)
     {
@@ -124,7 +124,6 @@ void    webserver::run() {
                     server->clear_handled_request(server->_activeFD);
 					server->_handler.configure_location(server->_location_blocks, server->get_error_page());
                     server->_fileFD = server->_handler.handle_request();
-					//server->_fileFD = server->_handler.open_requested_file(server->_handler.get_file_location());
 					set_maxFD(server->_fileFD);
 					if (server->_fileFD != unused_)
 					    FD_SET(server->_fileFD, &_buffer_readFDS);
@@ -172,8 +171,6 @@ void    webserver::synchronize_FD_sets() {
 
 	for (size_t index = 0; index < _servers.size(); index++) {
 		FD_SET(_servers[index].get_tcp_socket(), &_readFDS);
-		FD_SET(_servers[index]._handler.get_cgiFD(), &_readFDS);
-		FD_SET(_servers[index]._handler.get_cgiFD(), &_writeFDS);
 	}
 }
 
@@ -188,8 +185,6 @@ void    webserver::initialize_highest_fd() {
 	for (size_t index = 0; index < _servers.size(); index++) {
 		if (_servers[index].get_tcp_socket() > _maxFD)
 			_maxFD = _servers[index].get_tcp_socket();
-		if (_servers[index]._handler.get_cgiFD() > _maxFD)
-			_maxFD = _servers[index]._handler.get_cgiFD();
 	}
 }
 
@@ -220,22 +215,9 @@ int     webserver::check_server_block(webserver::vector server_block) {
 	return 0;
 }
 
-void	generate_filename(std::string &filename, int index)
+void	webserver::initialize_handler_indexes()
 {
-	char	*index_str = ft_itoa(index);
-	filename.append(index_str);
-	free(index_str);
-	filename.append(".txt");
-}
-
-void	webserver::initialize_temp_files()
-{
-	for (size_t index = 0; index < _servers.size(); index++)
-	{
-		std::string	filename_str = "server_files/www/temp";
-		generate_filename(filename_str, index);
-		const char *filename = filename_str.c_str();
-		int	fd = open(filename, O_RDWR);
-		_servers[index]._handler.set_cgiFD(fd);
+	for (size_t index = 0; index < _servers.size(); index++) {
+		_servers[index]._handler.set_index(index);
 	}
 }

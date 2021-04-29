@@ -6,7 +6,7 @@
 /*   By: roybakker <roybakker@student.codam.nl>       +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2021/04/07 13:10:33 by roybakker     #+#    #+#                 */
-/*   Updated: 2021/04/29 15:59:28 by gbouwen       ########   odam.nl         */
+/*   Updated: 2021/04/29 16:20:40 by gbouwen       ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -168,29 +168,45 @@ int        header_handler::get_request() {
 
 // work in progress
 
-int        header_handler::post_request() {
-//	write(activeFD, "HTTP/1.1 200 OK\r\n", strlen("HTTP/1.1 200 OK\r\n"));
-//	write(activeFD, "Content-Length: 13\r\n", strlen("Content-Length: 13\r\n"));
-//	write(activeFD, "\r\n", strlen("\r\n"));
+//int        header_handler::post_request() {
+////	write(activeFD, "HTTP/1.1 200 OK\r\n", strlen("HTTP/1.1 200 OK\r\n"));
+////	write(activeFD, "Content-Length: 13\r\n", strlen("Content-Length: 13\r\n"));
+////	write(activeFD, "\r\n", strlen("\r\n"));
 
-	char		**args = new char *[3];
+	//char		**args = new char *[3];
 
-	args[0] = ft_strdup("/usr/bin/php");
-	args[1] = ft_strdup(_file_location.c_str());
-	args[2] = NULL;
-	if (fork() == 0)
-	{
-		close(STDOUT_FILENO);
-		dup(_cgiFD);
-//		execve(args[0], const_cast<char **>(reinterpret_cast<char * const *>(args)), NULL); //
-		execve(args[0], args, NULL);
-	}
-	else
-		wait(NULL);
-	free(args[0]);
-	free(args[1]);
-	delete [] args;
-    return (_cgiFD);
+	//args[0] = ft_strdup("/usr/bin/php");
+	//args[1] = ft_strdup(_file_location.c_str());
+	//args[2] = NULL;
+	//if (fork() == 0)
+	//{
+		//close(STDOUT_FILENO);
+		//dup(_cgiFD);
+////		execve(args[0], const_cast<char **>(reinterpret_cast<char * const *>(args)), NULL); //
+		//execve(args[0], args, NULL);
+	//}
+	//else
+		//wait(NULL);
+	//free(args[0]);
+	//free(args[1]);
+	//delete [] args;
+    //return (_cgiFD);
+//}
+
+int			header_handler::post_request()
+{
+	std::string	str_filename = "server_files/www/temp";
+	char	*index_str = ft_itoa(_index);
+
+	str_filename.append(index_str);
+	free(index_str);
+	const char *filename = str_filename.c_str();
+	int	cgiFD = open(filename, O_CREAT | O_RDWR, S_IRWXU);
+	if (cgiFD == -1)
+		throw std::runtime_error("Open failed");
+	std::cout << "FILENAME " << filename << std::endl;
+	std::cout << "cgiFD " << cgiFD << std::endl;
+	return (cgiFD);
 }
 
 int         header_handler::put_request() {
@@ -460,6 +476,7 @@ void        header_handler::reset_handler_atributes() {
 void            header_handler::reset_status() {_status = 200;}
 
 //------Getter------
+int				header_handler::get_index() { return _index; }
 int             header_handler::get_content_length() { return _content_length;}
 std::string     header_handler::get_content_type() { return _content_type;}
 std::string     header_handler::get_content_language() { return _content_language;}
@@ -476,11 +493,10 @@ std::string     header_handler::get_accept_language() { return _accept_language;
 std::string     header_handler::get_authorization() { return _authorization;}
 std::string     header_handler::get_referer() { return _referer;}
 std::string     header_handler::get_body() { return _body;}
-int				header_handler::get_cgiFD() { return _cgiFD; }
 
 //------Setter------
-void			header_handler::set_cgiFD(int fd)
+void			header_handler::set_index(int index)
 {
-	_cgiFD = fd;
-	fcntl(_cgiFD, F_SETFL, O_NONBLOCK);
+	_index = index;
 }
+

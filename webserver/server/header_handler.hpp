@@ -6,7 +6,7 @@
 /*   By: roybakker <roybakker@student.codam.nl>       +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2021/04/07 13:23:53 by roybakker     #+#    #+#                 */
-/*   Updated: 2021/04/29 15:58:40 by gbouwen       ########   odam.nl         */
+/*   Updated: 2021/04/29 16:13:42 by gbouwen       ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -45,6 +45,8 @@ public:
     enum        status_values{ no_content_ = 204, forbidden_ = 403, not_found_ = 404 };
 
 protected:
+	int				_index;
+
     //status
     int                         _status;
     std::map<int, std::string>  _status_phrases;
@@ -71,9 +73,6 @@ protected:
     std::string     _requested_file;
 
     //Status code map
-
-	//cgiFD
-	int				_cgiFD;
 
 public:
     header_handler();
@@ -127,6 +126,7 @@ public:
     void            reset_status();
 
     //Getter
+	int				get_index();
     int             get_content_length();
     std::string     get_content_type();
     std::string     get_content_language();
@@ -143,10 +143,9 @@ public:
     std::string     get_authorization();
     std::string     get_referer();
     std::string     get_body();
-	int				get_cgiFD();
 
 	//Setter
-	void			set_cgiFD(int fd);
+	void			set_index(int index);
 
     //Debug tool
     void            print_request(); //DELETE LATER
