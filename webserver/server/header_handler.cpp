@@ -6,7 +6,7 @@
 /*   By: roybakker <roybakker@student.codam.nl>       +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2021/04/07 13:10:33 by roybakker     #+#    #+#                 */
-/*   Updated: 2021/04/29 16:20:40 by gbouwen       ########   odam.nl         */
+/*   Updated: 2021/04/29 16:34:49 by gbouwen       ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -204,8 +204,6 @@ int			header_handler::post_request()
 	int	cgiFD = open(filename, O_CREAT | O_RDWR, S_IRWXU);
 	if (cgiFD == -1)
 		throw std::runtime_error("Open failed");
-	std::cout << "FILENAME " << filename << std::endl;
-	std::cout << "cgiFD " << cgiFD << std::endl;
 	return (cgiFD);
 }
 

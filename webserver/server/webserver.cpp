@@ -6,7 +6,7 @@
 /*   By: roybakker <roybakker@student.codam.nl>       +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2021/03/30 16:30:47 by roybakker     #+#    #+#                 */
-/*   Updated: 2021/04/29 16:17:51 by gbouwen       ########   odam.nl         */
+/*   Updated: 2021/04/29 16:36:19 by gbouwen       ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -128,9 +128,9 @@ void    webserver::run() {
 					if (server->_fileFD != unused_)
 					    FD_SET(server->_fileFD, &_buffer_readFDS);
 					else
-					    FD_SET(server->_activeFD, &_buffer_writeFDS);
-
-					//_fileFD also needs to be added to buffer_writeFD in php cases
+						FD_SET(server->_activeFD, &_buffer_writeFDS);
+					if (server->_handler.get_file_location().find(".php") != std::string::npos) // php-case (maybe improve later?)
+						FD_SET(server->_fileFD, &_buffer_writeFDS);
 				}
 			}
 
@@ -141,7 +141,7 @@ void    webserver::run() {
                     //set php params
                     //dup2 _fileFD to STDOUT
                     //execve php file
-                    //FD_CLR _fileFD form buffer_writeFDS in php cases
+					FD_CLR(server->_fileFD, &_buffer_writeFDS);
 			    }
 			    //regular cases with already present files on server ready to be read
 
@@ -153,7 +153,6 @@ void    webserver::run() {
 			if (server->_activeFD != unused_ && FD_ISSET(_servers[index]._activeFD, &_writeFDS)) //create response
 			{
 				server->_handler.send_response(server->_activeFD, server->_fileFD, server->_server_name);
-				std::cout << "response" << std::endl;
 				close(server->_fileFD);
 				server->_fileFD = unused_;
 				FD_CLR(server->_activeFD, &_buffer_writeFDS);
