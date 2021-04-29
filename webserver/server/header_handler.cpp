@@ -160,26 +160,31 @@ int         header_handler::head_request() {
 // work in progress
 
 int        header_handler::post_request(int activeFD) {
-	write(activeFD, "HTTP/1.1 200 OK\r\n", strlen("HTTP/1.1 200 OK\r\n"));
-	write(activeFD, "Content-Length: 13\r\n", strlen("Content-Length: 13\r\n"));
-	write(activeFD, "\r\n", strlen("\r\n"));
-
 	char		**args = new char *[3];
-	std::string	temp;
+	char 		**envp = new char *[3];
+	std::string	temp = "/usr/bin/php";
 
-	temp = "/usr/bin/php";
 	args[0] = ft_strdup(temp.c_str());
 	args[1] = ft_strdup(_file_location.c_str());
 	args[2] = NULL;
+
+	std::string query = "QUERY_STRING=";
+	std::string full_query = query.append(_body);
+	std::string request_method = "REQUEST_METHOD=";
+	std::string full_request = request_method.append(_method);
+	envp[0] = ft_strdup(full_request.c_str());
+	envp[1] = ft_strdup(full_query.c_str());
+	envp[2] = NULL;
+
 	if (fork() == 0)
 	{
-		close(STDOUT_FILENO);
-		dup(activeFD);
-		execve(args[0], const_cast<char **>(reinterpret_cast<char * const *>(args)), NULL);
+		dup2(activeFD, STDOUT_FILENO);
+		execve(args[0], const_cast<char **>(reinterpret_cast<char * const *>(args)), const_cast<char **>(reinterpret_cast<char * const *>(envp)));
 	}
 	else
 		wait(NULL);
 	delete [] args;
+	delete [] envp;
     return (-1);
 }
 
