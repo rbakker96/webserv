@@ -6,7 +6,7 @@
 /*   By: roybakker <roybakker@student.codam.nl>       +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2021/03/30 16:30:47 by roybakker     #+#    #+#                 */
-/*   Updated: 2021/04/26 18:04:40 by gbouwen       ########   odam.nl         */
+/*   Updated: 2021/04/29 15:58:17 by gbouwen       ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -124,19 +124,28 @@ void    webserver::run() {
                     server->clear_handled_request(server->_activeFD);
 					server->_handler.configure_location(server->_location_blocks, server->get_error_page());
                     server->_fileFD = server->_handler.handle_request();
-					std::cout << "FILE FD " << server->_fileFD << std::endl;
 					//server->_fileFD = server->_handler.open_requested_file(server->_handler.get_file_location());
 					set_maxFD(server->_fileFD);
 					if (server->_fileFD != unused_)
 					    FD_SET(server->_fileFD, &_buffer_readFDS);
 					else
-                        FD_SET(server->_activeFD, &_buffer_writeFDS);
+					    FD_SET(server->_activeFD, &_buffer_writeFDS);
+
+					//_fileFD also needs to be added to buffer_writeFD in php cases
 				}
 			}
 
 			if (server->_fileFD != unused_ && FD_ISSET(server->_fileFD, &_readFDS)) //read requested file
 			{
-				std::cout << "check" << std::endl;
+			    if (FD_ISSET(server->_fileFD, &_writeFDS)) {
+                    //(create CGI class for this)
+                    //set php params
+                    //dup2 _fileFD to STDOUT
+                    //execve php file
+                    //FD_CLR _fileFD form buffer_writeFDS in php cases
+			    }
+			    //regular cases with already present files on server ready to be read
+
 				server->_handler.read_requested_file(server->_fileFD);
 				FD_CLR(server->_fileFD, &_buffer_readFDS);
 				FD_SET(server->_activeFD, &_buffer_writeFDS);

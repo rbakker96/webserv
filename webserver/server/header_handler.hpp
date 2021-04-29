@@ -6,7 +6,7 @@
 /*   By: roybakker <roybakker@student.codam.nl>       +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2021/04/07 13:23:53 by roybakker     #+#    #+#                 */
-/*   Updated: 2021/04/22 14:47:45 by gbouwen       ########   odam.nl         */
+/*   Updated: 2021/04/29 15:58:40 by gbouwen       ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -102,6 +102,7 @@ public:
     int             get_request();
     int             head_request();
     int             post_request();
+    int             put_request();
 
     //Send response functions
 	void 			send_response(int activeFD, int fileFD, std::string server_name);
