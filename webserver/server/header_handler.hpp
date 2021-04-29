@@ -6,7 +6,7 @@
 /*   By: roybakker <roybakker@student.codam.nl>       +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2021/04/07 13:23:53 by roybakker     #+#    #+#                 */
-/*   Updated: 2021/04/29 16:13:42 by gbouwen       ########   odam.nl         */
+/*   Updated: 2021/04/29 17:55:54 by gbouwen       ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -102,6 +102,9 @@ public:
     int             head_request();
     int             post_request();
     int             put_request();
+
+	//CGI functions
+	void			execute_php(int fileFD);
 
     //Send response functions
 	void 			send_response(int activeFD, int fileFD, std::string server_name);

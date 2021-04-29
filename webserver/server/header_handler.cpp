@@ -6,7 +6,7 @@
 /*   By: roybakker <roybakker@student.codam.nl>       +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2021/04/07 13:10:33 by roybakker     #+#    #+#                 */
-/*   Updated: 2021/04/29 16:34:49 by gbouwen       ########   odam.nl         */
+/*   Updated: 2021/04/29 17:55:53 by gbouwen       ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -204,6 +204,7 @@ int			header_handler::post_request()
 	int	cgiFD = open(filename, O_CREAT | O_RDWR, S_IRWXU);
 	if (cgiFD == -1)
 		throw std::runtime_error("Open failed");
+	fcntl(cgiFD, F_SETFL, O_NONBLOCK);
 	return (cgiFD);
 }
 
@@ -217,6 +218,26 @@ int         header_handler::put_request() {
     return 0;
 }
 
+//------CGI functions------
+void		header_handler::execute_php(int fileFD)
+{
+	char	**args = new char *[3];
+
+	args[0] = ft_strdup("/usr/bin/php");
+	args[1] = ft_strdup(_file_location.c_str());
+	args[2] = NULL;
+	if (fork() == 0) // needs error checking
+	{
+		close(STDOUT_FILENO);
+		dup2(fileFD, STDOUT_FILENO);
+		execve(args[0], args, NULL);
+	}
+	else
+		wait(NULL);
+	free(args[0]);
+	free(args[1]);
+	delete [] args;
+}
 
 //------Send response functions------
 void        header_handler::send_response(int activeFD, int fileFD, std::string server_name) {
@@ -351,10 +372,13 @@ void        header_handler::read_requested_file(int fd) {
 
     while (ret > 0) {
         ret = read(fd, buff, 3000);
+		std::cout << "BUFF " << buff << std::endl;
+		std::cout << "RET " << ret << std::endl;
         _requested_file.append(buff, ret);
         if (ret < 3000)
             break;
     }
+	std::cout << "REQUESTED_FILE STRING: " << _requested_file << std::endl;
     if (ret == -1)
         throw std::runtime_error("Read failed");
 }

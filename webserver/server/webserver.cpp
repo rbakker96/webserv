@@ -6,7 +6,7 @@
 /*   By: roybakker <roybakker@student.codam.nl>       +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2021/03/30 16:30:47 by roybakker     #+#    #+#                 */
-/*   Updated: 2021/04/29 16:36:19 by gbouwen       ########   odam.nl         */
+/*   Updated: 2021/04/29 17:55:54 by gbouwen       ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -137,6 +137,7 @@ void    webserver::run() {
 			if (server->_fileFD != unused_ && FD_ISSET(server->_fileFD, &_readFDS)) //read requested file
 			{
 			    if (FD_ISSET(server->_fileFD, &_writeFDS)) {
+					server->_handler.execute_php(server->_fileFD);
                     //(create CGI class for this)
                     //set php params
                     //dup2 _fileFD to STDOUT
