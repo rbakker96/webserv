@@ -1,12 +1,24 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        ::::::::            */
+/*   header_handler.cpp                                 :+:    :+:            */
+/*                                                     +:+                    */
+/*   By: gbouwen <marvin@codam.nl>                    +#+                     */
+/*                                                   +#+                      */
+/*   Created: 2021/05/03 12:34:40 by gbouwen       #+#    #+#                 */
+/*   Updated: 2021/05/03 12:41:04 by gbouwen       ########   odam.nl         */
+/*                                                                            */
+/* ************************************************************************** */
+
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        ::::::::            */
 /*   handler.cpp                                        :+:    :+:            */
 /*                                                     +:+                    */
 /*   By: roybakker <roybakker@student.codam.nl>       +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2021/04/07 13:10:33 by roybakker     #+#    #+#                 */
-/*   Updated: 2021/04/29 17:55:53 by gbouwen       ########   odam.nl         */
+/*   Updated: 2021/05/03 12:34:39 by gbouwen       ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -166,33 +178,6 @@ int        header_handler::get_request() {
     return (open_requested_file(_file_location));
 }
 
-// work in progress
-
-//int        header_handler::post_request() {
-////	write(activeFD, "HTTP/1.1 200 OK\r\n", strlen("HTTP/1.1 200 OK\r\n"));
-////	write(activeFD, "Content-Length: 13\r\n", strlen("Content-Length: 13\r\n"));
-////	write(activeFD, "\r\n", strlen("\r\n"));
-
-	//char		**args = new char *[3];
-
-	//args[0] = ft_strdup("/usr/bin/php");
-	//args[1] = ft_strdup(_file_location.c_str());
-	//args[2] = NULL;
-	//if (fork() == 0)
-	//{
-		//close(STDOUT_FILENO);
-		//dup(_cgiFD);
-////		execve(args[0], const_cast<char **>(reinterpret_cast<char * const *>(args)), NULL); //
-		//execve(args[0], args, NULL);
-	//}
-	//else
-		//wait(NULL);
-	//free(args[0]);
-	//free(args[1]);
-	//delete [] args;
-    //return (_cgiFD);
-//}
-
 int			header_handler::post_request()
 {
 	std::string	str_filename = "server_files/www/temp";
@@ -201,7 +186,7 @@ int			header_handler::post_request()
 	str_filename.append(index_str);
 	free(index_str);
 	const char *filename = str_filename.c_str();
-	int	cgiFD = open(filename, O_CREAT | O_RDWR, S_IRWXU);
+	int	cgiFD = open(filename, O_CREAT | O_RDWR | O_TRUNC, S_IRWXU);
 	if (cgiFD == -1)
 		throw std::runtime_error("Open failed");
 	fcntl(cgiFD, F_SETFL, O_NONBLOCK);
@@ -370,15 +355,13 @@ void        header_handler::read_requested_file(int fd) {
     char    buff[3000];
     int     ret = 1;
 
+	lseek(fd, 0, SEEK_SET);
     while (ret > 0) {
         ret = read(fd, buff, 3000);
-		std::cout << "BUFF " << buff << std::endl;
-		std::cout << "RET " << ret << std::endl;
         _requested_file.append(buff, ret);
         if (ret < 3000)
             break;
     }
-	std::cout << "REQUESTED_FILE STRING: " << _requested_file << std::endl;
     if (ret == -1)
         throw std::runtime_error("Read failed");
 }
