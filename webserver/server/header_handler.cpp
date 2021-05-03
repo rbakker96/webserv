@@ -6,7 +6,7 @@
 /*   By: gbouwen <marvin@codam.nl>                    +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2021/05/03 12:34:40 by gbouwen       #+#    #+#                 */
-/*   Updated: 2021/05/03 15:03:56 by gbouwen       ########   odam.nl         */
+/*   Updated: 2021/05/03 15:55:22 by gbouwen       ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -116,14 +116,39 @@ int         header_handler::identify_request_value(const std::string &str) {
     return unknown_;
 }
 
+//std::string	get_body_from_url(const std::string &file_location, int start_of_body)
+//{
+	//return (file_location.substr(start_of_body + 1, std::string::npos));
+//}
+
+//std::string	get_correct_file_location(const std::string &str, size_t start)
+//{
+	//int		questionmark_position;
+	//size_t	end_of_location;
+
+	//questionmark_position = str.find("?", start);
+	//if (questionmark_position != -1)
+		//return (str.substr(start, questionmark_position));
+	//end_of_location = str.find_first_of(' ', start);
+	//return (str.substr(start, end));
+//}
+
 void        header_handler::parse_first_line(const std::string &str) {
-    size_t start = 0;
-    size_t end = str.find_first_of(' ', start);
+	int		index;
+    size_t	start = 0;
+    size_t	end = str.find_first_of(' ', start);
     _method = str.substr(start, end - start);
 
     start = end + 1;
     end = str.find_first_of(' ', start);
-	_file_location = str.substr(start, end - start);
+	if ((index = str.find('?', start)) != -1)
+	{
+		_file_location = str.substr(start, index - start);
+		index++;
+		_body = str.substr(index, end - index);
+	}
+	else
+		_file_location = str.substr(start, end - start);
     _protocol = str.substr(end + 1);
 }
 
@@ -146,7 +171,6 @@ int        header_handler::handle_request(header_handler::location_vector locati
     int		fd = unused_;
 
     verify_file_location(location_blocks, error_page);
-	std::cout << "FILE LOCATION " << _file_location << std::endl;
     if (stat(_file_location.c_str(), &stats) == -1)  //maybe more errors for which we can see with fstat
         _status = not_found_;
     else if (!(stats.st_mode & S_IRUSR))
