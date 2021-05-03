@@ -6,7 +6,7 @@
 /*   By: roybakker <roybakker@student.codam.nl>       +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2021/03/30 16:30:47 by roybakker     #+#    #+#                 */
-/*   Updated: 2021/04/26 18:04:40 by gbouwen       ########   odam.nl         */
+/*   Updated: 2021/05/03 12:50:04 by gbouwen       ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -92,13 +92,17 @@ void    webserver::establish_connection(){
 
 void    webserver::run() {
 	initialize_FD_sets();
+	initialize_handler_indexes();
     initialize_highest_fd();
     while (true)
     {
 		synchronize_FD_sets();
 		std::cout << "--- Waiting for activity... ---" << std::endl;
         if (select(get_maxFD(), &_readFDS, &_writeFDS, 0, 0) == -1)
+		{
+			std::cout << strerror(errno) << std::endl;
         	throw std::runtime_error("Select failed");
+		}
         for (size_t index = 0; index < _servers.size(); index++) {
 			server *server = &_servers[index];
 
@@ -118,7 +122,7 @@ void    webserver::run() {
 					FD_CLR(server->_activeFD, &_buffer_readFDS);
 					server->_handler.parse_request(server->_activeFD, server->_request_buffer);
                     server->clear_handled_request(server->_activeFD);
-                    server->_fileFD = server->_handler.handle_request(server->_location_blocks, server->get_error_page(), server->_activeFD);
+                    server->_fileFD = server->_handler.handle_request(server->_location_blocks, server->get_error_page());
 
 					set_maxFD(server->_fileFD);
 					if (server->_fileFD != unused_)
@@ -133,11 +137,12 @@ void    webserver::run() {
 			if (server->_fileFD != unused_ && FD_ISSET(server->_fileFD, &_readFDS)) //read requested file
 			{
 			    if (FD_ISSET(server->_fileFD, &_writeFDS)) {
+					server->_handler.execute_php(server->_fileFD);
                     //(create CGI class for this)
                     //set php params
                     //dup2 _fileFD to STDOUT
                     //execve php file
-                    //FD_CLR _fileFD form buffer_writeFDS in php cases
+					FD_CLR(server->_fileFD, &_buffer_writeFDS);
 			    }
 			    //regular cases with already present files on server ready to be read
 
@@ -208,4 +213,11 @@ int     webserver::check_server_block(webserver::vector server_block) {
 	if (open_bracket == closing_bracket && open_bracket != 0)
 		return 1;
 	return 0;
+}
+
+void	webserver::initialize_handler_indexes()
+{
+	for (size_t index = 0; index < _servers.size(); index++) {
+		_servers[index]._handler.set_index(index);
+	}
 }

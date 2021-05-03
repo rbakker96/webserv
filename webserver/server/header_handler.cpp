@@ -1,12 +1,12 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        ::::::::            */
-/*   handler.cpp                                        :+:    :+:            */
+/*   header_handler.cpp                                 :+:    :+:            */
 /*                                                     +:+                    */
-/*   By: roybakker <roybakker@student.codam.nl>       +#+                     */
+/*   By: gbouwen <marvin@codam.nl>                    +#+                     */
 /*                                                   +#+                      */
-/*   Created: 2021/04/07 13:10:33 by roybakker     #+#    #+#                 */
-/*   Updated: 2021/04/26 18:04:41 by gbouwen       ########   odam.nl         */
+/*   Created: 2021/05/03 12:34:40 by gbouwen       #+#    #+#                 */
+/*   Updated: 2021/05/03 12:50:05 by gbouwen       ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -39,17 +39,21 @@ void header_handler::print_request() {
 //------------------------------------------------------------
 
 
-header_handler::header_handler() : _status(200), _content_length(0), _content_type("Content-Type: text/"), _content_language("en"), _content_location(), _allow(),
-								   _method(), _file_location(), _protocol(), _requested_host(), _user_agent(), _accept_language(), _authorization(), _referer(), _body(), _requested_file() {
-    _status_phrases.insert (pair(200, "OK"));
-    _status_phrases.insert (pair(400, "Bad Request"));
-    _status_phrases.insert (pair(401, "Unauthorized"));
-    _status_phrases.insert (pair(403, "Forbidden"));
-    _status_phrases.insert (pair(404, "Not Found"));
-    _status_phrases.insert (pair(405, "Method Not Allowed"));
+header_handler::header_handler():	_status(200), _content_length(0), _content_type("Content-Type: text/"),
+									_content_language("en"), _content_location(), _allow(), _method(), _file_location(),
+									_protocol(), _requested_host(), _user_agent(), _accept_language(), _authorization(),
+									_referer(), _body(), _requested_file()	{
+	// setup status phrases
+	_status_phrases.insert (pair(200, "OK"));
+	_status_phrases.insert (pair(400, "Bad Request"));
+	_status_phrases.insert (pair(401, "Unauthorized"));
+	_status_phrases.insert (pair(403, "Forbidden"));
+	_status_phrases.insert (pair(404, "Not Found"));
+	_status_phrases.insert (pair(405, "Method Not Allowed"));
 //    _status_phrases.insert ( pair(, ""));
-//    _status_phrases.insert ( pair(, ""));
-//    _status_phrases.insert ( pair(, ""));
+
+	// setup CGI environment variables
+
 }
 
 header_handler::~header_handler(){
@@ -136,10 +140,8 @@ void        header_handler::parse_content_location(const std::string &str) {_con
 void        header_handler::parse_allow(const std::string &str) {_allow = parse_string(str);}
 void        header_handler::invalid_argument(const std::string &str) {parse_invalid(str);}
 
-
-
 //------Handle request functions------
-int        header_handler::handle_request(header_handler::location_vector location_blocks, std::string error_page, int activeFD) {
+int        header_handler::handle_request(header_handler::location_vector location_blocks, std::string error_page) {
     struct  stat stats;
     int		fd = -1; //add unused_ enum to handler
 
@@ -150,7 +152,7 @@ int        header_handler::handle_request(header_handler::location_vector locati
     else if (!(stats.st_mode & S_IRUSR))
         _status = forbidden_;
     else if (verify_content_type() == "php") //post request
-        activeFD = 1; //something with the php fle opening and returning fd
+		return post_request();
     else if (_method == "PUT")
         put_request();
     else if ((fd = open(&_file_location[0], O_RDONLY)) == -1 )
@@ -234,14 +236,66 @@ void        header_handler::verify_file_location(header_handler::location_vector
 //    return (-1);
 //}
 
+
+int			header_handler::post_request()
+{
+	std::string	str_filename = "server_files/www/temp";
+	char	*index_str = ft_itoa(_index);
+
+	str_filename.append(index_str);
+	free(index_str);
+	const char *filename = str_filename.c_str();
+	int	cgiFD = open(filename, O_CREAT | O_RDWR | O_TRUNC, S_IRWXU);
+	if (cgiFD == -1)
+		throw std::runtime_error("Open failed");
+	fcntl(cgiFD, F_SETFL, O_NONBLOCK);
+	return (cgiFD);
+}
+
 int         header_handler::put_request() {
     //not allowed method (405)
     //bigger then max filesize (413)
     //uploading older version then present (409) conflict
-    //successfully created (201)
-    //successfully modified (204)
+    //succesfully created (201)
+    //succecfully modified (204)
 
-    return 0;
+	return 0;
+}
+
+//------CGI functions------
+int header_handler::execute_php(int fileFD)
+{
+	char	**args = new char *[3];
+	char 	**envp = new char *[3];
+
+	args[0] = ft_strdup("/usr/bin/php");
+	args[1] = ft_strdup(_file_location.c_str());
+	args[2] = NULL;
+
+	std::string query = "QUERY_STRING=";
+	std::string full_query = query.append(_body);
+	std::string request_method = "REQUEST_METHOD=";
+	std::string full_request = request_method.append(_method);
+	envp[0] = ft_strdup(full_request.c_str());
+	envp[1] = ft_strdup(full_query.c_str());
+	envp[2] = NULL;
+
+	if (fork() == 0) // needs error checking
+	{
+		close(STDOUT_FILENO);
+		dup2(fileFD, STDOUT_FILENO);
+		execve(args[0], args, envp);
+	}
+	else
+		wait(NULL);
+	// create free_memory() function
+	free(args[0]);
+	free(args[1]);
+	delete [] args;
+	free(envp[0]);
+	free(envp[1]);
+	delete [] envp;
+    return (-1);
 }
 
 
@@ -281,6 +335,7 @@ void	header_handler::generate_status_line(std::string &response) {
 void	header_handler::generate_content_length(std::string &response){
 	std::string	content_length = "Content-Length: ";
 
+	std::cout << "requested file = \n" << get_requested_file() << std::endl;
 	content_length.append(ft_itoa(this->get_requested_file().size()));
 	content_length.append("\r\n");
 	response.append(content_length);
@@ -290,11 +345,15 @@ void	header_handler::generate_content_type(std::string &response) {
 	std::string	content_type_header = "Content-Type: ";
     _content_type = verify_content_type();
 
+    std::cout << "current content type = " << _content_type << std::endl;
 	if (_content_type.compare("html") == 0 || _content_type.compare("css") == 0)
 		content_type_header.append("text/");
 	else if (_content_type.compare("png") == 0)
 		content_type_header.append("image/");
 	content_type_header.append(_content_type);
+	if (_content_type.compare("php") == 0) //fix later
+		content_type_header ="text/html";
+	std::cout << "header content type = " << content_type_header << std::endl;
 	content_type_header.append("\r\n");
 	response.append(content_type_header);
 }
@@ -404,6 +463,7 @@ void        header_handler::read_requested_file(int fd) {
     char    buff[3000];
     int     ret = 1;
 
+	lseek(fd, 0, SEEK_SET);
     while (ret > 0) {
         ret = read(fd, buff, 3000);
         _requested_file.append(buff, ret);
@@ -436,6 +496,7 @@ void        header_handler::reset_handler_atributes() {
 void            header_handler::reset_status() {_status = 200;}
 
 //------Getter------
+int				header_handler::get_index() { return _index; }
 int             header_handler::get_content_length() { return _content_length;}
 std::string     header_handler::get_content_type() { return _content_type;}
 std::string     header_handler::get_content_language() { return _content_language;}
@@ -452,3 +513,7 @@ std::string     header_handler::get_accept_language() { return _accept_language;
 std::string     header_handler::get_authorization() { return _authorization;}
 std::string     header_handler::get_referer() { return _referer;}
 std::string     header_handler::get_body() { return _body;}
+
+//------Setter------
+void			header_handler::set_index(int index) { _index = index;}
+

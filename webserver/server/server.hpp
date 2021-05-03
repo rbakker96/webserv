@@ -56,7 +56,7 @@ private:
     std::string                     _error_page;
     std::vector<location_context>   _location_blocks;
 
-    //TCP conection
+    //TCP connection
     int 	                        _tcp_socket;
     int		                        _addr_len;
     struct	sockaddr_in             _addr;
