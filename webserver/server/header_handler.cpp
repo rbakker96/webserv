@@ -138,28 +138,47 @@ void        header_handler::invalid_argument(const std::string &str) {parse_inva
 
 //------Handle request functions------
 int        header_handler::handle_request(int activeFD) {
-    if (_method == "GET")
+    if (_method == "GET" || _method == "HEAD")
         return get_request();
-    else if (_method == "HEAD")
-        return head_request();
     else if (_method == "POST")
         return post_request(activeFD);
-//    else if (_method == "")
-//        ;
+    else if (_method == "PUT")
+        return put_request();
     return 0;
 }
 
 int        header_handler::get_request() {
-    return (open_requested_file(_file_location));
-}
+    //check for existing location block
+        //not present redirect to error location
+        //present check for extension to see if index is needed
 
-int         header_handler::head_request() {
+    //determine content type
+
+    //if php file and it exists
+        //open temp file and return that to _fileFD
+
+    //else Open requested file
+        //open failed -> send back 500 (internal server errror)
+        //open succes -> return fd to set as activeFD
+
     return (open_requested_file(_file_location));
 }
 
 // work in progress
 
 int        header_handler::post_request(int activeFD) {
+
+    //check for existing location block
+    //not present redirect to error location
+    //present check for extension to see if index is needed
+
+    //determine content type
+
+    //if php file and it exists
+        //open temp file and return that to _fileFD
+
+    //else return error page
+
 	char		**args = new char *[3];
 	char 		**envp = new char *[3];
 	std::string	temp = "/usr/bin/php";
@@ -187,6 +206,17 @@ int        header_handler::post_request(int activeFD) {
 	delete [] envp;
     return (-1);
 }
+
+int         header_handler::put_request() {
+    //not allowed method (405)
+    //bigger then max filesize (413)
+    //uploading older version then present (409) conflict
+    //succesfully created (201)
+    //succecfully modified (204)
+
+    return 0;
+}
+
 
 //------Send response functions------
 void        header_handler::send_response(int activeFD, int fileFD, std::string server_name) {

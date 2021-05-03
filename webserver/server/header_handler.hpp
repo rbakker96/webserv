@@ -98,8 +98,8 @@ public:
     //Handle request functions
     int             handle_request(int activeFD);
     int             get_request();
-    int             head_request();
     int             post_request(int activeFD);
+    int             put_request();
 
     //Send response functions
 	void 			send_response(int activeFD, int fileFD, std::string server_name);
