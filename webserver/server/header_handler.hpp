@@ -72,30 +72,30 @@ protected:
 
 	std::string		_requested_file;
 
-    //CGI environment variables (17)
-	std::map<std::string, std::string>			_cgi_env_variables;
-
-	std::string 	_cgi_content_length; // -> _content_length
-	std::string 	_cgi_content_type; // -> _content_type
-	std::string 	_cgi_gateway_interface; // GATEWAY_INTERFACE: CGI/1.1
-	std::string 	_cgi_query_string; // -> _body
-	std::string 	_cgi_remote_addr; // (network address of the client)
-	std::string 	_cgi_request_method; // -> method
-	std::string 	_cgi_server_name; // -> server->_server_name
-	std::string 	_cgi_server_port; // -> server->_port
-	std::string 	_cgi_server_protocol; // -> protocol
-	std::string 	_cgi_server_software; // -> SERVER_SOFTWARE: webserv 1.1
-
-	// path related envp
-	std::string 	_cgi_path_info; // -> _requested_file (cgi file name)
-	std::string 	_cgi_path_translated;
-	std::string 	_cgi_request_uri;
-	std::string 	_cgi_script_name;
-
-	// authorization related envp
-	std::string 	_cgi_auth_type; // LATER (authorization)
-	std::string 	_cgi_remote_ident; // LATER (authorization)
-	std::string 	_cgi_remote_user; // LATER (authorization)
+//    //CGI environment variables (17) -> maybe not necessary
+//	std::map<std::string, std::string>			_cgi_env_variables;
+//
+//	std::string 	_cgi_content_length; // -> _content_length
+//	std::string 	_cgi_content_type; // -> _content_type
+//	std::string 	_cgi_gateway_interface; // GATEWAY_INTERFACE: CGI/1.1
+//	std::string 	_cgi_query_string; // -> _body
+//	std::string 	_cgi_remote_addr; // (network address of the client)
+//	std::string 	_cgi_request_method; // -> method
+//	std::string 	_cgi_server_name; // -> server->_server_name
+//	std::string 	_cgi_server_port; // -> server->_port
+//	std::string 	_cgi_server_protocol; // -> protocol
+//	std::string 	_cgi_server_software; // -> SERVER_SOFTWARE: webserv 1.1
+//
+//	// path related envp
+//	std::string 	_cgi_path_info; // -> _requested_file (cgi file name)
+//	std::string 	_cgi_path_translated;
+//	std::string 	_cgi_request_uri;
+//	std::string 	_cgi_script_name;
+//
+//	// authorization related envp
+//	std::string 	_cgi_auth_type; // LATER (authorization)
+//	std::string 	_cgi_remote_ident; // LATER (authorization)
+//	std::string 	_cgi_remote_user; // LATER (authorization)
 
 public:
 	header_handler();
@@ -127,8 +127,8 @@ public:
 
 	//CGI functions
 	int 			execute_php(int fileFD);
-	int 			create_cgi_args(char **args);
-	int				create_cgi_envp(char **envp);
+	char 			**create_cgi_args();
+	char			**create_cgi_envp();
 	void 			free_cgi_execution_memory(char **args, char **envp);
 
     //Send response functions

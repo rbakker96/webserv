@@ -1,6 +1,52 @@
 <html>
 <body>
-<h2>Firstname: asdf</h2></br><h2>Lastname: asdf</h2></br></body>
-</html>
+<h2>Firstname: asdf</h2></br><h2>Lastname: asdf</h2></br><p>--add phpinfo for debugging--
+</p><p>phpinfo()
 
-// 
+Environment
+
+Variable => Value
+CONTENT_LENGTH => 28
+CONTENT_TYPE => application/x-www-form-urlencoded
+GATEWAY_INTERFACE => CGI/1.1
+QUERY_STRING => firstname=asdf&lastname=asdf
+REQUEST_METHOD => POST
+SERVER_PROTOCOL => HTTP/1.1
+SERVER_SOFTWARE => webserv/1.1
+__CF_USER_TEXT_ENCODING => 0xFA4E:0x0:0x0
+</p><p>phpinfo()
+
+PHP Variables
+
+Variable => Value
+$_SERVER['CONTENT_LENGTH'] => 28
+$_SERVER['CONTENT_TYPE'] => application/x-www-form-urlencoded
+$_SERVER['GATEWAY_INTERFACE'] => CGI/1.1
+$_SERVER['QUERY_STRING'] => firstname=asdf&lastname=asdf
+$_SERVER['REQUEST_METHOD'] => POST
+$_SERVER['SERVER_PROTOCOL'] => HTTP/1.1
+$_SERVER['SERVER_SOFTWARE'] => webserv/1.1
+$_SERVER['__CF_USER_TEXT_ENCODING'] => 0xFA4E:0x0:0x0
+$_SERVER['PHP_SELF'] => server_files/www/cgi-bin/adduser.php
+$_SERVER['SCRIPT_NAME'] => server_files/www/cgi-bin/adduser.php
+$_SERVER['SCRIPT_FILENAME'] => server_files/www/cgi-bin/adduser.php
+$_SERVER['PATH_TRANSLATED'] => server_files/www/cgi-bin/adduser.php
+$_SERVER['DOCUMENT_ROOT'] => 
+$_SERVER['REQUEST_TIME_FLOAT'] => 1620048551.4207
+$_SERVER['REQUEST_TIME'] => 1620048551
+$_SERVER['argv'] => Array
+(
+    [0] => server_files/www/cgi-bin/adduser.php
+)
+
+$_SERVER['argc'] => 1
+$_ENV['CONTENT_LENGTH'] => 28
+$_ENV['CONTENT_TYPE'] => application/x-www-form-urlencoded
+$_ENV['GATEWAY_INTERFACE'] => CGI/1.1
+$_ENV['QUERY_STRING'] => firstname=asdf&lastname=asdf
+$_ENV['REQUEST_METHOD'] => POST
+$_ENV['SERVER_PROTOCOL'] => HTTP/1.1
+$_ENV['SERVER_SOFTWARE'] => webserv/1.1
+$_ENV['__CF_USER_TEXT_ENCODING'] => 0xFA4E:0x0:0x0
+</p></body>
+</html>

@@ -265,11 +265,9 @@ int         header_handler::put_request() {
 
 int header_handler::execute_php(int fileFD)
 {
-	char	**args = new char *[3];
-	char 	**envp = new char *[3];
+	char	**args = create_cgi_args();
+	char 	**envp = create_cgi_envp();
 
-	create_cgi_args(args);
-	create_cgi_envp(envp);
 	if (fork() == 0) // needs error checking
 	{
 		close(STDOUT_FILENO);
@@ -282,23 +280,39 @@ int header_handler::execute_php(int fileFD)
     return (-1);
 }
 
-int	header_handler::create_cgi_args(char **args)
+char	**header_handler::create_cgi_args()
 {
+	char	**args = new char *[3];
 	args[0] = ft_strdup("/usr/bin/php");
 	args[1] = ft_strdup(_file_location.c_str());
 	args[2] = NULL;
-	return 0;
+	return args;
 }
 
-int header_handler::create_cgi_envp(char **envp) {
-	std::string query = "QUERY_STRING=";
-	std::string full_query = query.append(_body);
-	std::string request_method = "REQUEST_METHOD=";
-	std::string full_request = request_method.append(_method);
-	envp[0] = ft_strdup(full_query.c_str());
-	envp[1] = ft_strdup(full_request.c_str());
-	envp[2] = NULL;
-	return 0;
+char 	**header_handler::create_cgi_envp() {
+
+	// calculate number of envp needed (17 default ones + additional x_ ones)
+	int 	size = 7;
+	char 	**envp = new char *[size + 1];
+
+	// add different environment variables to envp
+	std::string cgi_content_length = ((std::string)"CONTENT_LENGTH=").append(ft_itoa(_content_length));
+	std::string cgi_content_type = ((std::string)"CONTENT_TYPE=").append(_content_type);
+	std::string cgi_gateway_interface = "GATEWAY_INTERFACE=CGI/1.1";
+	std::string cgi_query_string = ((std::string)"QUERY_STRING=").append(_body);
+	std::string cgi_request_method = ((std::string)"REQUEST_METHOD=").append(_method);
+	std::string cgi_server_protocol = ((std::string)"SERVER_PROTOCOL=").append(_protocol);
+	std::string cgi_server_software = "SERVER_SOFTWARE=webserv/1.1";
+
+	envp[0] = ft_strdup(cgi_content_length.c_str());
+	envp[1] = ft_strdup(cgi_content_type.c_str());
+	envp[2] = ft_strdup(cgi_gateway_interface.c_str());
+	envp[3] = ft_strdup(cgi_query_string.c_str());
+	envp[4] = ft_strdup(cgi_request_method.c_str());
+	envp[5] = ft_strdup(cgi_server_protocol.c_str());
+	envp[6] = ft_strdup(cgi_server_software.c_str());
+	envp[size] = NULL;
+	return envp;
 }
 
 void header_handler::free_cgi_execution_memory(char **args, char **envp) {
@@ -307,6 +321,11 @@ void header_handler::free_cgi_execution_memory(char **args, char **envp) {
 	delete [] args;
 	free(envp[0]);
 	free(envp[1]);
+	free(envp[2]);
+	free(envp[3]);
+	free(envp[4]);
+	free(envp[5]);
+	free(envp[6]);
 	delete [] envp;
 }
 
