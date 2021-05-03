@@ -1,12 +1,12 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        ::::::::            */
-/*   handler.cpp                                        :+:    :+:            */
+/*   header_handler.cpp                                 :+:    :+:            */
 /*                                                     +:+                    */
-/*   By: roybakker <roybakker@student.codam.nl>       +#+                     */
+/*   By: gbouwen <marvin@codam.nl>                    +#+                     */
 /*                                                   +#+                      */
-/*   Created: 2021/04/07 13:10:33 by roybakker     #+#    #+#                 */
-/*   Updated: 2021/04/26 18:04:41 by gbouwen       ########   odam.nl         */
+/*   Created: 2021/05/03 12:34:40 by gbouwen       #+#    #+#                 */
+/*   Updated: 2021/05/03 12:50:05 by gbouwen       ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -137,11 +137,13 @@ void        header_handler::invalid_argument(const std::string &str) {parse_inva
 
 
 //------Handle request functions------
-int        header_handler::handle_request(int activeFD) {
+int        header_handler::handle_request() {
     if (_method == "GET" || _method == "HEAD")
         return get_request();
     else if (_method == "POST")
-        return post_request(activeFD);
+        return post_request();
+//    else if (_method == "")
+//        ;
     else if (_method == "PUT")
         return put_request();
     return 0;
@@ -164,26 +166,38 @@ int        header_handler::get_request() {
     return (open_requested_file(_file_location));
 }
 
-// work in progress
+int			header_handler::post_request()
+{
+	std::string	str_filename = "server_files/www/temp";
+	char	*index_str = ft_itoa(_index);
 
-int        header_handler::post_request(int activeFD) {
+	str_filename.append(index_str);
+	free(index_str);
+	const char *filename = str_filename.c_str();
+	int	cgiFD = open(filename, O_CREAT | O_RDWR | O_TRUNC, S_IRWXU);
+	if (cgiFD == -1)
+		throw std::runtime_error("Open failed");
+	fcntl(cgiFD, F_SETFL, O_NONBLOCK);
+	return (cgiFD);
+}
 
-    //check for existing location block
-    //not present redirect to error location
-    //present check for extension to see if index is needed
+int         header_handler::put_request() {
+    //not allowed method (405)
+    //bigger then max filesize (413)
+    //uploading older version then present (409) conflict
+    //succesfully created (201)
+    //succecfully modified (204)
 
-    //determine content type
+	return 0;
+}
 
-    //if php file and it exists
-        //open temp file and return that to _fileFD
+//------CGI functions------
+void		header_handler::execute_php(int fileFD)
+{
+	char	**args = new char *[3];
+	char 	**envp = new char *[3];
 
-    //else return error page
-
-	char		**args = new char *[3];
-	char 		**envp = new char *[3];
-	std::string	temp = "/usr/bin/php";
-
-	args[0] = ft_strdup(temp.c_str());
+	args[0] = ft_strdup("/usr/bin/php");
 	args[1] = ft_strdup(_file_location.c_str());
 	args[2] = NULL;
 
@@ -195,28 +209,23 @@ int        header_handler::post_request(int activeFD) {
 	envp[1] = ft_strdup(full_query.c_str());
 	envp[2] = NULL;
 
-	if (fork() == 0)
+	if (fork() == 0) // needs error checking
 	{
-		dup2(activeFD, STDOUT_FILENO);
-		execve(args[0], const_cast<char **>(reinterpret_cast<char * const *>(args)), const_cast<char **>(reinterpret_cast<char * const *>(envp)));
+		close(STDOUT_FILENO);
+		dup2(fileFD, STDOUT_FILENO);
+		execve(args[0], args, envp);
 	}
 	else
 		wait(NULL);
+	// create free_memory() function
+	free(args[0]);
+	free(args[1]);
 	delete [] args;
+	free(envp[0]);
+	free(envp[1]);
 	delete [] envp;
     return (-1);
 }
-
-int         header_handler::put_request() {
-    //not allowed method (405)
-    //bigger then max filesize (413)
-    //uploading older version then present (409) conflict
-    //succesfully created (201)
-    //succecfully modified (204)
-
-    return 0;
-}
-
 
 //------Send response functions------
 void        header_handler::send_response(int activeFD, int fileFD, std::string server_name) {
@@ -349,6 +358,7 @@ void        header_handler::read_requested_file(int fd) {
     char    buff[3000];
     int     ret = 1;
 
+	lseek(fd, 0, SEEK_SET);
     while (ret > 0) {
         ret = read(fd, buff, 3000);
         _requested_file.append(buff, ret);
@@ -474,6 +484,7 @@ void        header_handler::reset_handler_atributes() {
 void            header_handler::reset_status() {_status = 200;}
 
 //------Getter------
+int				header_handler::get_index() { return _index; }
 int             header_handler::get_content_length() { return _content_length;}
 std::string     header_handler::get_content_type() { return _content_type;}
 std::string     header_handler::get_content_language() { return _content_language;}
@@ -490,3 +501,10 @@ std::string     header_handler::get_accept_language() { return _accept_language;
 std::string     header_handler::get_authorization() { return _authorization;}
 std::string     header_handler::get_referer() { return _referer;}
 std::string     header_handler::get_body() { return _body;}
+
+//------Setter------
+void			header_handler::set_index(int index)
+{
+	_index = index;
+}
+

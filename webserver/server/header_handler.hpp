@@ -6,7 +6,7 @@
 /*   By: roybakker <roybakker@student.codam.nl>       +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2021/04/07 13:23:53 by roybakker     #+#    #+#                 */
-/*   Updated: 2021/04/22 14:47:45 by gbouwen       ########   odam.nl         */
+/*   Updated: 2021/04/29 17:55:54 by gbouwen       ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -45,6 +45,8 @@ public:
     enum        status_values{ no_content_ = 204, forbidden_ = 403, not_found_ = 404 };
 
 protected:
+	int				_index;
+
     //status
     int                         _status;
     std::map<int, std::string>  _status_phrases;
@@ -72,7 +74,6 @@ protected:
 
     //Status code map
 
-
 public:
     header_handler();
     ~header_handler();
@@ -96,10 +97,14 @@ public:
     void            invalid_argument(const std::string &str);
 
     //Handle request functions
-    int             handle_request(int activeFD);
+    int             handle_request();
     int             get_request();
-    int             post_request(int activeFD);
+    int             head_request();
+    int             post_request();
     int             put_request();
+
+	//CGI functions
+	void			execute_php(int fileFD);
 
     //Send response functions
 	void 			send_response(int activeFD, int fileFD, std::string server_name);
@@ -124,6 +129,7 @@ public:
     void            reset_status();
 
     //Getter
+	int				get_index();
     int             get_content_length();
     std::string     get_content_type();
     std::string     get_content_language();
@@ -140,6 +146,9 @@ public:
     std::string     get_authorization();
     std::string     get_referer();
     std::string     get_body();
+
+	//Setter
+	void			set_index(int index);
 
     //Debug tool
     void            print_request(); //DELETE LATER
