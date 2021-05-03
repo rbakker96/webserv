@@ -85,6 +85,7 @@ void        header_handler::parse_request(int fd, header_handler::map request_bu
         parse function = parse_array[request_value];
         (this->*function)(*it);
     }
+
 //    configure_location(location);
     std::cout << "-----------\n" << "request buffer = \n" << request->second << "-----------\n" << std::endl; //REMOVE
     print_request(); //REMOVE
@@ -140,38 +141,102 @@ void        header_handler::parse_content_location(const std::string &str) {_con
 void        header_handler::parse_allow(const std::string &str) {_allow = parse_string(str);}
 void        header_handler::invalid_argument(const std::string &str) {parse_invalid(str);}
 
-
 //------Handle request functions------
-int        header_handler::handle_request() {
-    if (_method == "GET" || _method == "HEAD")
-        return get_request();
-    else if (_method == "POST")
-        return post_request();
-//    else if (_method == "")
-//        ;
+int        header_handler::handle_request(header_handler::location_vector location_blocks, std::string error_page) {
+    struct  stat stats;
+    int		fd = unused_;
+
+    verify_file_location(location_blocks, error_page);
+    if (stat(_file_location.c_str(), &stats) == -1)  //maybe more errors for which we can see with fstat
+        _status = not_found_;
+    else if (!(stats.st_mode & S_IRUSR))
+        _status = forbidden_;
+    else if (verify_content_type() == "php")
+		return cgi_request();
     else if (_method == "PUT")
-        return put_request();
-    return 0;
+        put_request();
+    else if ((fd = open(&_file_location[0], O_RDONLY)) == -1 )
+        _status = not_found_;
+
+    if (_status >= error_code_) {
+        _file_location = error_page.append(ft_itoa(_status));
+        _file_location.append(".html");
+        if ((fd = open(&_file_location[0], O_RDONLY)) == -1)
+            throw std::runtime_error("Open failed");
+    }
+    if (fd != -1)
+        fcntl(fd, F_SETFL, O_NONBLOCK);
+    return fd;
 }
 
-int        header_handler::get_request() {
-    //check for existing location block
-        //not present redirect to error location
-        //present check for extension to see if index is needed
+void        header_handler::verify_file_location(header_handler::location_vector location_blocks, std::string error_page) {
+    std::string file_location = _file_location;
+    size_t pos;
 
-    //determine content type
+    if (!_referer.empty()) {
+        pos = _referer.find(_requested_host);
+        file_location = _referer.substr(pos + _requested_host.length());
+    }
+    else if (_file_location[_file_location.length() - 1] != '/') {
+        pos = _file_location.find_last_of('/');
+        file_location = _file_location.substr(0, pos+1);
+    }
 
-    //if php file and it exists
-        //open temp file and return that to _fileFD
-
-    //else Open requested file
-        //open failed -> send back 500 (internal server errror)
-        //open succes -> return fd to set as activeFD
-
-    return (open_requested_file(_file_location));
+    for (location_iterator loc = location_blocks.begin(); loc != location_blocks.end(); loc++) {
+        if (loc->get_location_context() == file_location) {
+            _file_location = loc->get_root().append(_file_location);
+            if (verify_content_type() == "folder")
+                _file_location = _file_location.append(loc->get_index());
+            break;
+        }
+        else if ((loc + 1) == location_blocks.end()) {
+            pos = _file_location.find_last_of('/');
+            file_location = _file_location.substr(pos+1);
+            _file_location = error_page.append(file_location);
+        }
+    }
 }
 
-int			header_handler::post_request()
+
+// work in progress
+
+//int        header_handler::cgi_request(int activeFD) {
+//    //check for existing location block
+//    //not present redirect to error location
+//    //present check for extension to see if index is needed
+//
+//    //determine content type
+//
+//    //if php file and it exists
+//        //open temp file and return that to _fileFD
+//
+//    //else return error page
+//
+//	write(activeFD, "HTTP/1.1 200 OK\r\n", strlen("HTTP/1.1 200 OK\r\n"));
+//	write(activeFD, "Content-Length: 13\r\n", strlen("Content-Length: 13\r\n"));
+//	write(activeFD, "\r\n", strlen("\r\n"));
+//
+//	char		**args = new char *[3];
+//	std::string	temp;
+//
+//	temp = "/usr/bin/php";
+//	args[0] = ft_strdup(temp.c_str());
+//	args[1] = ft_strdup(_file_location.c_str());
+//	args[2] = NULL;
+//	if (fork() == 0)
+//	{
+//		close(STDOUT_FILENO);
+//		dup(activeFD);
+//		execve(args[0], const_cast<char **>(reinterpret_cast<char * const *>(args)), NULL);
+//	}
+//	else
+//		wait(NULL);
+//	delete [] args;
+//    return (-1);
+//}
+
+
+int			header_handler::cgi_request()
 {
 	std::string	str_filename = "server_files/www/temp";
 	char	*index_str = ft_itoa(_index);
@@ -245,6 +310,7 @@ void header_handler::free_cgi_execution_memory(char **args, char **envp) {
 	delete [] envp;
 }
 
+
 //------Send response functions------
 void        header_handler::send_response(int activeFD, int fileFD, std::string server_name) {
 	std::string response;
@@ -265,8 +331,6 @@ void        header_handler::send_response(int activeFD, int fileFD, std::string 
 	reset_status();
 	clear_requested_file();
 }
-
-// Need to check later how to send correct response code
 
 void	header_handler::generate_status_line(std::string &response) {
 	std::string status_line = get_protocol();
@@ -290,12 +354,17 @@ void	header_handler::generate_content_length(std::string &response){
 
 void	header_handler::generate_content_type(std::string &response) {
 	std::string	content_type_header = "Content-Type: ";
+    _content_type = verify_content_type();
 
+    std::cout << "current content type = " << _content_type << std::endl;
 	if (_content_type.compare("html") == 0 || _content_type.compare("css") == 0)
 		content_type_header.append("text/");
 	else if (_content_type.compare("png") == 0)
 		content_type_header.append("image/");
 	content_type_header.append(_content_type);
+	if (_content_type.compare("php") == 0) //fix later
+		content_type_header ="text/html";
+	std::cout << "header content type = " << content_type_header << std::endl;
 	content_type_header.append("\r\n");
 	response.append(content_type_header);
 }
@@ -372,40 +441,19 @@ std::string    header_handler::read_browser_request(int fd) {
     return tmp;
 }
 
-void        header_handler::read_requested_file(int fd) {
-    char    buff[3000];
-    int     ret = 1;
+std::string     header_handler::verify_content_type() {
+    vector extensions;
+    extensions.push_back("html");
+    extensions.push_back("php");
+    extensions.push_back("css");
+    extensions.push_back("ico");
+    extensions.push_back("png");
 
-	lseek(fd, 0, SEEK_SET);
-    while (ret > 0) {
-        ret = read(fd, buff, 3000);
-        _requested_file.append(buff, ret);
-        if (ret < 3000)
-            break;
+    for (vector_iterator it = extensions.begin(); it != extensions.end(); it++) {
+        if (_file_location.find(*it) != std::string::npos)
+            return *it;
     }
-    if (ret == -1)
-        throw std::runtime_error("Read failed");
-}
-
-int         header_handler::open_requested_file(std::string file_location) {
-    std::string error_page = "server_files/www/error_pages/.html";
-    struct      stat stats;
-    int		    fd;
-
-    stat(file_location.c_str(), &stats);
-    if (!(stats.st_mode & S_IRUSR))
-        _status = forbidden_;
-    if ((fd = open(&file_location[0], O_RDONLY)) == -1 )
-        _status = not_found_;
-    if (_status >= error_code_) {
-        _file_location = error_page.insert(29, ft_itoa(_status));
-//        _allow = "put"; something else later?
-        fd = open(&_file_location[0], O_RDONLY);
-        if (fd == -1)
-            throw std::runtime_error("Open failed");
-    }
-    fcntl(fd, F_SETFL, O_NONBLOCK);
-    return (fd);
+    return "folder";
 }
 
 header_handler::vector    header_handler::str_to_vector(std::string request) {
@@ -422,62 +470,19 @@ header_handler::vector    header_handler::str_to_vector(std::string request) {
     return request_elements;
 }
 
-void        header_handler::configure_location(header_handler::location_vector location_blocks, std::string error_page) {
-    std::string request_location = requested_location_block();
+void        header_handler::read_requested_file(int fd) {
+    char    buff[3000];
+    int     ret = 1;
 
-    for (location_iterator loc = location_blocks.begin(); loc != location_blocks.end(); loc++) {
-        if (loc->get_location_context() == request_location) {
-            _file_location = loc->get_root().append(_file_location);
-            if (determine_content_type() == folder_)
-                _file_location = _file_location.append(loc->get_index());
-            return;
-        }
+	lseek(fd, 0, SEEK_SET);
+    while (ret > 0) {
+        ret = read(fd, buff, 3000);
+        _requested_file.append(buff, ret);
+        if (ret < 3000)
+            break;
     }
-    size_t pos = _file_location.find("resources");
-    if (pos != std::string::npos) {
-        std::string tmp = _file_location.substr(pos - 1);
-        _file_location = error_page.append(tmp);
-    }
-    else
-        _file_location = error_page.append(_file_location);
-    determine_content_type();
-}
-
-std::string header_handler::requested_location_block() {
-    std::string request_location;
-    size_t pos;
-
-    if (!_referer.empty()) {
-        pos = _referer.find(_requested_host);
-        request_location = _referer.substr(pos + _requested_host.length());
-    }
-    else if (_file_location[_file_location.length() - 1] == '/')
-        request_location = _file_location;
-    else {
-        pos = _file_location.find_last_of('/');
-        request_location = _file_location.substr(0, pos+1);
-    }
-    return request_location;
-}
-
-int         header_handler::determine_content_type() {
-    vector extensions;
-    extensions.push_back("html");
-    extensions.push_back("php");
-    extensions.push_back("css");
-    extensions.push_back("ico");
-    extensions.push_back("png");
-
-    for (vector_iterator it = extensions.begin(); it != extensions.end(); it++) {
-        if (_file_location.find(*it) != std::string::npos) {
-//            _content_type = *it;
-            _content_type = _content_type.append(*it);
-            return 1;
-        }
-    }
-//    _content_type = "html";
-    _content_type = _content_type.append("html");
-    return (folder_);
+    if (ret == -1)
+        throw std::runtime_error("Read failed");
 }
 
 void		header_handler::clear_requested_file() {_requested_file.clear();}
@@ -521,8 +526,5 @@ std::string     header_handler::get_referer() { return _referer;}
 std::string     header_handler::get_body() { return _body;}
 
 //------Setter------
-void			header_handler::set_index(int index)
-{
-	_index = index;
-}
+void			header_handler::set_index(int index) { _index = index;}
 
