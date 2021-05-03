@@ -9,8 +9,3 @@ echo "<h2>Lastname: " . $output['lastname'] . "</h2></br>";
 ?>
 </body>
 </html>
-
-// <?php
-// echo "---info environment\n";
-// phpinfo(16);
-// phpinfo(32);

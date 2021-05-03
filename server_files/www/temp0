@@ -1,38 +1,6 @@
 <html>
 <body>
-<h2>Firstname: roy</h2></br><h2>Lastname: bakker</h2></br></body>
+<h2>Firstname: asdf</h2></br><h2>Lastname: asdf</h2></br></body>
 </html>
 
----info environment
-phpinfo()
-
-Environment
-
-Variable => Value
-QUERY_STRING => firstname=asdf&lastname=asdf
-REQUEST_METHOD => POST
-__CF_USER_TEXT_ENCODING => 0xFA4E:0x0:0x0
-phpinfo()
-
-PHP Variables
-
-Variable => Value
-$_SERVER['QUERY_STRING'] => firstname=asdf&lastname=asdf
-$_SERVER['REQUEST_METHOD'] => POST
-$_SERVER['__CF_USER_TEXT_ENCODING'] => 0xFA4E:0x0:0x0
-$_SERVER['PHP_SELF'] => server_files/www/cgi-bin/adduser.php
-$_SERVER['SCRIPT_NAME'] => server_files/www/cgi-bin/adduser.php
-$_SERVER['SCRIPT_FILENAME'] => server_files/www/cgi-bin/adduser.php
-$_SERVER['PATH_TRANSLATED'] => server_files/www/cgi-bin/adduser.php
-$_SERVER['DOCUMENT_ROOT'] => 
-$_SERVER['REQUEST_TIME_FLOAT'] => 1620045984.0317
-$_SERVER['REQUEST_TIME'] => 1620045984
-$_SERVER['argv'] => Array
-(
-    [0] => server_files/www/cgi-bin/adduser.php
-)
-
-$_SERVER['argc'] => 1
-$_ENV['QUERY_STRING'] => firstname=asdf&lastname=asdf
-$_ENV['REQUEST_METHOD'] => POST
-$_ENV['__CF_USER_TEXT_ENCODING'] => 0xFA4E:0x0:0x0
+// 
