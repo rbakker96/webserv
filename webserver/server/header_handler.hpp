@@ -41,7 +41,7 @@ public:
 
 	enum		location_values{requested_host_ = 0, user_agent_ = 1, language_ = 2, authorization_ = 3, referer_ = 4, body_ = 5,
 								content_length_ = 6, content_type_ = 7, content_language_ = 8, content_location_ = 9,
-								allow_ = 10, unknown_ = 11, error_code_ = 400, folder_ = -1};
+								allow_ = 10, unknown_ = 11, error_code_ = 400, folder_ = -1, unused_ = -1};
 	enum		status_values{no_content_ = 204, forbidden_ = 403, not_found_ = 404};
 
 protected:
@@ -100,7 +100,7 @@ public:
     //Handle request functions
     int             handle_request(location_vector location_blocks, std::string error_page);
     int             put_request();
-	int             post_request();
+	int             cgi_request();
     void            verify_file_location(location_vector location_blocks, std::string error_page);
 
 	//CGI functions

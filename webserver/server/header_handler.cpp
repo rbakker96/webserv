@@ -143,22 +143,20 @@ void        header_handler::invalid_argument(const std::string &str) {parse_inva
 //------Handle request functions------
 int        header_handler::handle_request(header_handler::location_vector location_blocks, std::string error_page) {
     struct  stat stats;
-    int		fd = -1; //add unused_ enum to handler
+    int		fd = unused_;
 
     verify_file_location(location_blocks, error_page);
-    std::cout << "FILE LOCATION = " << _file_location << std::endl;
     if (stat(_file_location.c_str(), &stats) == -1)  //maybe more errors for which we can see with fstat
         _status = not_found_;
     else if (!(stats.st_mode & S_IRUSR))
         _status = forbidden_;
-    else if (verify_content_type() == "php") //post request
-		return post_request();
+    else if (verify_content_type() == "php")
+		return cgi_request();
     else if (_method == "PUT")
         put_request();
     else if ((fd = open(&_file_location[0], O_RDONLY)) == -1 )
         _status = not_found_;
 
-    std::cout << "STATUS = " << _status << std::endl;
     if (_status >= error_code_) {
         _file_location = error_page.append(ft_itoa(_status));
         _file_location.append(".html");
@@ -201,7 +199,7 @@ void        header_handler::verify_file_location(header_handler::location_vector
 
 // work in progress
 
-//int        header_handler::post_request(int activeFD) {
+//int        header_handler::cgi_request(int activeFD) {
 //    //check for existing location block
 //    //not present redirect to error location
 //    //present check for extension to see if index is needed
@@ -237,7 +235,7 @@ void        header_handler::verify_file_location(header_handler::location_vector
 //}
 
 
-int			header_handler::post_request()
+int			header_handler::cgi_request()
 {
 	std::string	str_filename = "server_files/www/temp";
 	char	*index_str = ft_itoa(_index);
@@ -335,7 +333,6 @@ void	header_handler::generate_status_line(std::string &response) {
 void	header_handler::generate_content_length(std::string &response){
 	std::string	content_length = "Content-Length: ";
 
-	std::cout << "requested file = \n" << get_requested_file() << std::endl;
 	content_length.append(ft_itoa(this->get_requested_file().size()));
 	content_length.append("\r\n");
 	response.append(content_length);

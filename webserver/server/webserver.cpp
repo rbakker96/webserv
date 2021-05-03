@@ -138,13 +138,8 @@ void    webserver::run() {
 			{
 			    if (FD_ISSET(server->_fileFD, &_writeFDS)) {
 					server->_handler.execute_php(server->_fileFD);
-                    //(create CGI class for this)
-                    //set php params
-                    //dup2 _fileFD to STDOUT
-                    //execve php file
 					FD_CLR(server->_fileFD, &_buffer_writeFDS);
 			    }
-			    //regular cases with already present files on server ready to be read
 
 				server->_handler.read_requested_file(server->_fileFD);
 				FD_CLR(server->_fileFD, &_buffer_readFDS);
