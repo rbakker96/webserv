@@ -42,10 +42,9 @@ public:
 	enum		location_values{requested_host_ = 0, user_agent_ = 1, language_ = 2, authorization_ = 3, referer_ = 4, body_ = 5,
 								content_length_ = 6, content_type_ = 7, content_language_ = 8, content_location_ = 9,
 								allow_ = 10, unknown_ = 11, error_code_ = 400, folder_ = -1, unused_ = -1};
-	enum		status_values{no_content_ = 204, forbidden_ = 403, not_found_ = 404};
+	enum		status_values{no_content_ = 204, forbidden_ = 403, not_found_ = 404, method_not_allowed_ = 405, payload_too_large_ = 413 };
 
 protected:
-
 	int				_index;
 	//status
 	int				_status;
@@ -98,10 +97,11 @@ public:
     void            invalid_argument(const std::string &str);
 
     //Handle request functions
-    int             handle_request(location_vector location_blocks, std::string error_page);
-    int             put_request();
+    int             handle_request(location_vector location_blocks, std::string error_page, int max_file_size);
+    void            put_request(int max_file_size);
 	int             cgi_request();
     void            verify_file_location(location_vector location_blocks, std::string error_page);
+    void			verify_method();
 
 	//CGI functions
 	int 			execute_php(int fileFD);

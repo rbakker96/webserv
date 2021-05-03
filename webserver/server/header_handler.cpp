@@ -141,11 +141,12 @@ void        header_handler::parse_allow(const std::string &str) {_allow = parse_
 void        header_handler::invalid_argument(const std::string &str) {parse_invalid(str);}
 
 //------Handle request functions------
-int        header_handler::handle_request(header_handler::location_vector location_blocks, std::string error_page) {
+int        header_handler::handle_request(header_handler::location_vector location_blocks, std::string error_page, int max_file_size) {
     struct  stat stats;
     int		fd = unused_;
 
     verify_file_location(location_blocks, error_page);
+    verify_method(); //see if error is not overwritten
     if (stat(_file_location.c_str(), &stats) == -1)  //maybe more errors for which we can see with fstat
         _status = not_found_;
     else if (!(stats.st_mode & S_IRUSR))
@@ -153,7 +154,7 @@ int        header_handler::handle_request(header_handler::location_vector locati
     else if (verify_content_type() == "php")
 		return cgi_request();
     else if (_method == "PUT")
-        put_request();
+        put_request(max_file_size);
     else if ((fd = open(&_file_location[0], O_RDONLY)) == -1 )
         _status = not_found_;
 
@@ -184,6 +185,7 @@ void        header_handler::verify_file_location(header_handler::location_vector
     for (location_iterator loc = location_blocks.begin(); loc != location_blocks.end(); loc++) {
         if (loc->get_location_context() == file_location) {
             _file_location = loc->get_root().append(_file_location);
+            _allowed_methods_config = loc->get_method();
             if (verify_content_type() == "folder")
                 _file_location = _file_location.append(loc->get_index());
             break;
@@ -196,44 +198,19 @@ void        header_handler::verify_file_location(header_handler::location_vector
     }
 }
 
-
-// work in progress
-
-//int        header_handler::cgi_request(int activeFD) {
-//    //check for existing location block
-//    //not present redirect to error location
-//    //present check for extension to see if index is needed
-//
-//    //determine content type
-//
-//    //if php file and it exists
-//        //open temp file and return that to _fileFD
-//
-//    //else return error page
-//
-//	write(activeFD, "HTTP/1.1 200 OK\r\n", strlen("HTTP/1.1 200 OK\r\n"));
-//	write(activeFD, "Content-Length: 13\r\n", strlen("Content-Length: 13\r\n"));
-//	write(activeFD, "\r\n", strlen("\r\n"));
-//
-//	char		**args = new char *[3];
-//	std::string	temp;
-//
-//	temp = "/usr/bin/php";
-//	args[0] = ft_strdup(temp.c_str());
-//	args[1] = ft_strdup(_file_location.c_str());
-//	args[2] = NULL;
-//	if (fork() == 0)
-//	{
-//		close(STDOUT_FILENO);
-//		dup(activeFD);
-//		execve(args[0], const_cast<char **>(reinterpret_cast<char * const *>(args)), NULL);
-//	}
-//	else
-//		wait(NULL);
-//	delete [] args;
-//    return (-1);
-//}
-
+void 		header_handler::verify_method() {
+	if (_method == "GET" || _method == "HEAD")
+		return;
+	if (_allowed_methods_config.empty()) {
+		_status = method_not_allowed_;
+		return;
+	}
+	for (vector_iterator it = _allowed_methods_config.begin(); it != _allowed_methods_config.end(); it++) {
+		if (*it == _method)
+			return;
+	}
+	_status = method_not_allowed_;
+}
 
 int			header_handler::cgi_request()
 {
@@ -250,14 +227,22 @@ int			header_handler::cgi_request()
 	return (cgiFD);
 }
 
-int         header_handler::put_request() {
+void     	header_handler::put_request(int max_file_size)
+{
+	struct  stat stats;
+
+	stat(_file_location.c_str(), &stats);
+	if ((int)_body.length() > max_file_size) {
+		_status = payload_too_large_;
+		return;
+	}
+
     //not allowed method (405)
     //bigger then max filesize (413)
     //uploading older version then present (409) conflict
     //succesfully created (201)
     //succecfully modified (204)
 
-	return 0;
 }
 
 //------CGI functions------
@@ -342,14 +327,11 @@ void	header_handler::generate_content_type(std::string &response) {
 	std::string	content_type_header = "Content-Type: ";
     _content_type = verify_content_type();
 
-    std::cout << "current content type = " << _content_type << std::endl;
 	if (_content_type.compare("html") == 0 || _content_type.compare("css") == 0)
 		content_type_header.append("text/");
 	else if (_content_type.compare("png") == 0)
 		content_type_header.append("image/");
 	content_type_header.append(_content_type);
-	if (_content_type.compare("php") == 0) //fix later
-		content_type_header ="text/html";
 	std::cout << "header content type = " << content_type_header << std::endl;
 	content_type_header.append("\r\n");
 	response.append(content_type_header);
@@ -395,7 +377,6 @@ void	header_handler::generate_server_name(std::string &response, std::string ser
 }
 
 // ONLY SEND WITH "405 Method Not Allowed" RESPONSE CODE!
-
 void	header_handler::generate_allowed_methods_config(std::string &response)
 {
 	std::string allow_header = "Allow: ";
@@ -436,8 +417,11 @@ std::string     header_handler::verify_content_type() {
     extensions.push_back("png");
 
     for (vector_iterator it = extensions.begin(); it != extensions.end(); it++) {
-        if (_file_location.find(*it) != std::string::npos)
-            return *it;
+        if (_file_location.find(*it) != std::string::npos) {
+			if (*it == "php")
+				return "html";
+			return *it;
+		}
     }
     return "folder";
 }

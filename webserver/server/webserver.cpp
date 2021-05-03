@@ -122,7 +122,7 @@ void    webserver::run() {
 					FD_CLR(server->_activeFD, &_buffer_readFDS);
 					server->_handler.parse_request(server->_activeFD, server->_request_buffer);
                     server->clear_handled_request(server->_activeFD);
-                    server->_fileFD = server->_handler.handle_request(server->_location_blocks, server->get_error_page());
+                    server->_fileFD = server->_handler.handle_request(server->_location_blocks, server->get_error_page(), server->get_file_size());
 
 					set_maxFD(server->_fileFD);
 					if (server->_fileFD != unused_)
