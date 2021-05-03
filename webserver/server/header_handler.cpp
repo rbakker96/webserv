@@ -6,7 +6,7 @@
 /*   By: gbouwen <marvin@codam.nl>                    +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2021/05/03 12:34:40 by gbouwen       #+#    #+#                 */
-/*   Updated: 2021/05/03 15:55:22 by gbouwen       ########   odam.nl         */
+/*   Updated: 2021/05/03 17:20:17 by gbouwen       ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -45,6 +45,7 @@ header_handler::header_handler():	_status(200), _content_length(0), _content_typ
 									_referer(), _body(), _requested_file()	{
 	// setup status phrases
 	_status_phrases.insert (pair(200, "OK"));
+	_status_phrases.insert (pair(204, "No Content"));
 	_status_phrases.insert (pair(400, "Bad Request"));
 	_status_phrases.insert (pair(401, "Unauthorized"));
 	_status_phrases.insert (pair(403, "Forbidden"));
@@ -116,23 +117,6 @@ int         header_handler::identify_request_value(const std::string &str) {
     return unknown_;
 }
 
-//std::string	get_body_from_url(const std::string &file_location, int start_of_body)
-//{
-	//return (file_location.substr(start_of_body + 1, std::string::npos));
-//}
-
-//std::string	get_correct_file_location(const std::string &str, size_t start)
-//{
-	//int		questionmark_position;
-	//size_t	end_of_location;
-
-	//questionmark_position = str.find("?", start);
-	//if (questionmark_position != -1)
-		//return (str.substr(start, questionmark_position));
-	//end_of_location = str.find_first_of(' ', start);
-	//return (str.substr(start, end));
-//}
-
 void        header_handler::parse_first_line(const std::string &str) {
 	int		index;
     size_t	start = 0;
@@ -171,6 +155,7 @@ int        header_handler::handle_request(header_handler::location_vector locati
     int		fd = unused_;
 
     verify_file_location(location_blocks, error_page);
+
     if (stat(_file_location.c_str(), &stats) == -1)  //maybe more errors for which we can see with fstat
         _status = not_found_;
     else if (!(stats.st_mode & S_IRUSR))
@@ -330,7 +315,7 @@ void	header_handler::generate_status_line(std::string &response) {
 	std::string status_line = get_protocol();
 
 	status_line.append(" ");
-	status_line.append((ft_itoa(_status)));
+	status_line.append((ft_itoa(_status))); // this leaks
     status_line.append(" ");
     status_line.append(_status_phrases[_status]);
 	status_line.append("\r\n");
@@ -356,7 +341,7 @@ void	header_handler::generate_content_type(std::string &response) {
 		content_type_header.append("image/");
 	content_type_header.append(_content_type);
 	if (_content_type.compare("php") == 0) //fix later
-		content_type_header ="text/html";
+		content_type_header = "text/html";
 	content_type_header.append("\r\n");
 	response.append(content_type_header);
 }
@@ -500,6 +485,7 @@ void            header_handler::reset_status() {_status = 200;}
 
 //------Getter------
 int				header_handler::get_index() { return _index; }
+int				header_handler::get_status() { return _status; }
 int             header_handler::get_content_length() { return _content_length;}
 std::string     header_handler::get_content_type() { return _content_type;}
 std::string     header_handler::get_content_language() { return _content_language;}

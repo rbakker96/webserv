@@ -6,7 +6,7 @@
 /*   By: roybakker <roybakker@student.codam.nl>       +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2021/04/07 13:23:53 by roybakker     #+#    #+#                 */
-/*   Updated: 2021/05/03 14:13:38 by gbouwen       ########   odam.nl         */
+/*   Updated: 2021/05/03 17:19:43 by gbouwen       ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -127,6 +127,7 @@ public:
 
     //Getter
 	int				get_index();
+	int				get_status();
     int             get_content_length();
     std::string     get_content_type();
     std::string     get_content_language();
