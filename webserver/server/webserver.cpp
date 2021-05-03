@@ -14,6 +14,7 @@
 #include "webserver.hpp"
 #include "server.hpp"
 #include <stdio.h> //REMOVE LATER!!!
+#include <cerrno> // for errno
 
 #include <iostream>
 void webserver::print_struct() {

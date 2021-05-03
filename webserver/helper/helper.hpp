@@ -17,6 +17,7 @@
 #include <vector>
 #include <cstring>
 #include <stdexcept>
+#include <cstdlib> // for malloc & free
 
 int							ft_atoi(const char *str);
 char						*ft_itoa(int n);
