@@ -39,10 +39,11 @@ void header_handler::print_request() {
 //------------------------------------------------------------
 
 
-header_handler::header_handler():	_status(200), _content_length(0), _content_type("Content-Type: text/"),
-									_content_language("en"), _content_location(), _allow(), _method(), _file_location(),
-									_protocol(), _requested_host(), _user_agent(), _accept_language(), _authorization(),
-									_referer(), _body(), _requested_file()	{
+header_handler::header_handler():	_index(0), _status(200), _status_phrases(), _content_length(0), _content_type("Content-Type: text/"),
+									_content_language("en"), _content_location(), _allow(), _allowed_methods_config(),
+									_method(), _file_location(), _protocol(), _requested_host(), _user_agent(),
+									_accept_language(), _authorization(), _referer(), _body(), _requested_file(),
+									_cgi_env_variables()	{
 	// setup status phrases
 	_status_phrases.insert (pair(200, "OK"));
 	_status_phrases.insert (pair(400, "Bad Request"));
@@ -196,23 +197,14 @@ int         header_handler::put_request() {
 }
 
 //------CGI functions------
+
 int header_handler::execute_php(int fileFD)
 {
 	char	**args = new char *[3];
 	char 	**envp = new char *[3];
 
-	args[0] = ft_strdup("/usr/bin/php");
-	args[1] = ft_strdup(_file_location.c_str());
-	args[2] = NULL;
-
-	std::string query = "QUERY_STRING=";
-	std::string full_query = query.append(_body);
-	std::string request_method = "REQUEST_METHOD=";
-	std::string full_request = request_method.append(_method);
-	envp[0] = ft_strdup(full_request.c_str());
-	envp[1] = ft_strdup(full_query.c_str());
-	envp[2] = NULL;
-
+	create_cgi_args(args);
+	create_cgi_envp(envp);
 	if (fork() == 0) // needs error checking
 	{
 		close(STDOUT_FILENO);
@@ -221,14 +213,36 @@ int header_handler::execute_php(int fileFD)
 	}
 	else
 		wait(NULL);
-	// create free_memory() function
+	free_cgi_execution_memory(args, envp);
+    return (-1);
+}
+
+int	header_handler::create_cgi_args(char **args)
+{
+	args[0] = ft_strdup("/usr/bin/php");
+	args[1] = ft_strdup(_file_location.c_str());
+	args[2] = NULL;
+	return 0;
+}
+
+int header_handler::create_cgi_envp(char **envp) {
+	std::string query = "QUERY_STRING=";
+	std::string full_query = query.append(_body);
+	std::string request_method = "REQUEST_METHOD=";
+	std::string full_request = request_method.append(_method);
+	envp[0] = ft_strdup(full_query.c_str());
+	envp[1] = ft_strdup(full_request.c_str());
+	envp[2] = NULL;
+	return 0;
+}
+
+void header_handler::free_cgi_execution_memory(char **args, char **envp) {
 	free(args[0]);
 	free(args[1]);
 	delete [] args;
 	free(envp[0]);
 	free(envp[1]);
 	delete [] envp;
-    return (-1);
 }
 
 //------Send response functions------
