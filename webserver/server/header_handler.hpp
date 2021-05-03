@@ -29,54 +29,55 @@
 
 class header_handler {
 public:
-    typedef     std::vector<std::string>                vector;
-    typedef     std::vector<std::string>::iterator      vector_iterator;
-    typedef     std::map<int, std::string>              map;
-    typedef     std::map<int, std::string>::iterator    map_iterator;
-    typedef     std::vector<location_context>           location_vector;
-    typedef     std::vector<location_context>::iterator location_iterator;
-    typedef     std::pair<int, std::string>             pair;
+	typedef		std::vector<std::string>				vector;
+	typedef		std::vector<std::string>::iterator		vector_iterator;
+	typedef		std::map<int, std::string>				map;
+	typedef		std::map<int, std::string>::iterator	map_iterator;
+	typedef		std::vector<location_context>			location_vector;
+	typedef     std::vector<location_context>::iterator location_iterator;
+	typedef		std::pair<int, std::string>				pair;
 
-    typedef     void (header_handler::*parse)(const std::string &str);
+	typedef		void (header_handler::*parse)(const std::string &str);
 
-    enum        location_values{ requested_host_ = 0, user_agent_ = 1, language_ = 2, authorization_ = 3, referer_ = 4, body_ = 5,
-                                 content_length_ = 6, content_type_ = 7, content_language_ = 8, content_location_ = 9,
-                                 allow_ = 10, unknown_ = 11, error_code_ = 400, folder_ = -1 };
-    enum        status_values{ no_content_ = 204, forbidden_ = 403, not_found_ = 404 };
+	enum		location_values{requested_host_ = 0, user_agent_ = 1, language_ = 2, authorization_ = 3, referer_ = 4, body_ = 5,
+								content_length_ = 6, content_type_ = 7, content_language_ = 8, content_location_ = 9,
+								allow_ = 10, unknown_ = 11, error_code_ = 400, folder_ = -1};
+	enum		status_values{no_content_ = 204, forbidden_ = 403, not_found_ = 404};
 
 protected:
+
 	int				_index;
+	//status
+	int				_status;
+	map				_status_phrases;
 
-    //status
-    int                         _status;
-    std::map<int, std::string>  _status_phrases;
-
-    //Entity headers
-    int             _content_length;
-    std::string     _content_type;
-    std::string     _content_language;
-    std::string     _content_location;
-    std::string     _allow;
+	//Entity headers
+	int				_content_length;
+	std::string		_content_type;
+	std::string		_content_language;
+	std::string		_content_location;
+	std::string		_allow;
 	vector			_allowed_methods_config;
 
-    //Request headers
-    std::string     _method;
-    std::string     _file_location;
-    std::string     _protocol;
-    std::string     _requested_host;
-    std::string     _user_agent;
-    std::string     _accept_language;
-    std::string     _authorization;
-    std::string     _referer;
-    std::string     _body;
+	//Request headers
+	std::string		_method;
+	std::string		_file_location;
+	std::string		_protocol;
+	std::string		_requested_host;
+	std::string		_user_agent;
+	std::string		_accept_language;
+	std::string		_authorization;
+	std::string		_referer;
+	std::string		_body;
 
-    std::string     _requested_file;
+	std::string		_requested_file;
 
-    //Status code map
+    //CGI environment variable map
+	std::map<std::string, std::string>			_cgi_env_variables;
 
 public:
-    header_handler();
-    ~header_handler();
+	header_handler();
+	~header_handler();
 
     //Parse request functions
     void            parse_request(int fd, map request_buffer);

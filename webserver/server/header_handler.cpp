@@ -39,17 +39,21 @@ void header_handler::print_request() {
 //------------------------------------------------------------
 
 
-header_handler::header_handler() : _status(200), _content_length(0), _content_type("Content-Type: text/"), _content_language("en"), _content_location(), _allow(),
-								   _method(), _file_location(), _protocol(), _requested_host(), _user_agent(), _accept_language(), _authorization(), _referer(), _body(), _requested_file() {
-    _status_phrases.insert (pair(200, "OK"));
-    _status_phrases.insert (pair(400, "Bad Request"));
-    _status_phrases.insert (pair(401, "Unauthorized"));
-    _status_phrases.insert (pair(403, "Forbidden"));
-    _status_phrases.insert (pair(404, "Not Found"));
-    _status_phrases.insert (pair(405, "Method Not Allowed"));
+header_handler::header_handler():	_status(200), _content_length(0), _content_type("Content-Type: text/"),
+									_content_language("en"), _content_location(), _allow(), _method(), _file_location(),
+									_protocol(), _requested_host(), _user_agent(), _accept_language(), _authorization(),
+									_referer(), _body(), _requested_file()	{
+	// setup status phrases
+	_status_phrases.insert (pair(200, "OK"));
+	_status_phrases.insert (pair(400, "Bad Request"));
+	_status_phrases.insert (pair(401, "Unauthorized"));
+	_status_phrases.insert (pair(403, "Forbidden"));
+	_status_phrases.insert (pair(404, "Not Found"));
+	_status_phrases.insert (pair(405, "Method Not Allowed"));
 //    _status_phrases.insert ( pair(, ""));
-//    _status_phrases.insert ( pair(, ""));
-//    _status_phrases.insert ( pair(, ""));
+
+	// setup CGI environment variables
+
 }
 
 header_handler::~header_handler(){
