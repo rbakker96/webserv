@@ -6,7 +6,7 @@
 /*   By: gbouwen <marvin@codam.nl>                    +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2021/05/03 12:34:40 by gbouwen       #+#    #+#                 */
-/*   Updated: 2021/05/03 12:50:05 by gbouwen       ########   odam.nl         */
+/*   Updated: 2021/05/03 12:56:27 by gbouwen       ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -192,8 +192,22 @@ int         header_handler::put_request() {
 }
 
 //------CGI functions------
+
+void		free_memory(char **str_array)
+{
+	int	index = 0;
+
+	while (str_array[index] != NULL)
+	{
+		free(str_array[index]);
+		index++;
+	}
+	delete [] str_array;
+}
+
 void		header_handler::execute_php(int fileFD)
 {
+	pid_t	pid;
 	char	**args = new char *[3];
 	char 	**envp = new char *[3];
 
@@ -209,22 +223,20 @@ void		header_handler::execute_php(int fileFD)
 	envp[1] = ft_strdup(full_query.c_str());
 	envp[2] = NULL;
 
-	if (fork() == 0) // needs error checking
+	pid = fork();
+	if (pid == -1)
+		throw std::runtime_error("Fork failed");
+	if (pid == 0)
 	{
+		// go to right directory?
 		close(STDOUT_FILENO);
 		dup2(fileFD, STDOUT_FILENO);
 		execve(args[0], args, envp);
 	}
 	else
 		wait(NULL);
-	// create free_memory() function
-	free(args[0]);
-	free(args[1]);
-	delete [] args;
-	free(envp[0]);
-	free(envp[1]);
-	delete [] envp;
-    return (-1);
+	free_memory(args);
+	free_memory(envp);
 }
 
 //------Send response functions------
