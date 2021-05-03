@@ -13,11 +13,12 @@
 #include "helper.hpp"
 
 std::vector<std::string>	parse_vector(const std::string& str) {
+
 	std::vector<std::string>	vector;
-	size_t                      start = str.find_first_not_of(' ');
-	size_t                      pos = str.find_first_of(' ', start);
-	std::string                 tmp = str.substr(pos + 1);
-	std::string                 value;
+	size_t						start = str.find_first_not_of(' ');
+	size_t						pos = str.find_first_of(' ', start);
+	std::string					tmp = str.substr(pos + 1);
+	std::string					value;
 
 	while ((pos =tmp.find_first_of(' ')) != std::string::npos) {
 		value = tmp.substr(0, pos);
@@ -28,22 +29,23 @@ std::vector<std::string>	parse_vector(const std::string& str) {
 	return (vector);
 }
 
-std::string					parse_string (const std::string& str) {
+std::string	parse_string (const std::string& str) {
+
 	size_t start = str.find_first_not_of(' ');
 	size_t pos = str.find_first_of(' ', start);
-
 	return (str.substr(pos + 1));
 }
 
-int 						parse_number (const std::string& str) {
+int parse_number (const std::string& str) {
+
 	size_t start = str.find_first_not_of(' ');
 	size_t pos = str.find_first_of(' ', start);
 	std::string temp = str.substr(pos + 1);
-
 	return (ft_atoi(temp.c_str()));
 }
 
-void 					parse_invalid(const std::string& str) {
+void parse_invalid(const std::string& str) {
+
 	if (str == "0")
 		return;
 }
