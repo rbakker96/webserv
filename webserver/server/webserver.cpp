@@ -6,7 +6,7 @@
 /*   By: roybakker <roybakker@student.codam.nl>       +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2021/03/30 16:30:47 by roybakker     #+#    #+#                 */
-/*   Updated: 2021/05/03 12:50:04 by gbouwen       ########   odam.nl         */
+/*   Updated: 2021/05/03 14:13:38 by gbouwen       ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -119,18 +119,18 @@ void    webserver::run() {
 				std::string request_headers = server->_handler.read_browser_request(server->_activeFD);
 				if (server->update_request_buffer(server->_activeFD, request_headers) == valid_)
 				{
-					FD_CLR(_servers[index]._activeFD, &_buffer_readFDS);
+					FD_CLR(server->_activeFD, &_buffer_readFDS);
 					server->_handler.parse_request(server->_activeFD, server->_request_buffer);
                     server->clear_handled_request(server->_activeFD);
-					server->_handler.configure_location(server->_location_blocks, server->get_error_page());
-                    server->_fileFD = server->_handler.handle_request();
+                    server->_fileFD = server->_handler.handle_request(server->_location_blocks, server->get_error_page());
+
 					set_maxFD(server->_fileFD);
 					if (server->_fileFD != unused_)
 					    FD_SET(server->_fileFD, &_buffer_readFDS);
 					else
-						FD_SET(server->_activeFD, &_buffer_writeFDS);
-					if (server->_handler.get_file_location().find(".php") != std::string::npos) // php-case (maybe improve later?)
-						FD_SET(server->_fileFD, &_buffer_writeFDS);
+					    FD_SET(server->_activeFD, &_buffer_writeFDS);
+                    if (server->_handler.verify_content_type() == "php")
+                        FD_SET(server->_fileFD, &_buffer_writeFDS); //_fileFD also needs to be added to buffer_writeFD in php cases
 				}
 			}
 
@@ -138,20 +138,15 @@ void    webserver::run() {
 			{
 			    if (FD_ISSET(server->_fileFD, &_writeFDS)) {
 					server->_handler.execute_php(server->_fileFD);
-                    //(create CGI class for this)
-                    //set php params
-                    //dup2 _fileFD to STDOUT
-                    //execve php file
 					FD_CLR(server->_fileFD, &_buffer_writeFDS);
 			    }
-			    //regular cases with already present files on server ready to be read
 
 				server->_handler.read_requested_file(server->_fileFD);
 				FD_CLR(server->_fileFD, &_buffer_readFDS);
 				FD_SET(server->_activeFD, &_buffer_writeFDS);
 			}
 
-			if (server->_activeFD != unused_ && FD_ISSET(_servers[index]._activeFD, &_writeFDS)) //create response
+			if (server->_activeFD != unused_ && FD_ISSET(server->_activeFD, &_writeFDS)) //create response
 			{
 				server->_handler.send_response(server->_activeFD, server->_fileFD, server->_server_name);
 				close(server->_fileFD);

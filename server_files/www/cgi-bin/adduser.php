@@ -1,10 +1,5 @@
-
 <?php
 parse_str($_SERVER['QUERY_STRING'], $output);
-echo "HTTP/1.1 200 OK\r\n";
-echo "Content-Length: 85\r\n";
-echo "Content-Type: text/html; charset=UTF-8\r\n";
-echo "\r\n";
 ?>
 <html>
 <body>

@@ -6,7 +6,7 @@
 /*   By: roybakker <roybakker@student.codam.nl>       +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2021/04/07 13:23:53 by roybakker     #+#    #+#                 */
-/*   Updated: 2021/04/29 17:55:54 by gbouwen       ########   odam.nl         */
+/*   Updated: 2021/05/03 14:13:38 by gbouwen       ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,54 +29,55 @@
 
 class header_handler {
 public:
-    typedef     std::vector<std::string>                vector;
-    typedef     std::vector<std::string>::iterator      vector_iterator;
-    typedef     std::map<int, std::string>              map;
-    typedef     std::map<int, std::string>::iterator    map_iterator;
-    typedef     std::vector<location_context>           location_vector;
-    typedef     std::vector<location_context>::iterator location_iterator;
-    typedef     std::pair<int, std::string>             pair;
+	typedef		std::vector<std::string>				vector;
+	typedef		std::vector<std::string>::iterator		vector_iterator;
+	typedef		std::map<int, std::string>				map;
+	typedef		std::map<int, std::string>::iterator	map_iterator;
+	typedef		std::vector<location_context>			location_vector;
+	typedef     std::vector<location_context>::iterator location_iterator;
+	typedef		std::pair<int, std::string>				pair;
 
-    typedef     void (header_handler::*parse)(const std::string &str);
+	typedef		void (header_handler::*parse)(const std::string &str);
 
-    enum        location_values{ requested_host_ = 0, user_agent_ = 1, language_ = 2, authorization_ = 3, referer_ = 4, body_ = 5,
-                                 content_length_ = 6, content_type_ = 7, content_language_ = 8, content_location_ = 9,
-                                 allow_ = 10, unknown_ = 11, error_code_ = 400, folder_ = -1 };
-    enum        status_values{ no_content_ = 204, forbidden_ = 403, not_found_ = 404 };
+	enum		location_values{requested_host_ = 0, user_agent_ = 1, language_ = 2, authorization_ = 3, referer_ = 4, body_ = 5,
+								content_length_ = 6, content_type_ = 7, content_language_ = 8, content_location_ = 9,
+								allow_ = 10, unknown_ = 11, error_code_ = 400, folder_ = -1, unused_ = -1};
+	enum		status_values{no_content_ = 204, forbidden_ = 403, not_found_ = 404};
 
 protected:
+
 	int				_index;
+	//status
+	int				_status;
+	map				_status_phrases;
 
-    //status
-    int                         _status;
-    std::map<int, std::string>  _status_phrases;
-
-    //Entity headers
-    int             _content_length;
-    std::string     _content_type;
-    std::string     _content_language;
-    std::string     _content_location;
-    std::string     _allow;
+	//Entity headers
+	int				_content_length;
+	std::string		_content_type;
+	std::string		_content_language;
+	std::string		_content_location;
+	std::string		_allow;
 	vector			_allowed_methods_config;
 
-    //Request headers
-    std::string     _method;
-    std::string     _file_location;
-    std::string     _protocol;
-    std::string     _requested_host;
-    std::string     _user_agent;
-    std::string     _accept_language;
-    std::string     _authorization;
-    std::string     _referer;
-    std::string     _body;
+	//Request headers
+	std::string		_method;
+	std::string		_file_location;
+	std::string		_protocol;
+	std::string		_requested_host;
+	std::string		_user_agent;
+	std::string		_accept_language;
+	std::string		_authorization;
+	std::string		_referer;
+	std::string		_body;
 
-    std::string     _requested_file;
+	std::string		_requested_file;
 
-    //Status code map
+    //CGI environment variable map
+	std::map<std::string, std::string>			_cgi_env_variables;
 
 public:
-    header_handler();
-    ~header_handler();
+	header_handler();
+	~header_handler();
 
     //Parse request functions
     void            parse_request(int fd, map request_buffer);
@@ -97,14 +98,13 @@ public:
     void            invalid_argument(const std::string &str);
 
     //Handle request functions
-    int             handle_request();
-    int             get_request();
-    int             head_request();
-    int             post_request();
+    int             handle_request(location_vector location_blocks, std::string error_page);
     int             put_request();
+	int             cgi_request();
+    void            verify_file_location(location_vector location_blocks, std::string error_page);
 
 	//CGI functions
-	void			execute_php(int fileFD);
+	void 			execute_php(int fileFD);
 
     //Send response functions
 	void 			send_response(int activeFD, int fileFD, std::string server_name);
@@ -118,12 +118,9 @@ public:
 
     //Helper functions
     std::string     read_browser_request(int fd);
-    void            read_requested_file(int fd);
-    int             open_requested_file(std::string file_location);
+    std::string     verify_content_type();
     vector          str_to_vector(std::string request);
-    void            configure_location(location_vector location_blocks, std::string error_page);
-    std::string 	requested_location_block();
-    int             determine_content_type();
+    void            read_requested_file(int fd);
     void		    clear_requested_file();
     void            reset_handler_atributes();
     void            reset_status();
