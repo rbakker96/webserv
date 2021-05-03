@@ -157,10 +157,9 @@ int        header_handler::handle_request(header_handler::location_vector locati
         _status = not_found_;
 
     std::cout << "STATUS = " << _status << std::endl;
-    if (_status >= error_code_) { //ERROR PAGE DOESN'T WORK YET WITH /ASDFASDF/ASDF/ADSF
+    if (_status >= error_code_) {
         _file_location = error_page.append(ft_itoa(_status));
         _file_location.append(".html");
-        std::cout << "ERROR LOCATION = " << _file_location << std::endl;
         if ((fd = open(&_file_location[0], O_RDONLY)) == -1)
             throw std::runtime_error("Open failed");
     }
@@ -191,12 +190,11 @@ void        header_handler::verify_file_location(header_handler::location_vector
         }
         else if ((loc + 1) == location_blocks.end()) {
             pos = _file_location.find_last_of('/');
-            file_location = _file_location.substr(0, pos+1);
-            _file_location = error_page.append(_file_location);
+            file_location = _file_location.substr(pos+1);
+            _file_location = error_page.append(file_location);
         }
     }
 }
-
 
 
 // work in progress
