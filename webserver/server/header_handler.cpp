@@ -6,7 +6,7 @@
 /*   By: gbouwen <marvin@codam.nl>                    +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2021/05/03 12:34:40 by gbouwen       #+#    #+#                 */
-/*   Updated: 2021/05/03 14:13:39 by gbouwen       ########   odam.nl         */
+/*   Updated: 2021/05/03 15:03:56 by gbouwen       ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -146,6 +146,7 @@ int        header_handler::handle_request(header_handler::location_vector locati
     int		fd = unused_;
 
     verify_file_location(location_blocks, error_page);
+	std::cout << "FILE LOCATION " << _file_location << std::endl;
     if (stat(_file_location.c_str(), &stats) == -1)  //maybe more errors for which we can see with fstat
         _status = not_found_;
     else if (!(stats.st_mode & S_IRUSR))
@@ -196,45 +197,6 @@ void        header_handler::verify_file_location(header_handler::location_vector
     }
 }
 
-
-// work in progress
-
-//int        header_handler::cgi_request(int activeFD) {
-//    //check for existing location block
-//    //not present redirect to error location
-//    //present check for extension to see if index is needed
-//
-//    //determine content type
-//
-//    //if php file and it exists
-//        //open temp file and return that to _fileFD
-//
-//    //else return error page
-//
-//	write(activeFD, "HTTP/1.1 200 OK\r\n", strlen("HTTP/1.1 200 OK\r\n"));
-//	write(activeFD, "Content-Length: 13\r\n", strlen("Content-Length: 13\r\n"));
-//	write(activeFD, "\r\n", strlen("\r\n"));
-//
-//	char		**args = new char *[3];
-//	std::string	temp;
-//
-//	temp = "/usr/bin/php";
-//	args[0] = ft_strdup(temp.c_str());
-//	args[1] = ft_strdup(_file_location.c_str());
-//	args[2] = NULL;
-//	if (fork() == 0)
-//	{
-//		close(STDOUT_FILENO);
-//		dup(activeFD);
-//		execve(args[0], const_cast<char **>(reinterpret_cast<char * const *>(args)), NULL);
-//	}
-//	else
-//		wait(NULL);
-//	delete [] args;
-//    return (-1);
-//}
-
-
 int			header_handler::cgi_request()
 {
 	std::string	str_filename = "server_files/www/temp";
@@ -273,6 +235,16 @@ void		free_memory(char **str_array)
 	delete [] str_array;
 }
 
+std::string	get_location_without_root(std::string &file_location)
+{
+	std::string	result;
+
+	result = file_location.substr(file_location.find_last_of("/", std::string::npos) + 1, std::string::npos);
+	return (result);
+}
+
+// error checking if execve fails
+
 void		header_handler::execute_php(int fileFD)
 {
 	pid_t	pid;
@@ -280,7 +252,8 @@ void		header_handler::execute_php(int fileFD)
 	char 	**envp = new char *[3];
 
 	args[0] = ft_strdup("/usr/bin/php");
-	args[1] = ft_strdup(_file_location.c_str());
+	std::string	file_location_no_root = get_location_without_root(_file_location);
+	args[1] = ft_strdup(file_location_no_root.c_str());
 	args[2] = NULL;
 
 	std::string query = "QUERY_STRING=";
@@ -296,7 +269,7 @@ void		header_handler::execute_php(int fileFD)
 		throw std::runtime_error("Fork failed");
 	if (pid == 0)
 	{
-		// go to right directory?
+		chdir("server_files/www/cgi-bin");
 		close(STDOUT_FILENO);
 		dup2(fileFD, STDOUT_FILENO);
 		execve(args[0], args, envp);
@@ -353,7 +326,6 @@ void	header_handler::generate_content_type(std::string &response) {
 	std::string	content_type_header = "Content-Type: ";
     _content_type = verify_content_type();
 
-    std::cout << "current content type = " << _content_type << std::endl;
 	if (_content_type.compare("html") == 0 || _content_type.compare("css") == 0)
 		content_type_header.append("text/");
 	else if (_content_type.compare("png") == 0)
@@ -361,7 +333,6 @@ void	header_handler::generate_content_type(std::string &response) {
 	content_type_header.append(_content_type);
 	if (_content_type.compare("php") == 0) //fix later
 		content_type_header ="text/html";
-	std::cout << "header content type = " << content_type_header << std::endl;
 	content_type_header.append("\r\n");
 	response.append(content_type_header);
 }
