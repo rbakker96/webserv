@@ -1,1 +1,9 @@
-Hello world!
+
+HTTP/1.1 200 OK
+Content-Length: 85
+Content-Type: text/html; charset=UTF-8
+
+<html>
+<body>
+<h2>Firstname: asdf</h2></br><h2>Lastname: asdf</h2></br></body>
+</html>

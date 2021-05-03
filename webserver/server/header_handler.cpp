@@ -196,7 +196,7 @@ int         header_handler::put_request() {
 }
 
 //------CGI functions------
-void		header_handler::execute_php(int fileFD)
+int header_handler::execute_php(int fileFD)
 {
 	char	**args = new char *[3];
 	char 	**envp = new char *[3];

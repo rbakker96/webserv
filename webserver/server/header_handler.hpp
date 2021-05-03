@@ -105,7 +105,7 @@ public:
     int             put_request();
 
 	//CGI functions
-	void			execute_php(int fileFD);
+	int execute_php(int fileFD);
 
     //Send response functions
 	void 			send_response(int activeFD, int fileFD, std::string server_name);
