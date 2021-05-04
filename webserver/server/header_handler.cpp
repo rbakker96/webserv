@@ -6,7 +6,7 @@
 /*   By: gbouwen <marvin@codam.nl>                    +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2021/05/03 12:34:40 by gbouwen       #+#    #+#                 */
-/*   Updated: 2021/05/04 14:22:47 by gbouwen       ########   odam.nl         */
+/*   Updated: 2021/05/04 16:48:58 by gbouwen       ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -179,12 +179,12 @@ int        header_handler::handle_request(header_handler::location_vector locati
     return fd;
 }
 
-int			header_handler::check_if_directory(header_handler::location_vector location_blocks, std::string &file_location)
+int			check_if_directory(header_handler::location_vector location_blocks, std::string &file_location)
 {
 	std::string	full_location;
 	struct stat	s;
 
-	for (location_iterator loc = location_blocks.begin(); loc != location_blocks.end(); loc++)
+	for (header_handler::location_iterator loc = location_blocks.begin(); loc != location_blocks.end(); loc++)
 	{
 		full_location = loc->get_root().append(file_location);
 		if (stat(full_location.c_str(), &s) == 0)
@@ -211,11 +211,23 @@ void        header_handler::verify_file_location(header_handler::location_vector
 
     for (location_iterator loc = location_blocks.begin(); loc != location_blocks.end(); loc++) {
         if (loc->get_location_context() == file_location) {
-            _file_location = loc->get_root().append(_file_location);
-            if (verify_content_type() == "folder" && !loc->get_autoindex())
+			if (_referer.empty())
+				_file_location = loc->get_root().append(_file_location);
+			else
+				_file_location = loc->get_root().append(file_location).append(_file_location);
+            if (verify_content_type() == "folder" && !loc->get_autoindex()) // this searches for index.html
 				_file_location = _file_location.append(loc->get_index());
-			else if (verify_content_type() == "folder" && loc->get_autoindex())
-				_file_location = "server_files/www/index.php";
+			else if (verify_content_type() == "folder" && loc->get_autoindex()) // this gets the auto index script
+			{
+				std::string temp = _file_location;
+				temp.append("/").append(loc->get_index());
+				struct stat	s;
+
+				if (stat(temp.c_str(), &s) == -1)
+					_file_location.append("/index.php");
+				else
+					_file_location.append("/").append(loc->get_index());
+			}
             break;
         }
         else if ((loc + 1) == location_blocks.end()) {
@@ -274,6 +286,14 @@ std::string	get_location_without_root(std::string &file_location)
 
 // error checking if execve fails
 
+std::string	get_correct_directory(std::string &file_location)
+{
+	int			last_index = file_location.find_last_of("/", std::string::npos);
+	std::string	result = file_location.substr(0, last_index);
+
+	return (result);
+}
+
 void		header_handler::execute_php(int fileFD)
 {
 	pid_t	pid;
@@ -293,12 +313,14 @@ void		header_handler::execute_php(int fileFD)
 	envp[1] = ft_strdup(full_query.c_str());
 	envp[2] = NULL;
 
+	std::string	correct_directory = get_correct_directory(_file_location);
+	std::cout << "CORRECT_DIRECTORY " << correct_directory << std::endl;
 	pid = fork();
 	if (pid == -1)
 		throw std::runtime_error("Fork failed");
 	if (pid == 0)
 	{
-		chdir("server_files/www/cgi-bin");
+		chdir(correct_directory.c_str());
 		close(STDOUT_FILENO);
 		dup2(fileFD, STDOUT_FILENO);
 		execve(args[0], args, envp);
