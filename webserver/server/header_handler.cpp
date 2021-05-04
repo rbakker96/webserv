@@ -6,7 +6,7 @@
 /*   By: gbouwen <marvin@codam.nl>                    +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2021/05/03 12:34:40 by gbouwen       #+#    #+#                 */
-/*   Updated: 2021/05/04 17:19:57 by gbouwen       ########   odam.nl         */
+/*   Updated: 2021/05/04 17:45:07 by gbouwen       ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -306,6 +306,7 @@ char	**header_handler::create_cgi_args()
 {
 	char	**args = new char *[3];
 	args[0] = ft_strdup("/usr/bin/php");
+//	args[0] = ft_strdup("/Users/gbouwen/Desktop/codam/subjects/webserv/tester_executables/cgi_tester");
 	args[1] = ft_strdup(get_location_without_root(_file_location).c_str());
 	args[2] = NULL;
 	return args;
