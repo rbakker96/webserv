@@ -196,45 +196,6 @@ void        header_handler::verify_file_location(header_handler::location_vector
     }
 }
 
-
-// work in progress
-
-//int        header_handler::cgi_request(int activeFD) {
-//    //check for existing location block
-//    //not present redirect to error location
-//    //present check for extension to see if index is needed
-//
-//    //determine content type
-//
-//    //if php file and it exists
-//        //open temp file and return that to _fileFD
-//
-//    //else return error page
-//
-//	write(activeFD, "HTTP/1.1 200 OK\r\n", strlen("HTTP/1.1 200 OK\r\n"));
-//	write(activeFD, "Content-Length: 13\r\n", strlen("Content-Length: 13\r\n"));
-//	write(activeFD, "\r\n", strlen("\r\n"));
-//
-//	char		**args = new char *[3];
-//	std::string	temp;
-//
-//	temp = "/usr/bin/php";
-//	args[0] = ft_strdup(temp.c_str());
-//	args[1] = ft_strdup(_file_location.c_str());
-//	args[2] = NULL;
-//	if (fork() == 0)
-//	{
-//		close(STDOUT_FILENO);
-//		dup(activeFD);
-//		execve(args[0], const_cast<char **>(reinterpret_cast<char * const *>(args)), NULL);
-//	}
-//	else
-//		wait(NULL);
-//	delete [] args;
-//    return (-1);
-//}
-
-
 int			header_handler::cgi_request()
 {
 	std::string	str_filename = "server_files/www/temp";
@@ -262,20 +223,19 @@ int         header_handler::put_request() {
 
 //------CGI functions------
 
-int header_handler::execute_php(int fileFD)
+int header_handler::execute_php(int fileFD, std::string server_name, int server_port)
 {
-	char	**args = create_cgi_args();
-	char 	**envp = create_cgi_envp();
-
 	if (fork() == 0) // needs error checking
 	{
+		// error management
+		char	**args = create_cgi_args();
+		char 	**envp = create_cgi_envp(server_name, server_port);
 		close(STDOUT_FILENO);
 		dup2(fileFD, STDOUT_FILENO);
 		execve(args[0], args, envp);
 	}
 	else
 		wait(NULL);
-	free_cgi_execution_memory(args, envp);
     return (-1);
 }
 
@@ -288,29 +248,43 @@ char	**header_handler::create_cgi_args()
 	return args;
 }
 
-char 	**header_handler::create_cgi_envp() {
+char **header_handler::create_cgi_envp(const std::string& server_name, int server_port)
+{
+	// for later
+	// AUTH_TYPE, REMOTE_ADDR, REMOTE_IDENT, REMOTE_USER
+	vector	cgi_envps;
 
-	// calculate number of envp needed (17 default ones + additional x_ ones)
-	int 	size = 7;
-	char 	**envp = new char *[size + 1];
+	if (_content_length)
+	{
+		cgi_envps.push_back(((std::string)"CONTENT_LENGTH=").append(ft_itoa(get_content_length())));
+		cgi_envps.push_back(((std::string)"CONTENT_TYPE=").append(get_content_type()));
+	}
+	cgi_envps.push_back((std::string)"GATEWAY_INTERFACE=CGI/1.1");
+	cgi_envps.push_back((std::string)"SERVER_SOFTWARE=webserv/1.1");
+	cgi_envps.push_back(((std::string)"QUERY_STRING=").append(get_body()));
+	cgi_envps.push_back(((std::string)"REQUEST_METHOD=").append(get_method()));
+	cgi_envps.push_back(((std::string)"SERVER_PROTOCOL=").append(get_protocol()));
+	cgi_envps.push_back(((std::string)"SERVER_NAME=").append(server_name));
+	cgi_envps.push_back(((std::string)"SERVER_PORT=").append(ft_itoa(server_port)));
 
-	// add different environment variables to envp
-	std::string cgi_content_length = ((std::string)"CONTENT_LENGTH=").append(ft_itoa(_content_length));
-	std::string cgi_content_type = ((std::string)"CONTENT_TYPE=").append(_content_type);
-	std::string cgi_gateway_interface = "GATEWAY_INTERFACE=CGI/1.1";
-	std::string cgi_query_string = ((std::string)"QUERY_STRING=").append(_body);
-	std::string cgi_request_method = ((std::string)"REQUEST_METHOD=").append(_method);
-	std::string cgi_server_protocol = ((std::string)"SERVER_PROTOCOL=").append(_protocol);
-	std::string cgi_server_software = "SERVER_SOFTWARE=webserv/1.1";
+	// PATH related
 
-	envp[0] = ft_strdup(cgi_content_length.c_str());
-	envp[1] = ft_strdup(cgi_content_type.c_str());
-	envp[2] = ft_strdup(cgi_gateway_interface.c_str());
-	envp[3] = ft_strdup(cgi_query_string.c_str());
-	envp[4] = ft_strdup(cgi_request_method.c_str());
-	envp[5] = ft_strdup(cgi_server_protocol.c_str());
-	envp[6] = ft_strdup(cgi_server_software.c_str());
-	envp[size] = NULL;
+	// PATH_INFO -> need to save the part after '.php'; if not existing, set as NULL
+	// PATH_TRANSLATED -> /DOCUMENT_ROOT + PATH_INFO ; if PATH_INFO is NULL, set to NULL as well
+	// REQUEST_URI -> /SCRIPT_NAME + ? QUERY_STRING /test.php?foo=bar
+	// SCRIPT_NAME -> file name of the CGI script
+	cgi_envps.push_back(((std::string)"SCRIPT_NAME=").append(get_file_location()));
+
+	char 	**envp = new char *[cgi_envps.size() + 1];
+	int		i = 0;
+
+	for (vector_iterator it = cgi_envps.begin(); it != cgi_envps.end(); it++)
+	{
+		envp[i] = ft_strdup((*it).c_str()); // error check on ft_strdup failure
+		i++;
+	}
+	envp[cgi_envps.size()] = NULL;
+
 	return envp;
 }
 

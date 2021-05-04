@@ -138,7 +138,7 @@ void    webserver::run() {
 			if (server->_fileFD != unused_ && FD_ISSET(server->_fileFD, &_readFDS)) //read requested file
 			{
 			    if (FD_ISSET(server->_fileFD, &_writeFDS)) {
-					server->_handler.execute_php(server->_fileFD);
+					server->_handler.execute_php(server->_fileFD, server->_server_name, server->_port);
 					FD_CLR(server->_fileFD, &_buffer_writeFDS);
 			    }
 
