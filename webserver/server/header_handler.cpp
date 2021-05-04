@@ -6,7 +6,7 @@
 /*   By: gbouwen <marvin@codam.nl>                    +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2021/05/03 12:34:40 by gbouwen       #+#    #+#                 */
-/*   Updated: 2021/05/03 17:20:17 by gbouwen       ########   odam.nl         */
+/*   Updated: 2021/05/04 14:22:47 by gbouwen       ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -155,7 +155,7 @@ int        header_handler::handle_request(header_handler::location_vector locati
     int		fd = unused_;
 
     verify_file_location(location_blocks, error_page);
-
+	std::cout << "LOCATION " << _file_location << std::endl;
     if (stat(_file_location.c_str(), &stats) == -1)  //maybe more errors for which we can see with fstat
         _status = not_found_;
     else if (!(stats.st_mode & S_IRUSR))
@@ -164,9 +164,8 @@ int        header_handler::handle_request(header_handler::location_vector locati
 		return cgi_request();
     else if (_method == "PUT")
         put_request();
-    else if ((fd = open(&_file_location[0], O_RDONLY)) == -1 )
+    else if ((fd = open(&_file_location[0], O_RDONLY)) == -1)
         _status = not_found_;
-
     if (_status >= error_code_) {
         _file_location = error_page.append(ft_itoa(_status));
         _file_location.append(".html");
@@ -175,7 +174,26 @@ int        header_handler::handle_request(header_handler::location_vector locati
     }
     if (fd != -1)
         fcntl(fd, F_SETFL, O_NONBLOCK);
+	std::cout << "FD : " << fd << std::endl;
+	std::cout << _file_location << std::endl;
     return fd;
+}
+
+int			header_handler::check_if_directory(header_handler::location_vector location_blocks, std::string &file_location)
+{
+	std::string	full_location;
+	struct stat	s;
+
+	for (location_iterator loc = location_blocks.begin(); loc != location_blocks.end(); loc++)
+	{
+		full_location = loc->get_root().append(file_location);
+		if (stat(full_location.c_str(), &s) == 0)
+		{
+			if (s.st_mode & S_IFDIR)
+				return (1);
+		}
+	}
+	return (0);
 }
 
 void        header_handler::verify_file_location(header_handler::location_vector location_blocks, std::string error_page) {
@@ -186,16 +204,18 @@ void        header_handler::verify_file_location(header_handler::location_vector
         pos = _referer.find(_requested_host);
         file_location = _referer.substr(pos + _requested_host.length());
     }
-    else if (_file_location[_file_location.length() - 1] != '/') {
-        pos = _file_location.find_last_of('/');
-        file_location = _file_location.substr(0, pos+1);
-    }
+	else if (_file_location[_file_location.length() - 1] != '/' && (check_if_directory(location_blocks, file_location) == 0)) {
+		pos = _file_location.find_last_of('/');
+		file_location = _file_location.substr(0, pos+1);
+	}
 
     for (location_iterator loc = location_blocks.begin(); loc != location_blocks.end(); loc++) {
         if (loc->get_location_context() == file_location) {
             _file_location = loc->get_root().append(_file_location);
-            if (verify_content_type() == "folder")
-                _file_location = _file_location.append(loc->get_index());
+            if (verify_content_type() == "folder" && !loc->get_autoindex())
+				_file_location = _file_location.append(loc->get_index());
+			else if (verify_content_type() == "folder" && loc->get_autoindex())
+				_file_location = "server_files/www/index.php";
             break;
         }
         else if ((loc + 1) == location_blocks.end()) {

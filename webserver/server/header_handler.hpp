@@ -6,7 +6,7 @@
 /*   By: roybakker <roybakker@student.codam.nl>       +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2021/04/07 13:23:53 by roybakker     #+#    #+#                 */
-/*   Updated: 2021/05/03 17:19:43 by gbouwen       ########   odam.nl         */
+/*   Updated: 2021/05/04 13:58:31 by gbouwen       ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -101,6 +101,7 @@ public:
     int             handle_request(location_vector location_blocks, std::string error_page);
     int             put_request();
 	int             cgi_request();
+	int				check_if_directory(location_vector location_blocks, std::string &file_location);
     void            verify_file_location(location_vector location_blocks, std::string error_page);
 
 	//CGI functions
