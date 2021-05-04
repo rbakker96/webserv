@@ -6,7 +6,7 @@
 /*   By: gbouwen <marvin@codam.nl>                    +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2021/05/03 12:34:40 by gbouwen       #+#    #+#                 */
-/*   Updated: 2021/05/03 12:50:05 by gbouwen       ########   odam.nl         */
+/*   Updated: 2021/05/04 17:19:57 by gbouwen       ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -45,6 +45,7 @@ header_handler::header_handler():	_index(0), _status(200), _status_phrases(), _c
 									_accept_language(), _authorization(), _referer(), _body(), _requested_file()	{
 	// setup status phrases
 	_status_phrases.insert (pair(200, "OK"));
+	_status_phrases.insert (pair(204, "No Content"));
 	_status_phrases.insert (pair(400, "Bad Request"));
 	_status_phrases.insert (pair(401, "Unauthorized"));
 	_status_phrases.insert (pair(403, "Forbidden"));
@@ -117,13 +118,21 @@ int         header_handler::identify_request_value(const std::string &str) {
 }
 
 void        header_handler::parse_first_line(const std::string &str) {
-    size_t start = 0;
-    size_t end = str.find_first_of(' ', start);
+	int		index;
+    size_t	start = 0;
+    size_t	end = str.find_first_of(' ', start);
     _method = str.substr(start, end - start);
 
     start = end + 1;
     end = str.find_first_of(' ', start);
-	_file_location = str.substr(start, end - start);
+	if ((index = str.find('?', start)) != -1)
+	{
+		_file_location = str.substr(start, index - start);
+		index++;
+		_body = str.substr(index, end - index);
+	}
+	else
+		_file_location = str.substr(start, end - start);
     _protocol = str.substr(end + 1);
 }
 
@@ -146,6 +155,7 @@ int        header_handler::handle_request(header_handler::location_vector locati
     int		fd = unused_;
 
     verify_file_location(location_blocks, error_page);
+	std::cout << "LOCATION " << _file_location << std::endl;
     if (stat(_file_location.c_str(), &stats) == -1)  //maybe more errors for which we can see with fstat
         _status = not_found_;
     else if (!(stats.st_mode & S_IRUSR))
@@ -154,9 +164,8 @@ int        header_handler::handle_request(header_handler::location_vector locati
 		return cgi_request();
     else if (_method == "PUT")
         put_request();
-    else if ((fd = open(&_file_location[0], O_RDONLY)) == -1 )
+    else if ((fd = open(&_file_location[0], O_RDONLY)) == -1)
         _status = not_found_;
-
     if (_status >= error_code_) {
         _file_location = error_page.append(ft_itoa(_status));
         _file_location.append(".html");
@@ -165,7 +174,26 @@ int        header_handler::handle_request(header_handler::location_vector locati
     }
     if (fd != -1)
         fcntl(fd, F_SETFL, O_NONBLOCK);
+	std::cout << "FD : " << fd << std::endl;
+	std::cout << _file_location << std::endl;
     return fd;
+}
+
+int			check_if_directory(header_handler::location_vector location_blocks, std::string &file_location)
+{
+	std::string	full_location;
+	struct stat	s;
+
+	for (header_handler::location_iterator loc = location_blocks.begin(); loc != location_blocks.end(); loc++)
+	{
+		full_location = loc->get_root().append(file_location);
+		if (stat(full_location.c_str(), &s) == 0)
+		{
+			if (s.st_mode & S_IFDIR)
+				return (1);
+		}
+	}
+	return (0);
 }
 
 void        header_handler::verify_file_location(header_handler::location_vector location_blocks, std::string error_page) {
@@ -176,16 +204,30 @@ void        header_handler::verify_file_location(header_handler::location_vector
         pos = _referer.find(_requested_host);
         file_location = _referer.substr(pos + _requested_host.length());
     }
-    else if (_file_location[_file_location.length() - 1] != '/') {
-        pos = _file_location.find_last_of('/');
-        file_location = _file_location.substr(0, pos+1);
-    }
+	else if (_file_location[_file_location.length() - 1] != '/' && (check_if_directory(location_blocks, file_location) == 0)) {
+		pos = _file_location.find_last_of('/');
+		file_location = _file_location.substr(0, pos+1);
+	}
 
     for (location_iterator loc = location_blocks.begin(); loc != location_blocks.end(); loc++) {
         if (loc->get_location_context() == file_location) {
-            _file_location = loc->get_root().append(_file_location);
-            if (verify_content_type() == "folder")
-                _file_location = _file_location.append(loc->get_index());
+			if (_referer.empty())
+				_file_location = loc->get_root().append(_file_location);
+			else
+				_file_location = loc->get_root().append(file_location).append(_file_location);
+            if (verify_content_type() == "folder" && !loc->get_autoindex()) // this searches for index.html
+				_file_location = _file_location.append(loc->get_index());
+			else if (verify_content_type() == "folder" && loc->get_autoindex()) // this gets the auto index script
+			{
+				std::string temp = _file_location;
+				temp.append("/").append(loc->get_index());
+				struct stat	s;
+
+				if (stat(temp.c_str(), &s) == -1)
+					_file_location.append("/index.php");
+				else
+					_file_location.append("/").append(loc->get_index());
+			}
             break;
         }
         else if ((loc + 1) == location_blocks.end()) {
@@ -222,28 +264,49 @@ int         header_handler::put_request() {
 }
 
 //------CGI functions------
-
-int header_handler::execute_php(int fileFD, std::string server_name, int server_port)
+std::string	get_correct_directory(std::string &file_location)
 {
-	if (fork() == 0) // needs error checking
+	int			last_index = file_location.find_last_of("/", std::string::npos);
+	std::string	result = file_location.substr(0, last_index);
+
+	return (result);
+}
+
+// error checking if execve fails
+void	header_handler::execute_php(int fileFD, std::string server_name, int server_port)
+{
+	pid_t	pid;
+
+	pid = fork();
+	if (pid == -1)
+		throw std::runtime_error("Fork failed");
+	if (pid == 0)
 	{
 		// error management
 		char	**args = create_cgi_args();
 		char 	**envp = create_cgi_envp(server_name, server_port);
+		chdir(get_correct_directory(_file_location).c_str());
 		close(STDOUT_FILENO);
 		dup2(fileFD, STDOUT_FILENO);
 		execve(args[0], args, envp);
 	}
 	else
 		wait(NULL);
-    return (-1);
+}
+
+std::string	get_location_without_root(std::string &file_location)
+{
+	std::string	result;
+
+	result = file_location.substr(file_location.find_last_of("/", std::string::npos) + 1, std::string::npos);
+	return (result);
 }
 
 char	**header_handler::create_cgi_args()
 {
 	char	**args = new char *[3];
 	args[0] = ft_strdup("/usr/bin/php");
-	args[1] = ft_strdup(_file_location.c_str());
+	args[1] = ft_strdup(get_location_without_root(_file_location).c_str());
 	args[2] = NULL;
 	return args;
 }
@@ -287,22 +350,6 @@ char **header_handler::create_cgi_envp(const std::string& server_name, int serve
 
 	return envp;
 }
-
-void header_handler::free_cgi_execution_memory(char **args, char **envp) {
-	free(args[0]);
-	free(args[1]);
-	delete [] args;
-	free(envp[0]);
-	free(envp[1]);
-	free(envp[2]);
-	free(envp[3]);
-	free(envp[4]);
-	free(envp[5]);
-	free(envp[6]);
-	delete [] envp;
-}
-
-
 //------Send response functions------
 void        header_handler::send_response(int activeFD, int fileFD, std::string server_name) {
 	std::string response;
@@ -328,7 +375,7 @@ void	header_handler::generate_status_line(std::string &response) {
 	std::string status_line = get_protocol();
 
 	status_line.append(" ");
-	status_line.append((ft_itoa(_status)));
+	status_line.append((ft_itoa(_status))); // this leaks
     status_line.append(" ");
     status_line.append(_status_phrases[_status]);
 	status_line.append("\r\n");
@@ -348,15 +395,13 @@ void	header_handler::generate_content_type(std::string &response) {
 	std::string	content_type_header = "Content-Type: ";
     _content_type = verify_content_type();
 
-    std::cout << "current content type = " << _content_type << std::endl;
 	if (_content_type.compare("html") == 0 || _content_type.compare("css") == 0)
 		content_type_header.append("text/");
 	else if (_content_type.compare("png") == 0)
 		content_type_header.append("image/");
 	content_type_header.append(_content_type);
 	if (_content_type.compare("php") == 0) //fix later
-		content_type_header ="text/html";
-	std::cout << "header content type = " << content_type_header << std::endl;
+		content_type_header = "text/html";
 	content_type_header.append("\r\n");
 	response.append(content_type_header);
 }
@@ -500,6 +545,7 @@ void            header_handler::reset_status() {_status = 200;}
 
 //------Getter------
 int				header_handler::get_index() { return _index; }
+int				header_handler::get_status() { return _status; }
 int             header_handler::get_content_length() { return _content_length;}
 std::string     header_handler::get_content_type() { return _content_type;}
 std::string     header_handler::get_content_language() { return _content_language;}

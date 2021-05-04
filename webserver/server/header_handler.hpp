@@ -6,7 +6,7 @@
 /*   By: roybakker <roybakker@student.codam.nl>       +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2021/04/07 13:23:53 by roybakker     #+#    #+#                 */
-/*   Updated: 2021/04/29 17:55:54 by gbouwen       ########   odam.nl         */
+/*   Updated: 2021/05/04 17:19:56 by gbouwen       ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -117,7 +117,7 @@ public:
     void            verify_file_location(location_vector location_blocks, std::string error_page);
 
 	//CGI functions
-	int execute_php(int fileFD, std::string server_name, int server_port);
+	void			execute_php(int fileFD, std::string server_name, int server_port);
 	char 			**create_cgi_args();
 	char 			**create_cgi_envp(const std::string& server_name, int server_port);
 	void 			free_cgi_execution_memory(char **args, char **envp);
@@ -143,6 +143,7 @@ public:
 
     //Getter
 	int				get_index();
+	int				get_status();
     int             get_content_length();
     std::string     get_content_type();
     std::string     get_content_language();
