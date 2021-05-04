@@ -32,7 +32,7 @@ void header_handler::print_request() {
     std::cout << "  Accept language = " << get_accept_language() << std::endl;
     std::cout << "  Authorization = " << get_authorization() << std::endl;
     std::cout << "  Referer = " << get_referer() << std::endl;
-    std::cout << "  Body = " << get_body() << std::endl;
+    std::cout << "  Body = \n" << get_body() << std::endl;
 
     std::cout << "------------- END REQUEST -------------\n\n";
 }
