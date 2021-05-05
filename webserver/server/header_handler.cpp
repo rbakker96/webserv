@@ -6,7 +6,7 @@
 /*   By: gbouwen <marvin@codam.nl>                    +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2021/05/03 12:34:40 by gbouwen       #+#    #+#                 */
-/*   Updated: 2021/05/05 10:57:42 by gbouwen       ########   odam.nl         */
+/*   Updated: 2021/05/05 13:24:51 by gbouwen       ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -309,6 +309,12 @@ std::string	get_location_without_root(std::string &file_location)
 char	**header_handler::create_cgi_args()
 {
 	char	**args = new char *[3];
+
+//	if (file location extension == .bla)
+//		use cgi tester
+//	else if (file location extension == .php)
+//		use usr bin php
+
 	args[0] = ft_strdup("/usr/bin/php");
 //	args[0] = ft_strdup("/Users/gbouwen/Desktop/codam/subjects/webserv/tester_executables/cgi_tester");
 	args[1] = ft_strdup(get_location_without_root(_file_location).c_str());
