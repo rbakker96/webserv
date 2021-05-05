@@ -164,6 +164,9 @@ int        header_handler::handle_request(header_handler::location_vector locati
 		return cgi_request();
     else if (_method == "PUT")
         put_request();
+    // 2 Post with no content -> not sure if it's the best place to check
+    else if (_method == "POST" && get_body().empty())
+    	_status = no_content_;
     else if ((fd = open(&_file_location[0], O_RDONLY)) == -1)
         _status = not_found_;
     if (_status >= error_code_) {
