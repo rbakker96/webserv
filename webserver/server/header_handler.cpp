@@ -6,7 +6,7 @@
 /*   By: gbouwen <marvin@codam.nl>                    +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2021/05/03 12:34:40 by gbouwen       #+#    #+#                 */
-/*   Updated: 2021/05/04 17:45:07 by gbouwen       ########   odam.nl         */
+/*   Updated: 2021/05/05 10:57:42 by gbouwen       ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -214,7 +214,11 @@ void        header_handler::verify_file_location(header_handler::location_vector
 			if (_referer.empty())
 				_file_location = loc->get_root().append(_file_location);
 			else
+			{
+				if (file_location[file_location.size() - 1] == '/')
+					file_location = file_location.substr(0, file_location.size() - 1);
 				_file_location = loc->get_root().append(file_location).append(_file_location);
+			}
             if (verify_content_type() == "folder" && !loc->get_autoindex()) // this searches for index.html
 				_file_location = _file_location.append(loc->get_index());
 			else if (verify_content_type() == "folder" && loc->get_autoindex()) // this gets the auto index script

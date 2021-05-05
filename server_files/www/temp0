@@ -15,7 +15,7 @@ REQUEST_METHOD => POST
 SERVER_PROTOCOL => HTTP/1.1
 SERVER_NAME => webserv/1.1
 SERVER_PORT => 8080
-SCRIPT_NAME => server_files/www//cgi-bin/adduser.php
+SCRIPT_NAME => server_files/www/cgi-bin/adduser.php
 __CF_USER_TEXT_ENCODING => 0xFA27:0x0:0x0
 </p><p>phpinfo()
 
@@ -37,8 +37,8 @@ $_SERVER['PHP_SELF'] => adduser.php
 $_SERVER['SCRIPT_FILENAME'] => adduser.php
 $_SERVER['PATH_TRANSLATED'] => adduser.php
 $_SERVER['DOCUMENT_ROOT'] => 
-$_SERVER['REQUEST_TIME_FLOAT'] => 1620143170.6982
-$_SERVER['REQUEST_TIME'] => 1620143170
+$_SERVER['REQUEST_TIME_FLOAT'] => 1620205039.6067
+$_SERVER['REQUEST_TIME'] => 1620205039
 $_SERVER['argv'] => Array
 (
     [0] => adduser.php
@@ -54,7 +54,7 @@ $_ENV['REQUEST_METHOD'] => POST
 $_ENV['SERVER_PROTOCOL'] => HTTP/1.1
 $_ENV['SERVER_NAME'] => webserv/1.1
 $_ENV['SERVER_PORT'] => 8080
-$_ENV['SCRIPT_NAME'] => server_files/www//cgi-bin/adduser.php
+$_ENV['SCRIPT_NAME'] => server_files/www/cgi-bin/adduser.php
 $_ENV['__CF_USER_TEXT_ENCODING'] => 0xFA27:0x0:0x0
 </p></body>
 </html>
