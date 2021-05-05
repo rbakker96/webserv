@@ -71,22 +71,6 @@ protected:
 
 	std::string		_requested_file;
 
-//	// path related envp
-//	std::string 	_cgi_path_info;
-//	// -> Extra path information passed to a CGI program (after php script)
-//	// http://www.example.com/phpinfo.php/HELLO_THERE
-//	// PATH_INFO=/HELLO_THERE
-//
-//	std::string 	_cgi_path_translated;
-//	// http://somehost.com/cgi-bin/somescript/this%2eis%2epath%3binfo
-//	// PATH_INFO=/this.is.the.path;info
-//	// An internal URI is constructed from the scheme, server location and the URL-encoded PATH_INFO
-//	// http://somehost.com/this.is.the.path%3binfo
-//	// This would then be translated to a location in the server's document repository, perhaps a filesystem path something like this:
-//	// /usr/local/www/htdocs/this.is.the.path;info
-//	std::string 	_cgi_request_uri;
-//	std::string 	_cgi_script_name; // _requested_file
-
 public:
 	header_handler();
 	~header_handler();

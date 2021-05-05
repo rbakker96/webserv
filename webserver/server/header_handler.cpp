@@ -165,6 +165,8 @@ int        header_handler::handle_request(header_handler::location_vector locati
             _status = forbidden_;
         else if (verify_content_type() == "php")
             return cgi_request();
+        else if (_method == "POST" && get_body().empty())
+            _status = no_content_;
         else if ((fd = open(&_file_location[0], O_RDONLY)) == -1)
             _status = not_found_;
     }
