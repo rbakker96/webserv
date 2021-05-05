@@ -134,13 +134,11 @@ int     server::valid_request(const std::string& request) {
     int header_size;
     int pos;
 
-    if ((header_size = (int)request.find_last_of("\r\n")) != -1) {
+    if ((header_size = (int)request.find("\r\n\r\n")) != -1) {
         if ((pos = (int)request.find("Content-Length:")) == -1)
             return valid_;
         int content_length = ft_atoi(request.c_str() + (pos + 16));
-        printf("content length = %d\n", content_length); //remove later
-        std::string body = request.substr(header_size + 1); //after two linebreaks ??
-        std::cout << "body = " << body << std::endl;
+        std::string body = request.substr(header_size + 4);
         if ((int)body.length() == content_length)
             return valid_;
     }

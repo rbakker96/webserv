@@ -23,3 +23,14 @@ html{
 	justify-content: center;
 	align-items: center;
 }
+
+form {
+	margin: 8px;
+	padding: 8px;
+	border-radius: 20px;
+	border: 5px solid black;
+}
+
+form .h2 {
+	margin: auto;
+}
