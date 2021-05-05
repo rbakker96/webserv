@@ -6,7 +6,7 @@
 /*   By: gbouwen <marvin@codam.nl>                    +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2021/05/03 12:34:40 by gbouwen       #+#    #+#                 */
-/*   Updated: 2021/05/04 17:45:07 by gbouwen       ########   odam.nl         */
+/*   Updated: 2021/05/05 13:24:51 by gbouwen       ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -214,7 +214,11 @@ void        header_handler::verify_file_location(header_handler::location_vector
 			if (_referer.empty())
 				_file_location = loc->get_root().append(_file_location);
 			else
+			{
+				if (file_location[file_location.size() - 1] == '/')
+					file_location = file_location.substr(0, file_location.size() - 1);
 				_file_location = loc->get_root().append(file_location).append(_file_location);
+			}
             if (verify_content_type() == "folder" && !loc->get_autoindex()) // this searches for index.html
 				_file_location = _file_location.append(loc->get_index());
 			else if (verify_content_type() == "folder" && loc->get_autoindex()) // this gets the auto index script
@@ -306,6 +310,12 @@ std::string	get_location_without_root(std::string &file_location)
 char	**header_handler::create_cgi_args()
 {
 	char	**args = new char *[3];
+
+//	if (file location extension == .bla)
+//		use cgi tester
+//	else if (file location extension == .php)
+//		use usr bin php
+
 	args[0] = ft_strdup("/usr/bin/php");
 //	args[0] = ft_strdup("/Users/gbouwen/Desktop/codam/subjects/webserv/tester_executables/cgi_tester");
 	args[1] = ft_strdup(get_location_without_root(_file_location).c_str());
