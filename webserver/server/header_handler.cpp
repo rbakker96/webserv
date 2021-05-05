@@ -298,7 +298,8 @@ std::string	get_location_without_root(std::string &file_location)
 {
 	std::string	result;
 
-	result = file_location.substr(file_location.find_last_of("/", std::string::npos) + 1, std::string::npos);
+	result = file_location.substr(file_location.find_last_of("/") + 1);
+//	result = file_location.substr(file_location.find_last_of("/", std::string::npos) + 1, std::string::npos);
 	return (result);
 }
 
@@ -337,7 +338,11 @@ char **header_handler::create_cgi_envp(const std::string& server_name, int serve
 	// PATH_TRANSLATED -> /DOCUMENT_ROOT + PATH_INFO ; if PATH_INFO is NULL, set to NULL as well
 	// REQUEST_URI -> /SCRIPT_NAME + ? QUERY_STRING /test.php?foo=bar
 	// SCRIPT_NAME -> file name of the CGI script
-	cgi_envps.push_back(((std::string)"SCRIPT_NAME=").append(get_file_location()));
+	cgi_envps.push_back(((std::string)"PATH_INFO=").append("/"));
+	cgi_envps.push_back(((std::string)"PATH_TRANSLATED=").append("/"));
+	std::string	request_uri = ((std::string)"REQUEST_URI=/").append(get_location_without_root(_file_location)).append("?");
+	cgi_envps.push_back(request_uri.append(get_body()));
+	cgi_envps.push_back(((std::string)"SCRIPT_NAME=").append(get_location_without_root(_file_location)));
 
 	char 	**envp = new char *[cgi_envps.size() + 1];
 	int		i = 0;
@@ -348,7 +353,6 @@ char **header_handler::create_cgi_envp(const std::string& server_name, int serve
 		i++;
 	}
 	envp[cgi_envps.size()] = NULL;
-
 	return envp;
 }
 //------Send response functions------
