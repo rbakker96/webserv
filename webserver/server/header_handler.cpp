@@ -147,17 +147,18 @@ int        header_handler::handle_request(header_handler::location_vector locati
 
     verify_file_location(location_blocks, error_page);
     verify_method(); //see if error is not overwritten
-    if (stat(_file_location.c_str(), &stats) == -1)  //maybe more errors for which we can see with fstat
-        _status = not_found_;
-    else if (!(stats.st_mode & S_IRUSR))
-        _status = forbidden_;
-    else if (verify_content_type() == "php")
-		return cgi_request();
-    else if (_method == "PUT")
-        put_request(max_file_size);
-    else if ((fd = open(&_file_location[0], O_RDONLY)) == -1 )
-        _status = not_found_;
-
+    if (_status < error_code_) {
+        if (_method == "PUT")
+            fd = put_request(max_file_size);
+        else if (stat(_file_location.c_str(), &stats) == -1)  //maybe more errors for which we can see with fstat
+            _status = not_found_;
+        else if (!(stats.st_mode & S_IRUSR))
+            _status = forbidden_;
+        else if (verify_content_type() == "php")
+            return cgi_request();
+        else if ((fd = open(&_file_location[0], O_RDONLY)) == -1)
+            _status = not_found_;
+    }
     if (_status >= error_code_) {
         _file_location = error_page.append(ft_itoa(_status));
         _file_location.append(".html");
@@ -179,7 +180,7 @@ void        header_handler::verify_file_location(header_handler::location_vector
     }
     else if (_file_location[_file_location.length() - 1] != '/') {
         pos = _file_location.find_last_of('/');
-        file_location = _file_location.substr(0, pos+1);
+        file_location = _file_location.substr(0, pos);
     }
 
     for (location_iterator loc = location_blocks.begin(); loc != location_blocks.end(); loc++) {
@@ -206,7 +207,7 @@ void 		header_handler::verify_method() {
 		return;
 	}
 	for (vector_iterator it = _allowed_methods_config.begin(); it != _allowed_methods_config.end(); it++) {
-		if (*it == _method)
+	    if (*it == _method)
 			return;
 	}
 	_status = method_not_allowed_;
@@ -227,22 +228,34 @@ int			header_handler::cgi_request()
 	return (cgiFD);
 }
 
-void     	header_handler::put_request(int max_file_size)
+
+#include <errno.h>
+int     	header_handler::put_request(int max_file_size)
 {
+    int fd = unused_;
 	struct  stat stats;
+    std::string folder = "server_files/www/downloads/";
+    std::string file = _file_location.substr(_file_location.find_last_of('/') + 1);
+    std::string put_file = folder.append(file);
 
-	stat(_file_location.c_str(), &stats);
-	if ((int)_body.length() > max_file_size) {
+	if ((int)_body.length() > max_file_size)
 		_status = payload_too_large_;
-		return;
-	}
+	else if (stat(put_file.c_str(), &stats) != -1) {
+        _status = no_content_;
+        fd = open(&put_file[0], O_RDWR | O_TRUNC, S_IRWXU);
+    }
+	else {
+        _status = created_;
+        fd = open(&put_file[0], O_RDWR | O_CREAT, S_IRWXU);
+    }
+    if (fd == -1)
+        throw std::runtime_error("Open failed");
+    return fd;
+}
 
-    //not allowed method (405)
-    //bigger then max filesize (413)
-    //uploading older version then present (409) conflict
-    //succesfully created (201)
-    //succecfully modified (204)
-
+void        header_handler::write_put_file(int file_fd) {
+    if ((write(file_fd, _body.c_str(), _body.length())) == -1)
+        throw std::runtime_error("Write failed");
 }
 
 //------CGI functions------
@@ -332,7 +345,6 @@ void	header_handler::generate_content_type(std::string &response) {
 	else if (_content_type.compare("png") == 0)
 		content_type_header.append("image/");
 	content_type_header.append(_content_type);
-	std::cout << "header content type = " << content_type_header << std::endl;
 	content_type_header.append("\r\n");
 	response.append(content_type_header);
 }
@@ -477,7 +489,8 @@ void        header_handler::reset_handler_atributes() {
 void            header_handler::reset_status() {_status = 200;}
 
 //------Getter------
-int				header_handler::get_index() { return _index; }
+int				header_handler::get_index() { return _index;}
+int             header_handler::get_status() { return _status;}
 int             header_handler::get_content_length() { return _content_length;}
 std::string     header_handler::get_content_type() { return _content_type;}
 std::string     header_handler::get_content_language() { return _content_language;}
