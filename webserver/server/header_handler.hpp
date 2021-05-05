@@ -6,7 +6,7 @@
 /*   By: roybakker <roybakker@student.codam.nl>       +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2021/04/07 13:23:53 by roybakker     #+#    #+#                 */
-/*   Updated: 2021/04/29 17:55:54 by gbouwen       ########   odam.nl         */
+/*   Updated: 2021/05/04 17:19:56 by gbouwen       ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -71,30 +71,21 @@ protected:
 
 	std::string		_requested_file;
 
-//    //CGI environment variables (17) -> maybe not necessary
-//	std::map<std::string, std::string>			_cgi_env_variables;
-//
-//	std::string 	_cgi_content_length; // -> _content_length
-//	std::string 	_cgi_content_type; // -> _content_type
-//	std::string 	_cgi_gateway_interface; // GATEWAY_INTERFACE: CGI/1.1
-//	std::string 	_cgi_query_string; // -> _body
-//	std::string 	_cgi_remote_addr; // (network address of the client)
-//	std::string 	_cgi_request_method; // -> method
-//	std::string 	_cgi_server_name; // -> server->_server_name
-//	std::string 	_cgi_server_port; // -> server->_port
-//	std::string 	_cgi_server_protocol; // -> protocol
-//	std::string 	_cgi_server_software; // -> SERVER_SOFTWARE: webserv 1.1
-//
 //	// path related envp
-//	std::string 	_cgi_path_info; // -> _requested_file (cgi file name)
-//	std::string 	_cgi_path_translated;
-//	std::string 	_cgi_request_uri;
-//	std::string 	_cgi_script_name;
+//	std::string 	_cgi_path_info;
+//	// -> Extra path information passed to a CGI program (after php script)
+//	// http://www.example.com/phpinfo.php/HELLO_THERE
+//	// PATH_INFO=/HELLO_THERE
 //
-//	// authorization related envp
-//	std::string 	_cgi_auth_type; // LATER (authorization)
-//	std::string 	_cgi_remote_ident; // LATER (authorization)
-//	std::string 	_cgi_remote_user; // LATER (authorization)
+//	std::string 	_cgi_path_translated;
+//	// http://somehost.com/cgi-bin/somescript/this%2eis%2epath%3binfo
+//	// PATH_INFO=/this.is.the.path;info
+//	// An internal URI is constructed from the scheme, server location and the URL-encoded PATH_INFO
+//	// http://somehost.com/this.is.the.path%3binfo
+//	// This would then be translated to a location in the server's document repository, perhaps a filesystem path something like this:
+//	// /usr/local/www/htdocs/this.is.the.path;info
+//	std::string 	_cgi_request_uri;
+//	std::string 	_cgi_script_name; // _requested_file
 
 public:
 	header_handler();
@@ -127,10 +118,9 @@ public:
     void 		    verify_method();
 
 	//CGI functions
-	int 			execute_php(int fileFD);
+	void 			execute_php(int fileFD, std::string server_name, int server_port);
 	char 			**create_cgi_args();
-	char			**create_cgi_envp();
-	void 			free_cgi_execution_memory(char **args, char **envp);
+	char 			**create_cgi_envp(const std::string& server_name, int server_port);
 
     //Send response functions
 	void 			send_response(int activeFD, int fileFD, std::string server_name);

@@ -1,0 +1,162 @@
+Content of struct
+------------- BEGIN SERVER BLOCK -------------
+Port = 8080
+Host = localhost
+File size = 1000000
+Server name = webserv/1.1
+Error page = server_files/www/error_pages/
+
+  ------------- location block -------------
+  location = /
+  Root = server_files/www
+  Allowed methods = GET HEAD POST PUT DELETE CONNECT OPTIONS TRACE 
+  Index = index.html
+  Autoindex = 0
+
+  ------------- location block -------------
+  location = /download
+  Root = server_files/www
+  Allowed methods = PUT 
+  Index = index.html
+  Autoindex = 1
+
+  ------------- location block -------------
+  location = /put_test
+  Root = 
+  Allowed methods = PUT 
+  Index = 
+  Autoindex = 0
+------------- END SERVER BLOCK -------------
+
+------------- BEGIN SERVER BLOCK -------------
+Port = 7070
+Host = something_else
+File size = 7777777
+Server name = test_server_block
+Error page = server_files/www/error_pages/
+
+  ------------- location block -------------
+  location = /
+  Root = server_files/www/something_else
+  Allowed methods = GET 
+  Index = index.html
+  Autoindex = 0
+------------- END SERVER BLOCK -------------
+
+--- Waiting for activity... ---
+--- Waiting for activity... ---
+-----------
+request buffer = 
+PUT /put_test/test_file.txt HTTP/1.1
+Content-Type: text/plain
+User-Agent: PostmanRuntime/7.28.0
+Accept: */*
+Postman-Token: 3fdc8f53-9ad5-41b9-8159-1259cb149519
+Host: localhost:8080
+Accept-Encoding: gzip, deflate, br
+Connection: keep-alive
+Content-Length: 148
+
+<!DOCTYPE html>
+<html>
+
+<body>
+    <div>
+        <h1>PUT REQUEST TEST</h1>
+        <p>TESTING A NEW FILE BEING ADDED</p>
+    </div>
+</body>
+
+</html>-----------
+
+------------- REQUEST -------------
+Entity headers
+  Content length = 148
+  Content type = text/plain
+  Content language = en
+  Content location
+  Allow = 
+Request headers
+  Method = PUT
+  Location = /put_test/test_file.txt
+  Protocol = HTTP/1.1
+  Host = localhost:8080
+  User agent = PostmanRuntime/7.28.0
+  Accept language = 
+  Authorization = 
+  Referer = 
+  Body = 
+<!DOCTYPE html>
+<html>
+
+<body>
+    <div>
+        <h1>PUT REQUEST TEST</h1>
+        <p>TESTING A NEW FILE BEING ADDED</p>
+    </div>
+</body>
+
+</html>
+------------- END REQUEST -------------
+
+--- Waiting for activity... ---
+--- Waiting for activity... ---
+--- Waiting for activity... ---
+--- Waiting for activity... ---
+-----------
+request buffer = 
+PUT /put_test/test_file.txt HTTP/1.1
+Content-Type: text/plain
+User-Agent: PostmanRuntime/7.28.0
+Accept: */*
+Postman-Token: e144c767-f068-4a7c-b0c5-cf5696f37c98
+Host: localhost:8080
+Accept-Encoding: gzip, deflate, br
+Connection: keep-alive
+Content-Length: 148
+
+<!DOCTYPE html>
+<html>
+
+<body>
+    <div>
+        <h1>PUT REQUEST TEST</h1>
+        <p>TESTING A NEW FILE BEING ADDED</p>
+    </div>
+</body>
+
+</html>-----------
+
+------------- REQUEST -------------
+Entity headers
+  Content length = 148
+  Content type = text/plain
+  Content language = en
+  Content location
+  Allow = 
+Request headers
+  Method = PUT
+  Location = /put_test/test_file.txt
+  Protocol = HTTP/1.1
+  Host = localhost:8080
+  User agent = PostmanRuntime/7.28.0
+  Accept language = 
+  Authorization = 
+  Referer = 
+  Body = 
+<!DOCTYPE html>
+<html>
+
+<body>
+    <div>
+        <h1>PUT REQUEST TEST</h1>
+        <p>TESTING A NEW FILE BEING ADDED</p>
+    </div>
+</body>
+
+</html>
+------------- END REQUEST -------------
+
+--- Waiting for activity... ---
+--- Waiting for activity... ---
+--- Waiting for activity... ---

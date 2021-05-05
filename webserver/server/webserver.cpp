@@ -6,7 +6,7 @@
 /*   By: roybakker <roybakker@student.codam.nl>       +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2021/03/30 16:30:47 by roybakker     #+#    #+#                 */
-/*   Updated: 2021/05/03 12:50:04 by gbouwen       ########   odam.nl         */
+/*   Updated: 2021/05/03 17:19:44 by gbouwen       ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -139,7 +139,7 @@ void    webserver::run() {
 			{
 			    if (FD_ISSET(server->_fileFD, &_writeFDS)) {
                     if (server->_handler.verify_content_type() == "php")
-			            server->_handler.execute_php(server->_fileFD);
+                        server->_handler.execute_php(server->_fileFD, server->_server_name, server->_port);
                     else
                         server->_handler.write_put_file(server->_fileFD);
 					FD_CLR(server->_fileFD, &_buffer_writeFDS);
