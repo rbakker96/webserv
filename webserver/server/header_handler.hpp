@@ -27,6 +27,17 @@
 #include "location_context.hpp"
 #include "../helper/helper.hpp"
 
+//custom color for better visibility
+# define RESET			"\033[0m"
+# define BLACK			"\033[30m"				/* Black */
+# define RED			"\033[31m"				/* Red */
+# define GREEN			"\033[32m"				/* Green */
+# define YELLOW			"\033[33m"				/* Yellow */
+# define BLUE			"\033[34m"				/* Blue */
+# define MAGENTA		"\033[35m"				/* Magenta */
+# define CYAN			"\033[36m"				/* Cyan */
+# define WHITE			"\033[37m"				/* White */
+
 class header_handler {
 public:
 	typedef		std::vector<std::string>				vector;
@@ -109,7 +120,7 @@ public:
 	char 			**create_cgi_envp(const std::string& server_name, int server_port);
 
     //Send response functions
-	void 			send_response(int activeFD, int fileFD, std::string server_name);
+	std::string send_response(int activeFD, int fileFD, std::string server_name);
 	void			generate_status_line(std::string &response);
 	void			generate_content_length(std::string &response);
 	void			generate_content_type(std::string &response);
