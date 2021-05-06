@@ -87,7 +87,7 @@ void    webserver::establish_connection(){
 	for (size_t index = 0; index < _servers.size(); index++) {
         _servers[index].create_socket();
         _servers[index].bind_socket_address(_servers[index].get_port());
-        _servers[index].create_connection(100); //CHECK LATER
+        _servers[index].create_connection(1000); //CHECK LATER
 	}
 }
 

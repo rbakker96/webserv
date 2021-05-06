@@ -165,8 +165,8 @@ int        header_handler::handle_request(header_handler::location_vector locati
             _status = forbidden_;
         else if (verify_content_type() == "php")
             return cgi_request();
-        else if (_method == "POST" && get_body().empty())
-            _status = no_content_;
+        else if (_method == "POST" && get_body().empty()) // for test 2 POST with size 0
+            _status = method_not_allowed_;
         else if ((fd = open(&_file_location[0], O_RDONLY)) == -1)
             _status = not_found_;
     }
@@ -414,6 +414,7 @@ std::string header_handler::send_response(int activeFD, int fileFD, std::string 
 	generate_date(response);
 	generate_server_name(response, server_name);
 	generate_allowed_methods_config(response);
+	add_connection_close(response);
 	response.append("\r\n");
 
 	write(activeFD, response.c_str(), response.size());
@@ -457,7 +458,6 @@ void	header_handler::generate_content_type(std::string &response) {
 	else if (_content_type.compare("png") == 0)
 		content_type_header.append("image/");
 	content_type_header.append(_content_type);
-	content_type_header.append("\r\n");
 	response.append(content_type_header);
 }
 
@@ -514,6 +514,10 @@ void	header_handler::generate_allowed_methods_config(std::string &response)
 	}
 	allow_header.append("\r\n");
 	response.append(allow_header);
+}
+
+void	header_handler::add_connection_close(std::string &response) {
+	response.append("Connection: close\r\n");
 }
 
 //------Helper functions------

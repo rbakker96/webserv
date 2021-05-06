@@ -126,6 +126,7 @@ public:
 	void			generate_date(std::string &response);
 	void			generate_server_name(std::string &response, std::string server_name);
 	void			generate_allowed_methods_config(std::string &response);
+	void 			add_connection_close(std::string &response);
 
     //Helper functions
     std::string     read_browser_request(int fd);
