@@ -101,7 +101,7 @@ void    webserver::run() {
 		std::cout << "--- Waiting for activity... ---" << std::endl;
         if (select(get_maxFD(), &_readFDS, &_writeFDS, 0, 0) == -1)
 		{
-			std::cout << strerror(errno) << std::endl;
+			std::cout << RED << strerror(errno) << RESET << std::endl;
         	throw std::runtime_error("Select failed");
 		}
         for (size_t index = 0; index < _servers.size(); index++) {
@@ -153,10 +153,11 @@ void    webserver::run() {
 
 			if (server->_activeFD != unused_ && FD_ISSET(server->_activeFD, &_writeFDS)) //create response
 			{
-				server->_handler.send_response(server->_activeFD, server->_fileFD, server->_server_name);
+				std::string	response_headers = server->_handler.send_response(server->_activeFD, server->_fileFD, server->_server_name);
 				close(server->_fileFD);
 				server->_fileFD = unused_;
 				FD_CLR(server->_activeFD, &_buffer_writeFDS);
+				std::cout << GREEN << "RESPONSE HEADERS: \n" << response_headers << RESET << std::endl;
 				close(server->_activeFD);
 				server->_activeFD = ready_for_use_;
 			}

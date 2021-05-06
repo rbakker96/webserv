@@ -14,14 +14,7 @@
 
 //Debug tool
 void header_handler::print_request() {
-    std::cout << "------------- REQUEST -------------\n";
-
-    std::cout << "Entity headers\n";
-    std::cout << "  Content length = " << get_content_length() << std::endl;
-    std::cout << "  Content type = " << get_content_type() << std::endl;
-    std::cout << "  Content language = " << get_content_language() << std::endl;
-    std::cout << "  Content location" << get_content_location() << std::endl;
-    std::cout << "  Allow = " << get_allow() << std::endl;
+    std::cout << BLUE << "------------- REQUEST -------------\n";
 
     std::cout << "Request headers\n";
     std::cout << "  Method = " << get_method() << std::endl;
@@ -32,9 +25,16 @@ void header_handler::print_request() {
     std::cout << "  Accept language = " << get_accept_language() << std::endl;
     std::cout << "  Authorization = " << get_authorization() << std::endl;
     std::cout << "  Referer = " << get_referer() << std::endl;
-    std::cout << "  Body = \n" << get_body() << std::endl;
+    std::cout << "  Body = " << get_body() << std::endl;
 
-    std::cout << "------------- END REQUEST -------------\n\n";
+	std::cout << "Entity headers\n";
+	std::cout << "  Content length = " << get_content_length() << std::endl;
+	std::cout << "  Content type = " << get_content_type() << std::endl;
+	std::cout << "  Content language = " << get_content_language() << std::endl;
+	std::cout << "  Content location" << get_content_location() << std::endl;
+	std::cout << "  Allow = " << get_allow() << std::endl;
+
+    std::cout << "------------- END REQUEST -------------\n\n" << RESET;
 }
 //------------------------------------------------------------
 
@@ -87,7 +87,7 @@ void        header_handler::parse_request(int fd, header_handler::map request_bu
     }
 
 //    configure_location(location);
-    std::cout << "-----------\n" << "request buffer = \n" << request->second << "-----------\n" << std::endl; //REMOVE
+    std::cout << "-----------\n" << BLUE << "REQUEST BUFFER: \n" << request->second << RESET << std::endl; //REMOVE
     print_request(); //REMOVE
 }
 
@@ -404,7 +404,7 @@ char **header_handler::create_cgi_envp(const std::string& server_name, int serve
 	return envp;
 }
 //------Send response functions------
-void        header_handler::send_response(int activeFD, int fileFD, std::string server_name) {
+std::string header_handler::send_response(int activeFD, int fileFD, std::string server_name) {
 	std::string response;
 
 	generate_status_line(response);
@@ -422,6 +422,7 @@ void        header_handler::send_response(int activeFD, int fileFD, std::string 
 
 	reset_status();
 	clear_requested_file();
+	return response;
 }
 
 void	header_handler::generate_status_line(std::string &response) {
