@@ -436,7 +436,7 @@ void	header_handler::generate_status_line(std::string &response) {
 	response.append(status_line);
 }
 
-void	header_handler::generate_content_length(std::string &response){
+void	header_handler::generate_content_length(std::string &response) {
 	std::string	content_length = "Content-Length: ";
 
 	content_length.append(ft_itoa(this->get_requested_file().size()));
@@ -448,6 +448,9 @@ void	header_handler::generate_content_type(std::string &response) {
 	std::string	content_type_header = "Content-Type: ";
     _content_type = verify_content_type();
 
+    if (_content_type.compare("php") == 0){
+		_content_type = "html";
+	}
 	if (_content_type.compare("html") == 0 || _content_type.compare("css") == 0)
 		content_type_header.append("text/");
 	else if (_content_type.compare("png") == 0)
@@ -528,6 +531,7 @@ std::string    header_handler::read_browser_request(int fd) {
     return tmp;
 }
 
+// can't change php to html here, then no php file can go into the execute_php function
 std::string     header_handler::verify_content_type() {
     vector extensions;
     extensions.push_back("html");
@@ -538,8 +542,6 @@ std::string     header_handler::verify_content_type() {
 
     for (vector_iterator it = extensions.begin(); it != extensions.end(); it++) {
         if (_file_location.find(*it) != std::string::npos) {
-			if (*it == "php")
-				return "html";
 			return *it;
 		}
     }

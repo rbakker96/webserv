@@ -130,18 +130,18 @@ void    webserver::run() {
 					    FD_SET(server->_fileFD, &_buffer_readFDS);
 					else
 					    FD_SET(server->_activeFD, &_buffer_writeFDS);
-                    if (server->_handler.verify_content_type() == "php" || server->_handler.get_method() == "PUT")
-                        FD_SET(server->_fileFD, &_buffer_writeFDS); //_fileFD also needs to be added to buffer_writeFD in php cases or
+					if (server->_handler.verify_content_type() == "php" || server->_handler.get_method() == "PUT")
+						FD_SET(server->_fileFD, &_buffer_writeFDS); //_fileFD also needs to be added to buffer_writeFD in php cases or
 				}
 			}
 
 			if (server->_fileFD != unused_ && FD_ISSET(server->_fileFD, &_readFDS)) //read requested file
 			{
-			    if (FD_ISSET(server->_fileFD, &_writeFDS)) {
+				if (FD_ISSET(server->_fileFD, &_writeFDS)) {
                     if (server->_handler.verify_content_type() == "php")
-                        server->_handler.execute_php(server->_fileFD, server->_server_name, server->_port);
+						server->_handler.execute_php(server->_fileFD, server->_server_name, server->_port);
                     else
-                        server->_handler.write_put_file(server->_fileFD);
+						server->_handler.write_put_file(server->_fileFD);
 					FD_CLR(server->_fileFD, &_buffer_writeFDS);
 			    }
 
