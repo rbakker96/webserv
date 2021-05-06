@@ -99,6 +99,8 @@ public:
     void            write_put_file(int file_fd);
 	int             cgi_request();
     void            verify_file_location(location_vector location_blocks, std::string error_page);
+	std::string		get_referer_part(void);
+	int				find_location_block(location_vector location_blocks, std::string file_location);
     void 		    verify_method();
 
 	//CGI functions

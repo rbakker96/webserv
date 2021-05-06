@@ -182,68 +182,132 @@ int        header_handler::handle_request(header_handler::location_vector locati
     return fd;
 }
 
-int			check_if_directory(header_handler::location_vector location_blocks, std::string &file_location)
+int			check_if_directory(header_handler::location_vector location_blocks, std::string file_location)
 {
 	std::string	full_location;
 	struct stat	s;
 
-	for (header_handler::location_iterator loc = location_blocks.begin(); loc != location_blocks.end(); loc++)
+	for (size_t index = 0; index < location_blocks.size(); index++)
 	{
-		full_location = loc->get_root().append(file_location);
-		if (stat(full_location.c_str(), &s) == 0)
+		full_location = location_blocks[index].get_root();
+		if (stat(full_location.c_str(), &s) == 0 && location_blocks[index].get_location_context() == file_location)
 		{
 			if (s.st_mode & S_IFDIR)
-				return (1);
+				return (index);
 		}
 	}
-	return (0);
+	return (-1);
 }
 
-void        header_handler::verify_file_location(header_handler::location_vector location_blocks, std::string error_page) {
-    std::string file_location = _file_location;
-    size_t pos;
+std::string	header_handler::get_referer_part()
+{
+	int			start;
+	int			end;
 
-    if (!_referer.empty()) {
-        pos = _referer.find(_requested_host);
-        file_location = _referer.substr(pos + _requested_host.length());
-    }
-	else if (_file_location[_file_location.length() - 1] != '/' && (check_if_directory(location_blocks, file_location) == 0)) {
-		pos = _file_location.find_last_of('/');
-		file_location = _file_location.substr(0, pos);
+	start = _referer.find(_requested_host);
+	start += _requested_host.length();
+	end = _referer.find_last_of('/');
+	return (_referer.substr(start, end - start));
+}
+
+int	header_handler::find_location_block(header_handler::location_vector location_blocks, std::string file_location)
+{
+	int			val;
+	std::string	directory_path;
+
+	val = check_if_directory(location_blocks, file_location);
+	if (val >= 0)
+		return (val);
+	if (!_referer.empty())
+		directory_path = get_referer_part();
+	int pos = file_location.find_last_of('/');
+	directory_path.append(file_location.substr(0, pos));
+	if (directory_path.empty())
+		directory_path = "/";
+	for (size_t index = 0; index < location_blocks.size(); index++)
+	{
+		if (location_blocks[index].get_location_context() == directory_path)
+			return (index);
 	}
+	return (-1);
+}
 
-    for (location_iterator loc = location_blocks.begin(); loc != location_blocks.end(); loc++) {
-        if (loc->get_location_context() == file_location) {
-            _allowed_methods_config = loc->get_method();
-			if (_referer.empty())
-				_file_location = loc->get_root().append(_file_location);
+//void        header_handler::verify_file_location(header_handler::location_vector location_blocks, std::string error_page) {
+	//std::string file_location = _file_location;
+	//size_t pos;
+
+	//if (!_referer.empty()) {
+		//pos = _referer.find(_requested_host);
+		//file_location = _referer.substr(pos + _requested_host.length());
+	//}
+	//else if (_file_location[_file_location.length() - 1] != '/' && (check_if_directory(location_blocks, file_location) == 0)) {
+		//pos = _file_location.find_last_of('/');
+		//file_location = _file_location.substr(0, pos);
+	//}
+	//for (location_iterator loc = location_blocks.begin(); loc != location_blocks.end(); loc++) {
+		//if (loc->get_location_context() == file_location) {
+			//_allowed_methods_config = loc->get_method();
+			//if (_referer.empty())
+				//_file_location = loc->get_root().append(_file_location);
+			//else
+			//{
+				//if (file_location[file_location.size() - 1] == '/')
+					//file_location = file_location.substr(0, file_location.size() - 1);
+				//_file_location = loc->get_root().append(file_location).append(_file_location);
+			//}
+			//if (verify_content_type() == "folder" && !loc->get_autoindex()) // this searches for index.html
+				//_file_location = _file_location.append(loc->get_index());
+			//else if (verify_content_type() == "folder" && loc->get_autoindex()) // this gets the auto index script
+			//{
+				//std::string temp = _file_location;
+				//temp.append("/").append(loc->get_index());
+				//struct stat	s;
+
+				//if (stat(temp.c_str(), &s) == -1)
+					//_file_location.append("/index.php");
+				//else
+					//_file_location.append("/").append(loc->get_index());
+			//}
+			//break;
+		//}
+		//else if ((loc + 1) == location_blocks.end()) {
+			//pos = _file_location.find_last_of('/');
+			//file_location = _file_location.substr(pos+1);
+			//_file_location = error_page.append(file_location);
+		//}
+	//}
+//}
+
+void        header_handler::verify_file_location(header_handler::location_vector location_blocks, std::string error_page) {
+	int index = find_location_block(location_blocks, _file_location);
+
+	if (index == -1)
+	{
+		int pos = _file_location.find_last_of('/');
+		std::string temp = _file_location.substr(pos+1);
+		_file_location = error_page.append(temp);
+	}
+	else
+	{
+		_allowed_methods_config = location_blocks[index].get_method();
+		if (_referer.empty())
+			_file_location = location_blocks[index].get_root().append(_file_location);
+		else
+			_file_location = location_blocks[index].get_root().append(get_referer_part()).append(_file_location);
+		if (verify_content_type() == "folder" && !location_blocks[index].get_autoindex()) // this searches for index.html
+			_file_location = _file_location.append(location_blocks[index].get_index());
+		else if (verify_content_type() == "folder" && location_blocks[index].get_autoindex()) // this gets the auto index script
+		{
+			std::string temp = _file_location;
+			temp.append("/").append(location_blocks[index].get_index());
+			struct stat	s;
+
+			if (stat(temp.c_str(), &s) == -1)
+				_file_location.append("/index.php");
 			else
-			{
-				if (file_location[file_location.size() - 1] == '/')
-					file_location = file_location.substr(0, file_location.size() - 1);
-				_file_location = loc->get_root().append(file_location).append(_file_location);
-			}
-            if (verify_content_type() == "folder" && !loc->get_autoindex()) // this searches for index.html
-				_file_location = _file_location.append(loc->get_index());
-			else if (verify_content_type() == "folder" && loc->get_autoindex()) // this gets the auto index script
-			{
-				std::string temp = _file_location;
-				temp.append("/").append(loc->get_index());
-				struct stat	s;
-
-				if (stat(temp.c_str(), &s) == -1)
-					_file_location.append("/index.php");
-				else
-					_file_location.append("/").append(loc->get_index());
-			}
-            break;
-        }
-        else if ((loc + 1) == location_blocks.end()) {
-            pos = _file_location.find_last_of('/');
-            file_location = _file_location.substr(pos+1);
-            _file_location = error_page.append(file_location);
-        }
-    }
+				_file_location.append("/").append(location_blocks[index].get_index());
+		}
+	}
 }
 
 void 		header_handler::verify_method() {
