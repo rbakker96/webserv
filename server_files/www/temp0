@@ -1,43 +1,47 @@
 <html>
 <body>
-<h2>Firstname: s</h2></br><h2>Lastname: s</h2></br><p>--add phpinfo for debugging--
+<h2>Firstname: fweifj</h2></br><h2>Lastname: foiwej</h2></br><p>--add phpinfo for debugging--
 </p><p>phpinfo()
 
 Environment
 
 Variable => Value
+CONTENT_LENGTH => 32
+CONTENT_TYPE => application/x-www-form-urlencoded
 GATEWAY_INTERFACE => CGI/1.1
 SERVER_SOFTWARE => webserv/1.1
-QUERY_STRING => firstname=s&lastname=s
-REQUEST_METHOD => GET
+QUERY_STRING => firstname=fweifj&lastname=foiwej
+REQUEST_METHOD => POST
 SERVER_PROTOCOL => HTTP/1.1
 SERVER_NAME => webserv/1.1
 SERVER_PORT => 8080
 PATH_INFO => /
 PATH_TRANSLATED => /
-REQUEST_URI => /adduser.php?firstname=s&lastname=s
+REQUEST_URI => /adduser.php?firstname=fweifj&lastname=foiwej
 SCRIPT_NAME => adduser.php
 </p><p>phpinfo()
 
 PHP Variables
 
 Variable => Value
+$_SERVER['CONTENT_LENGTH'] => 32
+$_SERVER['CONTENT_TYPE'] => application/x-www-form-urlencoded
 $_SERVER['GATEWAY_INTERFACE'] => CGI/1.1
 $_SERVER['SERVER_SOFTWARE'] => webserv/1.1
-$_SERVER['QUERY_STRING'] => firstname=s&lastname=s
-$_SERVER['REQUEST_METHOD'] => GET
+$_SERVER['QUERY_STRING'] => firstname=fweifj&lastname=foiwej
+$_SERVER['REQUEST_METHOD'] => POST
 $_SERVER['SERVER_PROTOCOL'] => HTTP/1.1
 $_SERVER['SERVER_NAME'] => webserv/1.1
 $_SERVER['SERVER_PORT'] => 8080
 $_SERVER['PATH_INFO'] => /
 $_SERVER['PATH_TRANSLATED'] => adduser.php
-$_SERVER['REQUEST_URI'] => /adduser.php?firstname=s&lastname=s
+$_SERVER['REQUEST_URI'] => /adduser.php?firstname=fweifj&lastname=foiwej
 $_SERVER['SCRIPT_NAME'] => adduser.php
 $_SERVER['PHP_SELF'] => adduser.php
 $_SERVER['SCRIPT_FILENAME'] => adduser.php
 $_SERVER['DOCUMENT_ROOT'] => 
-$_SERVER['REQUEST_TIME_FLOAT'] => 1620306331.0252
-$_SERVER['REQUEST_TIME'] => 1620306331
+$_SERVER['REQUEST_TIME_FLOAT'] => 1620313183.3809
+$_SERVER['REQUEST_TIME'] => 1620313183
 $_SERVER['argv'] => Array
 (
     [0] => adduser.php

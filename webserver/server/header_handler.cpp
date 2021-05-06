@@ -182,17 +182,26 @@ int        header_handler::handle_request(header_handler::location_vector locati
     return fd;
 }
 
-int			check_if_directory(header_handler::location_vector location_blocks, std::string file_location)
+// need to improve this function to check if it matches the correct location block
+int			check_if_directory_or_file(header_handler::location_vector location_blocks, std::string file_location)
 {
-	std::string	full_location;
 	struct stat	s;
 
 	for (size_t index = 0; index < location_blocks.size(); index++)
 	{
-		full_location = location_blocks[index].get_root();
-		if (stat(full_location.c_str(), &s) == 0 && location_blocks[index].get_location_context() == file_location)
+		// checks if location block matches url
+		if (stat(location_blocks[index].get_root().c_str(), &s) == 0 && location_blocks[index].get_location_context() == file_location)
 		{
 			if (s.st_mode & S_IFDIR)
+				return (index);
+		}
+		std::string full_location = location_blocks[index].get_root().append(file_location);
+		// checks if file/directory exists
+		if (stat(full_location.c_str(), &s) == 0)
+		{
+			if (s.st_mode & S_IFDIR)
+				return (index);
+			else if (s.st_mode & S_IFREG)
 				return (index);
 		}
 	}
@@ -215,7 +224,7 @@ int	header_handler::find_location_block(header_handler::location_vector location
 	int			val;
 	std::string	directory_path;
 
-	val = check_if_directory(location_blocks, file_location);
+	val = check_if_directory_or_file(location_blocks, file_location);
 	if (val >= 0)
 		return (val);
 	if (!_referer.empty())
@@ -281,6 +290,7 @@ int	header_handler::find_location_block(header_handler::location_vector location
 void        header_handler::verify_file_location(header_handler::location_vector location_blocks, std::string error_page) {
 	int index = find_location_block(location_blocks, _file_location);
 
+	std::cout << "INDEX " << index << std::endl;
 	if (index == -1)
 	{
 		int pos = _file_location.find_last_of('/');
