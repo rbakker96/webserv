@@ -152,8 +152,8 @@ void        header_handler::invalid_argument(const std::string &str) {parse_inva
 int        header_handler::handle_request(header_handler::location_vector location_blocks, std::string error_page, int max_file_size) {
     int		fd = unused_;
 
-    verify_file_location(location_blocks, error_page); // move file-related status code in the function
-    verify_method(); // move method-related status code here
+	verify_method(); // moved method-related status code here
+    verify_file_location(location_blocks, error_page); // moved file-related status code in the function
     if (_status < error_code_)
     {
         if (_method == "PUT")
@@ -239,13 +239,10 @@ void        header_handler::verify_file_location(header_handler::location_vector
         }
     }
     // add file related status code here
-	if (_status < error_code_)
-	{
-		if (stat(_file_location.c_str(), &stats) == -1)
-			_status = not_found_;
-		else if (!(stats.st_mode & S_IRUSR))
-			_status = forbidden_;
-	}
+	if (stat(_file_location.c_str(), &stats) == -1)
+		_status = not_found_;
+	else if (!(stats.st_mode & S_IRUSR))
+		_status = forbidden_;
 }
 
 void 		header_handler::verify_method()
