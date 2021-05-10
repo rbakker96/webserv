@@ -50,10 +50,14 @@ public:
 
 	typedef		void (header_handler::*parse)(const std::string &str);
 
-	enum		location_values{requested_host_ = 0, user_agent_ = 1, language_ = 2, authorization_ = 3, referer_ = 4, body_ = 5,
-								content_length_ = 6, content_type_ = 7, content_language_ = 8, content_location_ = 9,
-								allow_ = 10, unknown_ = 11, error_code_ = 400, folder_ = -1, unused_ = -1};
-	enum		status_values{created_ = 201, no_content_ = 204, forbidden_ = 403, not_found_ = 404, method_not_allowed_ = 405, payload_too_large_ = 413 };
+	enum		location_values{requested_host_ = 0, user_agent_ = 1, language_ = 2, authorization_ = 3,
+								referer_ = 4, body_ = 5, content_length_ = 6, content_type_ = 7,
+								content_language_ = 8, content_location_ = 9, allow_ = 10, unknown_ = 11,
+								error_code_ = 400, folder_ = -1, unused_ = -1};
+	enum		status_values{	okay_ = 200, created_ = 201, no_content_ = 204,
+								bad_request_ = 400, unauthorized_ = 401, forbidden_ = 403,
+								not_found_ = 404, method_not_allowed_ = 405,
+								payload_too_large_ = 413	};
 
 protected:
 	int				_index;

@@ -39,21 +39,20 @@ void header_handler::print_request() {
 //------------------------------------------------------------
 
 
-header_handler::header_handler():	_index(0), _status(200), _status_phrases(), _content_length(0), _content_type("Content-Type: text/"),
+header_handler::header_handler():	_index(0), _status(okay_), _status_phrases(), _content_length(0), _content_type("Content-Type: text/"),
 									_content_language("en"), _content_location(), _allow(), _allowed_methods_config(),
 									_method(), _file_location(), _protocol(), _requested_host(), _user_agent(),
 									_accept_language(), _authorization(), _referer(), _body(), _requested_file()	{
 	// setup status phrases
 	_status_phrases.insert (pair(200, "OK"));
+	_status_phrases.insert (pair(201, "Created"));
 	_status_phrases.insert (pair(204, "No Content"));
 	_status_phrases.insert (pair(400, "Bad Request"));
 	_status_phrases.insert (pair(401, "Unauthorized"));
 	_status_phrases.insert (pair(403, "Forbidden"));
 	_status_phrases.insert (pair(404, "Not Found"));
 	_status_phrases.insert (pair(405, "Method Not Allowed"));
-//    _status_phrases.insert ( pair(, ""));
-
-	// setup CGI environment variables
+	_status_phrases.insert (pair(413, "Payload Too Large"));
 
 }
 
@@ -155,12 +154,13 @@ int        header_handler::handle_request(header_handler::location_vector locati
     int		fd = unused_;
 
     verify_file_location(location_blocks, error_page);
-    verify_method();
-    if (_status < error_code_) {
+    verify_method(); //-> STATUS CODE: set method_not_allowed
+    if (_status < error_code_)
+    {
         if (_method == "PUT")
             fd = put_request(max_file_size);
         else if (stat(_file_location.c_str(), &stats) == -1)  //maybe more errors for which we can see with fstat
-            _status = not_found_;
+            _status = not_found_; //-> STATUS CODE: set not_found
         else if (!(stats.st_mode & S_IRUSR))
             _status = forbidden_;
         else if (verify_content_type() == "php")
@@ -168,10 +168,10 @@ int        header_handler::handle_request(header_handler::location_vector locati
         else if (_method == "POST" && get_body().empty()) // for test 2 POST with size 0
             _status = method_not_allowed_;
         else if ((fd = open(&_file_location[0], O_RDONLY)) == -1)
-            _status = not_found_;
+			throw std::runtime_error("Open failed");
     }
 
-    if (_status >= error_code_) {
+    if (_status >= error_code_){
         _file_location = error_page.append(ft_itoa(_status));
         _file_location.append(".html");
         if ((fd = open(&_file_location[0], O_RDONLY)) == -1)
@@ -247,10 +247,7 @@ void        header_handler::verify_file_location(header_handler::location_vector
 }
 
 void 		header_handler::verify_method() {
-	if (_method == "GET" || _method == "HEAD")
-		return;
 	if (_allowed_methods_config.empty()) {
-		_status = method_not_allowed_;
 		return;
 	}
 	for (vector_iterator it = _allowed_methods_config.begin(); it != _allowed_methods_config.end(); it++) {
@@ -458,6 +455,7 @@ void	header_handler::generate_content_type(std::string &response) {
 	else if (_content_type.compare("png") == 0)
 		content_type_header.append("image/");
 	content_type_header.append(_content_type);
+	content_type_header.append("\r\n");
 	response.append(content_type_header);
 }
 
