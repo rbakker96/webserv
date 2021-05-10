@@ -6,7 +6,7 @@
 /*   By: gbouwen <marvin@codam.nl>                    +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2021/05/03 12:34:40 by gbouwen       #+#    #+#                 */
-/*   Updated: 2021/05/10 16:57:00 by gbouwen       ########   odam.nl         */
+/*   Updated: 2021/05/10 17:53:29 by gbouwen       ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -264,9 +264,9 @@ void        header_handler::verify_file_location(header_handler::location_vector
 			correct_location.append(get_referer_part()).append(_file_location);
 		else
 			correct_location.append(_file_location);
-		if (verify_content_type() == "folder" && !location_blocks[index].get_autoindex()) // this searches for index.html
+		if (verify_content_type() == "folder" && !location_blocks[index].get_autoindex())
 			correct_location.append(location_blocks[index].get_index());
-		else if (verify_content_type() == "folder" && location_blocks[index].get_autoindex()) // this gets the auto index script
+		else if (verify_content_type() == "folder" && location_blocks[index].get_autoindex())
 		{
 			std::string temp = correct_location;
 			temp.append("/").append(location_blocks[index].get_index());
@@ -277,7 +277,6 @@ void        header_handler::verify_file_location(header_handler::location_vector
 			else
 				correct_location.append("/").append(location_blocks[index].get_index());
 		}
-		// ADD CORRECT AUTO INDEX / NORMAL INDEX FUNCTION
 	}
 	_file_location = correct_location;
 }
