@@ -6,7 +6,7 @@
 /*   By: gbouwen <marvin@codam.nl>                    +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2021/05/03 12:34:40 by gbouwen       #+#    #+#                 */
-/*   Updated: 2021/05/05 13:24:51 by gbouwen       ########   odam.nl         */
+/*   Updated: 2021/05/10 16:57:00 by gbouwen       ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -182,142 +182,104 @@ int        header_handler::handle_request(header_handler::location_vector locati
     return fd;
 }
 
-// need to improve this function to check if it matches the correct location block
-int			check_if_directory_or_file(header_handler::location_vector location_blocks, std::string file_location)
-{
-	struct stat	s;
-
-	for (size_t index = 0; index < location_blocks.size(); index++)
-	{
-		// checks if location block matches url
-		if (stat(location_blocks[index].get_root().c_str(), &s) == 0 && location_blocks[index].get_location_context() == file_location)
-		{
-			if (s.st_mode & S_IFDIR)
-				return (index);
-		}
-		std::string full_location = location_blocks[index].get_root().append(file_location);
-		// checks if file/directory exists
-		if (stat(full_location.c_str(), &s) == 0)
-		{
-			if (s.st_mode & S_IFDIR)
-				return (index);
-			else if (s.st_mode & S_IFREG)
-				return (index);
-		}
-	}
-	return (-1);
-}
-
 std::string	header_handler::get_referer_part()
 {
 	int			start;
-	int			end;
+	std::string	result;
 
+	if (_referer.empty())
+		return ("/empty");
 	start = _referer.find(_requested_host);
 	start += _requested_host.length();
-	end = _referer.find_last_of('/');
-	return (_referer.substr(start, end - start));
+	result = _referer.substr(start, std::string::npos);
+	if (result.empty())
+		return ("/empty");
+	return (result);
 }
 
-int	header_handler::find_location_block(header_handler::location_vector location_blocks, std::string file_location)
+int	check_if_file(std::string file_location)
 {
-	int			val;
-	std::string	directory_path;
+	std::vector<std::string>	extensions;
+    extensions.push_back("html");
+    extensions.push_back("php");
+    extensions.push_back("css");
+    extensions.push_back("ico");
+    extensions.push_back("png");
 
-	val = check_if_directory_or_file(location_blocks, file_location);
-	if (val >= 0)
-		return (val);
-	if (!_referer.empty())
-		directory_path = get_referer_part();
-	int pos = file_location.find_last_of('/');
-	directory_path.append(file_location.substr(0, pos));
-	if (directory_path.empty())
-		directory_path = "/";
+    for (header_handler::vector_iterator it = extensions.begin(); it != extensions.end(); it++) {
+        if (file_location.find(*it) != std::string::npos) {
+			return (1);
+		}
+    }
+    return 0;
+}
+
+std::string	get_directory_part(std::string file_location)
+{
+	int			end;
+	std::string	result;
+
+	if (check_if_file(file_location) == 0)
+		return (file_location);
+	end = file_location.find_last_of('/');
+	result = file_location.substr(0, end);
+	if (result.empty())
+		result = "/";
+	return (result);
+}
+
+int			header_handler::match_location_block(header_handler::location_vector location_blocks, std::string file_location)
+{
 	for (size_t index = 0; index < location_blocks.size(); index++)
 	{
-		if (location_blocks[index].get_location_context() == directory_path)
+		if (location_blocks[index].get_location_context() == file_location)
+			return (index);
+		else if (location_blocks[index].get_location_context() == get_referer_part())
+			return (index);
+		else if (_referer.empty() && location_blocks[index].get_location_context() == get_directory_part(file_location))
+			return (index);
+		else if (check_if_file(_referer) && location_blocks[index].get_location_context() == get_directory_part(file_location))
 			return (index);
 	}
 	return (-1);
 }
 
-//void        header_handler::verify_file_location(header_handler::location_vector location_blocks, std::string error_page) {
-	//std::string file_location = _file_location;
-	//size_t pos;
-
-	//if (!_referer.empty()) {
-		//pos = _referer.find(_requested_host);
-		//file_location = _referer.substr(pos + _requested_host.length());
-	//}
-	//else if (_file_location[_file_location.length() - 1] != '/' && (check_if_directory(location_blocks, file_location) == 0)) {
-		//pos = _file_location.find_last_of('/');
-		//file_location = _file_location.substr(0, pos);
-	//}
-	//for (location_iterator loc = location_blocks.begin(); loc != location_blocks.end(); loc++) {
-		//if (loc->get_location_context() == file_location) {
-			//_allowed_methods_config = loc->get_method();
-			//if (_referer.empty())
-				//_file_location = loc->get_root().append(_file_location);
-			//else
-			//{
-				//if (file_location[file_location.size() - 1] == '/')
-					//file_location = file_location.substr(0, file_location.size() - 1);
-				//_file_location = loc->get_root().append(file_location).append(_file_location);
-			//}
-			//if (verify_content_type() == "folder" && !loc->get_autoindex()) // this searches for index.html
-				//_file_location = _file_location.append(loc->get_index());
-			//else if (verify_content_type() == "folder" && loc->get_autoindex()) // this gets the auto index script
-			//{
-				//std::string temp = _file_location;
-				//temp.append("/").append(loc->get_index());
-				//struct stat	s;
-
-				//if (stat(temp.c_str(), &s) == -1)
-					//_file_location.append("/index.php");
-				//else
-					//_file_location.append("/").append(loc->get_index());
-			//}
-			//break;
-		//}
-		//else if ((loc + 1) == location_blocks.end()) {
-			//pos = _file_location.find_last_of('/');
-			//file_location = _file_location.substr(pos+1);
-			//_file_location = error_page.append(file_location);
-		//}
-	//}
-//}
-
 void        header_handler::verify_file_location(header_handler::location_vector location_blocks, std::string error_page) {
-	int index = find_location_block(location_blocks, _file_location);
+	int index = match_location_block(location_blocks, _file_location);
+	std::string	correct_location;
 
-	std::cout << "INDEX " << index << std::endl;
 	if (index == -1)
 	{
 		int pos = _file_location.find_last_of('/');
 		std::string temp = _file_location.substr(pos+1);
-		_file_location = error_page.append(temp);
+		correct_location = error_page.append(temp);
 	}
 	else
 	{
 		_allowed_methods_config = location_blocks[index].get_method();
+		correct_location = location_blocks[index].get_root();
 		if (_referer.empty())
-			_file_location = location_blocks[index].get_root().append(_file_location);
+			correct_location.append(_file_location);
+		else if (!_referer.empty() && verify_content_type() == "folder")
+			correct_location.append(get_referer_part()).append(_file_location);
 		else
-			_file_location = location_blocks[index].get_root().append(get_referer_part()).append(_file_location);
+			correct_location.append(_file_location);
 		if (verify_content_type() == "folder" && !location_blocks[index].get_autoindex()) // this searches for index.html
-			_file_location = _file_location.append(location_blocks[index].get_index());
+			correct_location.append(location_blocks[index].get_index());
 		else if (verify_content_type() == "folder" && location_blocks[index].get_autoindex()) // this gets the auto index script
 		{
-			std::string temp = _file_location;
+			std::string temp = correct_location;
 			temp.append("/").append(location_blocks[index].get_index());
 			struct stat	s;
 
 			if (stat(temp.c_str(), &s) == -1)
-				_file_location.append("/index.php");
+				correct_location.append("/index.php");
 			else
-				_file_location.append("/").append(location_blocks[index].get_index());
+				correct_location.append("/").append(location_blocks[index].get_index());
 		}
+		// ADD CORRECT AUTO INDEX / NORMAL INDEX FUNCTION
 	}
+	_file_location = correct_location;
 }
 
 void 		header_handler::verify_method() {
@@ -532,6 +494,7 @@ void	header_handler::generate_content_type(std::string &response) {
 	else if (_content_type.compare("png") == 0)
 		content_type_header.append("image/");
 	content_type_header.append(_content_type);
+	content_type_header.append("\r\n");
 	response.append(content_type_header);
 }
 
