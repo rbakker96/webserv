@@ -39,21 +39,20 @@ void header_handler::print_request() {
 //------------------------------------------------------------
 
 
-header_handler::header_handler():	_index(0), _status(200), _status_phrases(), _content_length(0), _content_type("Content-Type: text/"),
+header_handler::header_handler():	_index(0), _status(okay_), _status_phrases(), _content_length(0), _content_type("Content-Type: text/"),
 									_content_language("en"), _content_location(), _allow(), _allowed_methods_config(),
 									_method(), _file_location(), _protocol(), _requested_host(), _user_agent(),
 									_accept_language(), _authorization(), _referer(), _body(), _requested_file()	{
 	// setup status phrases
 	_status_phrases.insert (pair(200, "OK"));
+	_status_phrases.insert (pair(201, "Created"));
 	_status_phrases.insert (pair(204, "No Content"));
 	_status_phrases.insert (pair(400, "Bad Request"));
 	_status_phrases.insert (pair(401, "Unauthorized"));
 	_status_phrases.insert (pair(403, "Forbidden"));
 	_status_phrases.insert (pair(404, "Not Found"));
 	_status_phrases.insert (pair(405, "Method Not Allowed"));
-//    _status_phrases.insert ( pair(, ""));
-
-	// setup CGI environment variables
+	_status_phrases.insert (pair(413, "Payload Too Large"));
 
 }
 
@@ -151,27 +150,26 @@ void        header_handler::invalid_argument(const std::string &str) {parse_inva
 
 //------Handle request functions------
 int        header_handler::handle_request(header_handler::location_vector location_blocks, std::string error_page, int max_file_size) {
-    struct  stat stats;
-    int		fd = unused_;
+	struct  stat stats;
+	int		fd = unused_;
 
     verify_file_location(location_blocks, error_page);
-    verify_method();
-    if (_status < error_code_) {
+	verify_method();
+	if (_status < error_code_)
+    {
         if (_method == "PUT")
             fd = put_request(max_file_size);
-        else if (stat(_file_location.c_str(), &stats) == -1)  //maybe more errors for which we can see with fstat
-            _status = not_found_;
-        else if (!(stats.st_mode & S_IRUSR))
-            _status = forbidden_;
+		else if (stat(_file_location.c_str(), &stats) == -1)
+			_status = not_found_;
+		else if (!(stats.st_mode & S_IRUSR))
+			_status = forbidden_;
         else if (verify_content_type() == "php")
             return cgi_request();
-        else if (_method == "POST" && get_body().empty()) // for test 2 POST with size 0
-            _status = method_not_allowed_;
         else if ((fd = open(&_file_location[0], O_RDONLY)) == -1)
-            _status = not_found_;
+			throw std::runtime_error("Open failed");
     }
 
-    if (_status >= error_code_) {
+    if (_status >= error_code_){
         _file_location = error_page.append(ft_itoa(_status));
         _file_location.append(".html");
         if ((fd = open(&_file_location[0], O_RDONLY)) == -1)
@@ -246,16 +244,17 @@ void        header_handler::verify_file_location(header_handler::location_vector
     }
 }
 
-void 		header_handler::verify_method() {
-	if (_method == "GET" || _method == "HEAD")
-		return;
-	if (_allowed_methods_config.empty()) {
+void 		header_handler::verify_method()
+{
+	if (_method == "POST" && get_body().empty())
 		_status = method_not_allowed_;
-		return;
-	}
-	for (vector_iterator it = _allowed_methods_config.begin(); it != _allowed_methods_config.end(); it++) {
-	    if (*it == _method)
-			return;
+	if (!_allowed_methods_config.empty())
+	{
+		for (vector_iterator it = _allowed_methods_config.begin(); it != _allowed_methods_config.end(); it++)
+		{
+			if (*it == _method)
+				return;
+		}
 	}
 	_status = method_not_allowed_;
 }
@@ -466,12 +465,12 @@ void	header_handler::generate_content_type(std::string &response) {
 void	header_handler::generate_last_modified(std::string &response, int fileFD)
 {
 	std::string	last_modified = "Last-Modified: ";
-	struct stat	statbuf;
+	struct stat	stat;
 	struct tm	*info;
 	char		timestamp[36];
 
-	fstat(fileFD, &statbuf);
-	info = localtime(&statbuf.st_mtime);
+	fstat(fileFD, &stat);
+	info = localtime(&stat.st_mtime);
 	strftime(timestamp, 36, "%a, %d %h %Y %H:%M:%S GMT", info);
 	last_modified.append(timestamp);
 	last_modified.append("\r\n");
