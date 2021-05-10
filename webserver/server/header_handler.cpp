@@ -403,6 +403,7 @@ char **header_handler::create_cgi_envp(const std::string& server_name, int serve
 	envp[cgi_envps.size()] = NULL;
 	return envp;
 }
+
 //------Send response functions------
 std::string header_handler::send_response(int activeFD, int fileFD, std::string server_name) {
 	std::string response;
@@ -458,6 +459,7 @@ void	header_handler::generate_content_type(std::string &response) {
 	else if (_content_type.compare("png") == 0)
 		content_type_header.append("image/");
 	content_type_header.append(_content_type);
+	content_type_header.append("\r\n");
 	response.append(content_type_header);
 }
 

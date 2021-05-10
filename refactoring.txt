@@ -1,0 +1,20 @@
+What is int index value used for with the handler class?
+
+-> Only in run function fd_set _readFDS & _writeFDS ect. are used, could make this local variable
+    + simplifies server struct
+    + pas arguments when needed
+    + create functions for FD_SET functions to avoid multiple if else statements
+
+-> TCP connections can be moved from server.hpp to webserver.hpp.
+    + variables hold now relation to server struct
+    + only accessed on webserver level so using the variables becomes easier.
+
+-> Create helper class or add cpp files to helper class to group generic functions and pass references to these functions to be able to change values if needed.
+    + classes become easier to read
+    + If it's a friend class it can access all values needed
+
+->  Make a local response class which can be cleared after the usage of that function
+    + shrinks header_handler function which data that's only needed in one function
+    + only needed in send response function
+
+What is int index value used for?

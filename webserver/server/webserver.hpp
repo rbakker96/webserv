@@ -18,6 +18,7 @@
 
 //custom includes
 #include "server.hpp"
+#include "file_descriptors.hpp"
 
 //custom color for better visibility
 # define RESET			"\033[0m"
@@ -38,9 +39,6 @@ public:
 
 private:
     std::vector<server>     _servers;
-    fd_set			        _readFDS, _writeFDS;
-    fd_set			        _buffer_readFDS, _buffer_writeFDS;
-    int				        _maxFD;
 
 public:
     webserver();
@@ -51,11 +49,6 @@ public:
     void    	run();
 
     //Helper functions
-	void    	synchronize_FD_sets();
-    void    	initialize_FD_sets();
-    void    	initialize_highest_fd();
-    void		set_maxFD(int fd);
-	int			get_maxFD();
     int    		check_server_block(vector server_block);
 	void		initialize_handler_indexes();
 

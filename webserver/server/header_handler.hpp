@@ -57,16 +57,17 @@ public:
 
 protected:
 	int				_index;
+
 	//status
 	int				_status;
 	map				_status_phrases;
 
-	//Entity headers
+	//Entity headers                        //why not response headers
 	int				_content_length;
 	std::string		_content_type;
 	std::string		_content_language;
 	std::string		_content_location;
-	std::string		_allow;
+	std::string		_allow;                 //difference with vector?
 	vector			_allowed_methods_config;
 
 	//Request headers
@@ -118,7 +119,7 @@ public:
 	char 			**create_cgi_envp(const std::string& server_name, int server_port);
 
     //Send response functions
-	std::string send_response(int activeFD, int fileFD, std::string server_name);
+	std::string     send_response(int activeFD, int fileFD, std::string server_name);
 	void			generate_status_line(std::string &response);
 	void			generate_content_length(std::string &response);
 	void			generate_content_type(std::string &response);

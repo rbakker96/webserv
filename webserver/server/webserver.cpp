@@ -53,7 +53,7 @@ void webserver::print_struct() {
     }
 }
 
-webserver::webserver() : _servers(), _readFDS(), _writeFDS(), _buffer_readFDS(), _buffer_writeFDS(), _maxFD(-1) {}
+webserver::webserver() : _servers() {}
 webserver::~webserver(){}
 
 void    webserver::load_configuration(char *config_file) {
@@ -92,112 +92,99 @@ void    webserver::establish_connection(){
 }
 
 void    webserver::run() {
-	initialize_FD_sets();
+    file_descriptors    fd;
+    fd.initialize_max(_servers);
 	initialize_handler_indexes();
-    initialize_highest_fd();
     while (true)
     {
-		synchronize_FD_sets();
+        fd.synchronize(_servers);
 		std::cout << "--- Waiting for activity... ---" << std::endl;
-        if (select(get_maxFD(), &_readFDS, &_writeFDS, 0, 0) == -1)
+        if (select(fd.get_max(), &fd.get_read(), &fd.get_write(), 0, 0) == -1)
 		{
 			std::cout << RED << strerror(errno) << RESET << std::endl;
         	throw std::runtime_error("Select failed");
 		}
         for (size_t index = 0; index < _servers.size(); index++) {
 			server *server = &_servers[index];
-
-			if (server->_activeFD == ready_for_use_ && FD_ISSET(server->get_tcp_socket(), &_readFDS)) //accept request
+            if (server->_activeFD == ready_for_use_ && fd.rdy_for_reading(server->get_tcp_socket())) //accept request
 			{
 				server->_activeFD = accept(server->get_tcp_socket(), (struct sockaddr *) &server->_addr, (socklen_t *) &server->_addr_len);
 				fcntl(server->_activeFD, F_SETFL, O_NONBLOCK);
-				FD_SET(server->_activeFD, &_buffer_readFDS);
-				set_maxFD(server->_activeFD);
+				fd.accepted_request_update(server->_activeFD);
 			}
 
-			if (server->_activeFD != unused_ && FD_ISSET(server->_activeFD, &_readFDS)) //handle request
+            if (server->_activeFD != unused_ && fd.rdy_for_reading(server->_activeFD)) //handle request
 			{
 				std::string request_headers = server->_handler.read_browser_request(server->_activeFD);
 				if (server->update_request_buffer(server->_activeFD, request_headers) == valid_)
 				{
-					FD_CLR(server->_activeFD, &_buffer_readFDS);
 					server->_handler.parse_request(server->_activeFD, server->_request_buffer);
                     server->clear_handled_request(server->_activeFD);
                     server->_fileFD = server->_handler.handle_request(server->_location_blocks, server->get_error_page(), server->get_file_size());
-
-					set_maxFD(server->_fileFD);
-					if (server->_fileFD != unused_)
-					    FD_SET(server->_fileFD, &_buffer_readFDS);
-					else
-					    FD_SET(server->_activeFD, &_buffer_writeFDS);
-					if (server->_handler.verify_content_type() == "php" || server->_handler.get_method() == "PUT")
-						FD_SET(server->_fileFD, &_buffer_writeFDS); //_fileFD also needs to be added to buffer_writeFD in php cases or
+                    fd.handled_request_update(server->_fileFD, server->_activeFD, server->_handler.verify_content_type(), server->_handler.get_method());
 				}
 			}
 
-			if (server->_fileFD != unused_ && FD_ISSET(server->_fileFD, &_readFDS)) //read requested file
+            if (server->_fileFD != unused_ && fd.rdy_for_reading(server->_fileFD)) //read requested file
 			{
-				if (FD_ISSET(server->_fileFD, &_writeFDS)) {
+				if (fd.rdy_for_writing(server->_fileFD)) {
                     if (server->_handler.verify_content_type() == "php")
 						server->_handler.execute_php(server->_fileFD, server->_server_name, server->_port);
                     else
 						server->_handler.write_put_file(server->_fileFD);
-					FD_CLR(server->_fileFD, &_buffer_writeFDS);
 			    }
-
 			    if (server->_handler.get_status() != 204)
 				    server->_handler.read_requested_file(server->_fileFD);
-				FD_CLR(server->_fileFD, &_buffer_readFDS);
-				FD_SET(server->_activeFD, &_buffer_writeFDS);
+			    fd.read_request_update(server->_fileFD, server->_activeFD);
 			}
 
-			if (server->_activeFD != unused_ && FD_ISSET(server->_activeFD, &_writeFDS)) //create response
+			if (server->_activeFD != unused_ && fd.rdy_for_writing(server->_activeFD)) //create response
 			{
 				std::string	response_headers = server->_handler.send_response(server->_activeFD, server->_fileFD, server->_server_name);
-				close(server->_fileFD);
-				server->_fileFD = unused_;
-				FD_CLR(server->_activeFD, &_buffer_writeFDS);
+                fd.clr_from_write_buffer(server->_activeFD);
 				std::cout << GREEN << "RESPONSE HEADERS: \n" << response_headers << RESET << std::endl;
 				close(server->_activeFD);
-				server->_activeFD = ready_for_use_;
+                close(server->_fileFD);
+                server->_activeFD = ready_for_use_;
+                server->_fileFD = unused_;
 			}
 		}
     }
 }
 
 //------Helper functions------
-void    webserver::synchronize_FD_sets() {
-	_readFDS = _buffer_readFDS;
-	_writeFDS = _buffer_writeFDS;
-
-	for (size_t index = 0; index < _servers.size(); index++) {
-		FD_SET(_servers[index].get_tcp_socket(), &_readFDS);
-	}
-}
-
-void    webserver::initialize_FD_sets() {
-    FD_ZERO(&_readFDS);
-    FD_ZERO(&_writeFDS);
-    FD_ZERO(&_buffer_readFDS);
-    FD_ZERO(&_buffer_writeFDS);
-}
-
-void    webserver::initialize_highest_fd() {
-	for (size_t index = 0; index < _servers.size(); index++) {
-		if (_servers[index].get_tcp_socket() > _maxFD)
-			_maxFD = _servers[index].get_tcp_socket();
-	}
-}
-
-void	webserver::set_maxFD(int fd) {
-	if (_maxFD > fd)
-		return;
-	_maxFD = fd;
-}
-
-int		webserver::get_maxFD() {
-	return (_maxFD + 1);
-}
+//void    webserver::synchronize_FD_sets() {
+//	_readFDS = _buffer_readFDS;
+//	_writeFDS = _buffer_writeFDS;
+//
+//	for (size_t index = 0; index < _servers.size(); index++) {
+//		FD_SET(_servers[index].get_tcp_socket(), &_readFDS);
+//	}
+//}
+//
+//void    webserver::initialize_FD_sets() {
+//    FD_ZERO(&_readFDS);
+//    FD_ZERO(&_writeFDS);
+//    FD_ZERO(&_buffer_readFDS);
+//    FD_ZERO(&_buffer_writeFDS);
+//}
+//
+//void    webserver::initialize_highest_fd() {
+//	for (size_t index = 0; index < _servers.size(); index++) {
+//		if (_servers[index].get_tcp_socket() > _maxFD)
+//			_maxFD = _servers[index].get_tcp_socket();
+//	}
+//}
+//
+//void	webserver::set_maxFD(int fd) {
+//	if (_maxFD > fd)
+//		return;
+//	_maxFD = fd;
+//}
+//
+//int		webserver::get_maxFD() {
+//	return (_maxFD + 1);
+//}
 
 int     webserver::check_server_block(webserver::vector server_block) {
 	int         open_bracket = 0;
