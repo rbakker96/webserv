@@ -5,10 +5,6 @@ What is int index value used for with the handler class?
     + pas arguments when needed
     + create functions for FD_SET functions to avoid multiple if else statements
 
--> TCP connections can be moved from server.hpp to webserver.hpp.
-    + variables hold now relation to server struct
-    + only accessed on webserver level so using the variables becomes easier.
-
 -> Create helper class or add cpp files to helper class to group generic functions and pass references to these functions to be able to change values if needed.
     + classes become easier to read
     + If it's a friend class it can access all values needed

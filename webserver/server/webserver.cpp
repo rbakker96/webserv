@@ -11,10 +11,9 @@
 /* ************************************************************************** */
 
 #include "../gnl/get_next_line.hpp"
+#include "../helper/helper.hpp"
 #include "webserver.hpp"
 #include "server.hpp"
-#include <stdio.h> //REMOVE LATER!!!
-#include <cerrno> // for errno
 
 #include <iostream>
 void webserver::print_struct() {
@@ -70,6 +69,7 @@ void    webserver::load_configuration(char *config_file) {
         free(line);
         if (check_server_block(server_block)) {
             server.create_new_server(server_block);
+            server._handler.set_index(_servers.size());
             _servers.push_back(server);
             server_block.clear();
         }
@@ -94,7 +94,7 @@ void    webserver::establish_connection(){
 void    webserver::run() {
     file_descriptors    fd;
     fd.initialize_max(_servers);
-	initialize_handler_indexes();
+//	initialize_handler_indexes();
     while (true)
     {
         fd.synchronize(_servers);
@@ -113,7 +113,7 @@ void    webserver::run() {
 				fd.accepted_request_update(server->_activeFD);
 			}
 
-            if (server->_activeFD != unused_ && fd.rdy_for_reading(server->_activeFD)) //handle request
+            if (fd.rdy_for_reading(server->_activeFD)) //handle request
 			{
 				std::string request_headers = server->_handler.read_browser_request(server->_activeFD);
 				if (server->update_request_buffer(server->_activeFD, request_headers) == valid_)
@@ -125,7 +125,7 @@ void    webserver::run() {
 				}
 			}
 
-            if (server->_fileFD != unused_ && fd.rdy_for_reading(server->_fileFD)) //read requested file
+            if (fd.rdy_for_reading(server->_fileFD)) //read requested file
 			{
 				if (fd.rdy_for_writing(server->_fileFD)) {
                     if (server->_handler.verify_content_type() == "php")
@@ -138,7 +138,7 @@ void    webserver::run() {
 			    fd.read_request_update(server->_fileFD, server->_activeFD);
 			}
 
-			if (server->_activeFD != unused_ && fd.rdy_for_writing(server->_activeFD)) //create response
+			if (fd.rdy_for_writing(server->_activeFD)) //create response
 			{
 				std::string	response_headers = server->_handler.send_response(server->_activeFD, server->_fileFD, server->_server_name);
                 fd.clr_from_write_buffer(server->_activeFD);
@@ -150,62 +150,4 @@ void    webserver::run() {
 			}
 		}
     }
-}
-
-//------Helper functions------
-//void    webserver::synchronize_FD_sets() {
-//	_readFDS = _buffer_readFDS;
-//	_writeFDS = _buffer_writeFDS;
-//
-//	for (size_t index = 0; index < _servers.size(); index++) {
-//		FD_SET(_servers[index].get_tcp_socket(), &_readFDS);
-//	}
-//}
-//
-//void    webserver::initialize_FD_sets() {
-//    FD_ZERO(&_readFDS);
-//    FD_ZERO(&_writeFDS);
-//    FD_ZERO(&_buffer_readFDS);
-//    FD_ZERO(&_buffer_writeFDS);
-//}
-//
-//void    webserver::initialize_highest_fd() {
-//	for (size_t index = 0; index < _servers.size(); index++) {
-//		if (_servers[index].get_tcp_socket() > _maxFD)
-//			_maxFD = _servers[index].get_tcp_socket();
-//	}
-//}
-//
-//void	webserver::set_maxFD(int fd) {
-//	if (_maxFD > fd)
-//		return;
-//	_maxFD = fd;
-//}
-//
-//int		webserver::get_maxFD() {
-//	return (_maxFD + 1);
-//}
-
-int     webserver::check_server_block(webserver::vector server_block) {
-	int         open_bracket = 0;
-	int         closing_bracket = 0;
-	std::string str;
-
-	for (vector_iterator it = server_block.begin(); it != server_block.end(); it++) {
-		str = *it;
-		if (str.find('{') != std::string::npos)
-			open_bracket++;
-		if (str.find('}') != std::string::npos)
-			closing_bracket++;
-	}
-	if (open_bracket == closing_bracket && open_bracket != 0)
-		return 1;
-	return 0;
-}
-
-void	webserver::initialize_handler_indexes()
-{
-	for (size_t index = 0; index < _servers.size(); index++) {
-		_servers[index]._handler.set_index(index);
-	}
 }

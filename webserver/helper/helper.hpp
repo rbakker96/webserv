@@ -19,10 +19,16 @@
 #include <stdexcept>
 #include <cstdlib> // for malloc & free
 
+
+//check_functions
+int                         check_server_block(std::vector<std::string> server_block);
+
+//lib functions
 int							ft_atoi(const char *str);
 char						*ft_itoa(int n);
 char						*ft_strdup(const char *str);
 
+//parse functions
 std::vector<std::string>	parse_vector(const std::string& str);
 std::string					parse_string (const std::string& str);
 int 						parse_number (const std::string& str);

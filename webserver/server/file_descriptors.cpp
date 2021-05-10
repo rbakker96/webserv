@@ -66,8 +66,16 @@ void     file_descriptors::clr_from_read_buffer(int fd) {FD_CLR(fd, &_read_buffe
 void     file_descriptors::clr_from_write_buffer(int fd) {FD_CLR(fd, &_write_buffer);}
 
 //IS_SET functions
-int     file_descriptors::rdy_for_reading(int fd) {return FD_ISSET(fd, &_read);}
-int     file_descriptors::rdy_for_writing(int fd) {return FD_ISSET(fd, &_write);}
+int     file_descriptors::rdy_for_reading(int fd) {
+    if (fd == -1)
+        return 0;
+    return FD_ISSET(fd, &_read);
+}
+int     file_descriptors::rdy_for_writing(int fd) {
+    if (fd == -1)
+        return 0;
+    return FD_ISSET(fd, &_write);
+}
 
 //Getter
 fd_set&  file_descriptors::get_read() {return _read;}

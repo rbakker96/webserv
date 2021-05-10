@@ -48,10 +48,6 @@ public:
     void    	establish_connection();
     void    	run();
 
-    //Helper functions
-    int    		check_server_block(vector server_block);
-	void		initialize_handler_indexes();
-
     //Debug-tool
     void        print_struct();
 };
