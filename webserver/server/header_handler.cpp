@@ -150,14 +150,19 @@ void        header_handler::invalid_argument(const std::string &str) {parse_inva
 
 //------Handle request functions------
 int        header_handler::handle_request(header_handler::location_vector location_blocks, std::string error_page, int max_file_size) {
-    int		fd = unused_;
+	struct  stat stats;
+	int		fd = unused_;
 
-	verify_method(); // moved method-related status code here
-    verify_file_location(location_blocks, error_page); // moved file-related status code in the function
-    if (_status < error_code_)
+    verify_file_location(location_blocks, error_page);
+	verify_method();
+	if (_status < error_code_)
     {
         if (_method == "PUT")
             fd = put_request(max_file_size);
+		else if (stat(_file_location.c_str(), &stats) == -1)
+			_status = not_found_;
+		else if (!(stats.st_mode & S_IRUSR))
+			_status = forbidden_;
         else if (verify_content_type() == "php")
             return cgi_request();
         else if ((fd = open(&_file_location[0], O_RDONLY)) == -1)
@@ -195,7 +200,6 @@ int			check_if_directory(header_handler::location_vector location_blocks, std::s
 void        header_handler::verify_file_location(header_handler::location_vector location_blocks, std::string error_page) {
     std::string file_location = _file_location;
     size_t pos;
-	struct  stat stats;
 
     if (!_referer.empty()) {
         pos = _referer.find(_requested_host);
@@ -238,11 +242,6 @@ void        header_handler::verify_file_location(header_handler::location_vector
             _file_location = error_page.append(file_location);
         }
     }
-    // add file related status code here
-	if (stat(_file_location.c_str(), &stats) == -1)
-		_status = not_found_;
-	else if (!(stats.st_mode & S_IRUSR))
-		_status = forbidden_;
 }
 
 void 		header_handler::verify_method()
