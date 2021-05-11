@@ -160,9 +160,9 @@ int        header_handler::handle_request(header_handler::location_vector locati
         if (_method == "PUT")
             fd = put_request(max_file_size);
 		else if (stat(_file_location.c_str(), &stats) == -1)
-			_status = not_found_;
+			_status = not_found_; // update the status code after the version is stable
 		else if (!(stats.st_mode & S_IRUSR))
-			_status = forbidden_;
+			_status = forbidden_; // update the status code after the version is stable
         else if (verify_content_type() == "php")
             return cgi_request();
         else if ((fd = open(&_file_location[0], O_RDONLY)) == -1)
@@ -314,7 +314,7 @@ std::string	get_correct_directory(std::string &file_location)
 }
 
 // error checking if execve fails
-void	header_handler::execute_php(int fileFD, std::string server_name, int server_port)
+void header_handler::execute_php(int fileFD, std::string server_name, int server_port)
 {
 	pid_t	pid;
 
@@ -340,31 +340,33 @@ std::string	get_location_without_root(std::string &file_location)
 	std::string	result;
 
 	result = file_location.substr(file_location.find_last_of("/") + 1);
-//	result = file_location.substr(file_location.find_last_of("/", std::string::npos) + 1, std::string::npos);
 	return (result);
 }
 
 char	**header_handler::create_cgi_args()
 {
 	char	**args = new char *[3];
+	char 	buf[PATH_MAX];
+	getcwd(buf, (size_t)PATH_MAX); // check error
 
-//	if (file location extension == .bla)
-//		use cgi tester
-//	else if (file location extension == .php)
-//		use usr bin php
+	// NEED TO DOUBLE CHECK AFTER THE VERSION IS STABLE
+	if (get_content_type() == "bla")
+		args[0] = ft_strjoin(buf, "/tester_executables/cgi_tester");
+	else if (get_content_type() == "php")
+		args[0] = ft_strdup("/usr/bin/php");
 
-	args[0] = ft_strdup("/usr/bin/php");
-//	args[0] = ft_strdup("/Users/gbouwen/Desktop/codam/subjects/webserv/tester_executables/cgi_tester");
 	args[1] = ft_strdup(get_location_without_root(_file_location).c_str());
 	args[2] = NULL;
 	return args;
 }
 
-char **header_handler::create_cgi_envp(const std::string& server_name, int server_port)
+char **header_handler::create_cgi_envp(const std::string &server_name, int server_port)
 {
 	// for later
 	// AUTH_TYPE, REMOTE_ADDR, REMOTE_IDENT, REMOTE_USER
 	vector	cgi_envps;
+	char 	server_root[PATH_MAX];
+	getcwd(server_root, (size_t)PATH_MAX); // check error
 
 	if (_content_length)
 	{
@@ -380,16 +382,23 @@ char **header_handler::create_cgi_envp(const std::string& server_name, int serve
 	cgi_envps.push_back(((std::string)"SERVER_PORT=").append(ft_itoa(server_port)));
 
 	// PATH related
+	// [RFC] PATH_INFO -> need to save the part after '.php'; if not existing, set as NULL
+	// [SLACK] PATH_INFO -> URI (/directory/youpi.bla)
+	cgi_envps.push_back(((std::string)"PATH_INFO=").append(get_file_location()));
 
-	// PATH_INFO -> need to save the part after '.php'; if not existing, set as NULL
-	// PATH_TRANSLATED -> /DOCUMENT_ROOT + PATH_INFO ; if PATH_INFO is NULL, set to NULL as well
-	// REQUEST_URI -> /SCRIPT_NAME + ? QUERY_STRING /test.php?foo=bar
-	// SCRIPT_NAME -> file name of the CGI script
-	cgi_envps.push_back(((std::string)"PATH_INFO=").append("/"));
-	cgi_envps.push_back(((std::string)"PATH_TRANSLATED=").append("/"));
+	// [RFC] SCRIPT_NAME -> file name of the CGI script
+	// [SLACK]SCRIPT_NAME -> URI (/directory/youpi.bla)
+	cgi_envps.push_back(((std::string)"SCRIPT_NAME=").append(get_file_location()));
+
+	// [RFC] PATH_TRANSLATED -> /DOCUMENT_ROOT + PATH_INFO ; if PATH_INFO is NULL, set to NULL as well
+	// [SLACK] PATH_TRANSLATED -> <server_root>/YoupiBanane -> server_root + location_root
+	cgi_envps.push_back(((((std::string)"PATH_TRANSLATED=").append(server_root)).append("/"))); // NEED UPDATE
+
+	// [SLACK] SCRIPT_FILENAME -> <server_root>/YoupiBanane/youpi.bla
+
+	// [ROOT] REQUEST_URI -> /SCRIPT_NAME + ? QUERY_STRING /test.php?foo=bar
 	std::string	request_uri = ((std::string)"REQUEST_URI=/").append(get_location_without_root(_file_location)).append("?");
 	cgi_envps.push_back(request_uri.append(get_body()));
-	cgi_envps.push_back(((std::string)"SCRIPT_NAME=").append(get_location_without_root(_file_location)));
 
 	char 	**envp = new char *[cgi_envps.size() + 1];
 	int		i = 0;
@@ -420,7 +429,6 @@ std::string header_handler::send_response(int activeFD, int fileFD, std::string 
 	write(activeFD, response.c_str(), response.size());
 	if (_method != "HEAD")
 	    write(activeFD, this->get_requested_file().c_str(), this->get_requested_file().size());
-
 	reset_status();
 	clear_requested_file();
 	return response;
@@ -441,7 +449,7 @@ void	header_handler::generate_status_line(std::string &response) {
 void	header_handler::generate_content_length(std::string &response) {
 	std::string	content_length = "Content-Length: ";
 
-	content_length.append(ft_itoa(this->get_requested_file().size()));
+	content_length.append(ft_itoa(get_requested_file().size()));
 	content_length.append("\r\n");
 	response.append(content_length);
 }
@@ -450,8 +458,8 @@ void	header_handler::generate_content_type(std::string &response) {
 	std::string	content_type_header = "Content-Type: ";
     _content_type = verify_content_type();
 
-    if (_content_type.compare("php") == 0){
-		_content_type = "html";
+    if (_content_type.compare("php") == 0 || get_content_type().compare("bla") == 0){
+		_content_type = "html"; // added bla file type
 	}
 	if (_content_type.compare("html") == 0 || _content_type.compare("css") == 0)
 		content_type_header.append("text/");
@@ -545,6 +553,7 @@ std::string     header_handler::verify_content_type() {
     extensions.push_back("css");
     extensions.push_back("ico");
     extensions.push_back("png");
+	extensions.push_back("bla"); // add bla type
 
     for (vector_iterator it = extensions.begin(); it != extensions.end(); it++) {
         if (_file_location.find(*it) != std::string::npos) {
