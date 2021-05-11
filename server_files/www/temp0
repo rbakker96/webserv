@@ -1,62 +1,14 @@
-<html>
-<body>
-<h2>Firstname: sdf</h2></br><h2>Lastname: asf</h2></br><p>--add phpinfo for debugging--
-</p><p>phpinfo()
+--- Waiting for activity... ---
+[32mRESPONSE HEADERS: 
+HTTP/1.1 200 OK
+Content-Length: 0
+Content-Type: text/html
+Last-Modified: Tue, 11 May 2021 15:09:47 GMT
+Date: Tue, 11 May 2021 15:09:47 GMT
+Server: webserv/1.1
+Allow: GET, HEAD, POST, PUT, DELETE, CONNECT, OPTIONS, TRACE
+Connection: close
 
-Environment
-
-Variable => Value
-GATEWAY_INTERFACE => CGI/1.1
-SERVER_SOFTWARE => webserv/1.1
-QUERY_STRING => firstname=sdf&lastname=asf
-REQUEST_METHOD => GET
-SERVER_PROTOCOL => HTTP/1.1
-SERVER_NAME => webserv/1.1
-SERVER_PORT => 8080
-PATH_INFO => /
-PATH_TRANSLATED => /
-REQUEST_URI => /adduser.php?firstname=sdf&lastname=asf
-SCRIPT_NAME => adduser.php
-__CF_USER_TEXT_ENCODING => 0xFA16:0x0:0x0
-</p><p>phpinfo()
-
-PHP Variables
-
-Variable => Value
-$_SERVER['GATEWAY_INTERFACE'] => CGI/1.1
-$_SERVER['SERVER_SOFTWARE'] => webserv/1.1
-$_SERVER['QUERY_STRING'] => firstname=sdf&lastname=asf
-$_SERVER['REQUEST_METHOD'] => GET
-$_SERVER['SERVER_PROTOCOL'] => HTTP/1.1
-$_SERVER['SERVER_NAME'] => webserv/1.1
-$_SERVER['SERVER_PORT'] => 8080
-$_SERVER['PATH_INFO'] => /
-$_SERVER['PATH_TRANSLATED'] => adduser.php
-$_SERVER['REQUEST_URI'] => /adduser.php?firstname=sdf&lastname=asf
-$_SERVER['SCRIPT_NAME'] => adduser.php
-$_SERVER['__CF_USER_TEXT_ENCODING'] => 0xFA16:0x0:0x0
-$_SERVER['PHP_SELF'] => adduser.php
-$_SERVER['SCRIPT_FILENAME'] => adduser.php
-$_SERVER['DOCUMENT_ROOT'] => 
-$_SERVER['REQUEST_TIME_FLOAT'] => 1620735239.9156
-$_SERVER['REQUEST_TIME'] => 1620735239
-$_SERVER['argv'] => Array
-(
-    [0] => adduser.php
-)
-
-$_SERVER['argc'] => 1
-$_ENV['GATEWAY_INTERFACE'] => CGI/1.1
-$_ENV['SERVER_SOFTWARE'] => webserv/1.1
-$_ENV['QUERY_STRING'] => firstname=sdf&lastname=asf
-$_ENV['REQUEST_METHOD'] => GET
-$_ENV['SERVER_PROTOCOL'] => HTTP/1.1
-$_ENV['SERVER_NAME'] => webserv/1.1
-$_ENV['SERVER_PORT'] => 8080
-$_ENV['PATH_INFO'] => /
-$_ENV['PATH_TRANSLATED'] => /
-$_ENV['REQUEST_URI'] => /adduser.php?firstname=sdf&lastname=asf
-$_ENV['SCRIPT_NAME'] => adduser.php
-$_ENV['__CF_USER_TEXT_ENCODING'] => 0xFA16:0x0:0x0
-</p></body>
-</html>
+[0m
+--- Waiting for activity... ---
+--- Waiting for activity... ---

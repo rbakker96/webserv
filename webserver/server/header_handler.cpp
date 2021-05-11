@@ -299,7 +299,6 @@ int     	header_handler::put_request(int max_file_size)
 
 void        header_handler::write_put_file(int file_fd) {
     if ((write(file_fd, _body.c_str(), _body.length())) == -1) {
-        std::cout << "HERE\n";
         throw std::runtime_error("Write failed");
     }
 }
@@ -346,13 +345,12 @@ std::string	get_location_without_root(std::string &file_location)
 char	**header_handler::create_cgi_args()
 {
 	char	**args = new char *[3];
-	char 	buf[PATH_MAX];
-	getcwd(buf, (size_t)PATH_MAX); // check error
-
-	// NEED TO DOUBLE CHECK AFTER THE VERSION IS STABLE
-	if (get_content_type() == "bla")
-		args[0] = ft_strjoin(buf, "/tester_executables/cgi_tester");
-	else if (get_content_type() == "php")
+//	char 	buf[PATH_MAX];
+//	getcwd(buf, (size_t)PATH_MAX); // check error
+//
+//	if (get_content_type() == "bla")
+//		args[0] = ft_strjoin(buf, "/tester_executables/cgi_tester");
+	if (get_content_type() == "php")
 		args[0] = ft_strdup("/usr/bin/php");
 
 	args[1] = ft_strdup(get_location_without_root(_file_location).c_str());
@@ -387,7 +385,7 @@ char **header_handler::create_cgi_envp(const std::string &server_name, int serve
 	cgi_envps.push_back(((std::string)"PATH_INFO=").append(get_file_location()));
 
 	// [RFC] SCRIPT_NAME -> file name of the CGI script
-	// [SLACK]SCRIPT_NAME -> URI (/directory/youpi.bla)
+	// [SLACK] SCRIPT_NAME -> URI (/directory/youpi.bla)
 	cgi_envps.push_back(((std::string)"SCRIPT_NAME=").append(get_file_location()));
 
 	// [RFC] PATH_TRANSLATED -> /DOCUMENT_ROOT + PATH_INFO ; if PATH_INFO is NULL, set to NULL as well
@@ -458,8 +456,8 @@ void	header_handler::generate_content_type(std::string &response) {
 	std::string	content_type_header = "Content-Type: ";
     _content_type = verify_content_type();
 
-    if (_content_type.compare("php") == 0 || get_content_type().compare("bla") == 0){
-		_content_type = "html"; // added bla file type
+    if (_content_type.compare("php") == 0){
+		_content_type = "html";
 	}
 	if (_content_type.compare("html") == 0 || _content_type.compare("css") == 0)
 		content_type_header.append("text/");
