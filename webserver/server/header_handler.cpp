@@ -6,7 +6,7 @@
 /*   By: gbouwen <marvin@codam.nl>                    +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2021/05/03 12:34:40 by gbouwen       #+#    #+#                 */
-/*   Updated: 2021/05/11 14:36:38 by gbouwen       ########   odam.nl         */
+/*   Updated: 2021/05/11 15:07:29 by gbouwen       ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,7 +14,7 @@
 
 //Debug tool
 void header_handler::print_request() {
-    std::cout << BLUE << "------------- REQUEST -------------\n";
+    std::cout << YELLOW << "------------- REQUEST -------------\n";
 
     std::cout << "Request headers\n";
     std::cout << "  Method = " << get_method() << std::endl;
@@ -87,7 +87,7 @@ void        header_handler::parse_request(int fd, header_handler::map request_bu
     }
 
 //    configure_location(location);
-    std::cout << "-----------\n" << BLUE << "REQUEST BUFFER: \n" << request->second << RESET << std::endl; //REMOVE
+    std::cout << "-----------\n" << YELLOW << "REQUEST BUFFER: \n" << request->second << RESET << std::endl; //REMOVE
     print_request(); //REMOVE
 }
 
@@ -236,8 +236,6 @@ int	compare_file(std::string file_location, std::string location_context)
 {
 	std::string	parent_directory = file_location;
 
-	if (file_location == location_context)
-		return (1);
 	while (1)
 	{
 		int	end = parent_directory.find_last_of("/");
@@ -289,7 +287,6 @@ void        header_handler::verify_file_location(header_handler::location_vector
 		correct_location = generate_error_page_location(error_page);
 	else
 	{
-		std::cout << "hier" << std::endl;
 		_allowed_methods_config = location_blocks[index].get_method();
 		correct_location = location_blocks[index].get_root();
 		if (verify_content_type() == "folder" && _referer.empty())
@@ -297,11 +294,7 @@ void        header_handler::verify_file_location(header_handler::location_vector
 		else if (verify_content_type() == "folder" && !_referer.empty() && check_if_file(referer_part) == 0)
 			correct_location.append(referer_part).append("/").append(_file_location).append("/").append(location_blocks[index].get_index());
 		else
-		{
-			std::cout << "GET FILE" << std::endl;
 			correct_location.append(_file_location);
-			std::cout << "GET FILE" << std::endl;
-		}
 	}
 	if (stat(correct_location.c_str(), &s) == -1)
 	{
