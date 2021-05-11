@@ -50,6 +50,7 @@ public:
 
     //Debug-tool
     void        print_struct();
+    void        print_fd_sets(file_descriptors fd);
 };
 
 #endif //WEBSERV_WEBSERVER_HPP
