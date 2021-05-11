@@ -3,6 +3,7 @@
 #define WEBSERVER_FILE_DESCRIPTORS_HPP
 
 //general includes
+#include <sys/time.h>
 #include <sys/socket.h>
 #include <vector>
 
@@ -11,14 +12,17 @@
 
 class file_descriptors {
 public:
-    typedef     std::vector<server> vector;
+    typedef     std::vector<server>                   vector;
+    typedef     std::map<int, long long>::iterator    map_iterator;
 
 private:
-    fd_set	    _read;
-    fd_set      _write;
-    fd_set	    _read_buffer;
-    fd_set      _write_buffer;
-    int			_max;
+    fd_set	                    _read;
+    fd_set                      _write;
+    fd_set	                    _read_buffer;
+    fd_set                      _write_buffer;
+    int			                _max;
+
+    std::map<int, long long>    _time_out_monitor;
 
 public:
     file_descriptors();
@@ -44,6 +48,10 @@ public:
     //IS_SET functions
     int         rdy_for_reading(int fd);
     int         rdy_for_writing(int fd);
+
+    //TIME OUT functions
+    void        set_time_out(int fd);
+    int         check_time_out(int fd, int time_out);
 
     //Getter
     fd_set&     get_read();

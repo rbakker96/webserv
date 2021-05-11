@@ -535,6 +535,7 @@ std::string    header_handler::read_browser_request(int fd) {
     }
     if (ret == -1)
         throw std::runtime_error("Read failed");
+    std::cout << "TMP = \n [" << tmp << "]" << std::endl;
     return tmp;
 }
 

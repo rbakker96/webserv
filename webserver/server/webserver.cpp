@@ -26,6 +26,7 @@ void webserver::print_struct() {
         std::cout << "Port = " << current.get_port() << std::endl;
         std::cout << "Host = " << current.get_host() << std::endl;
         std::cout << "File size = " << current.get_file_size() << std::endl;
+        std::cout << "Time out = " << current.get_time_out() << std::endl;
         std::cout << "Server name = " << current.get_server_name() << std::endl;
         std::cout << "Error page = " << current.get_error_page() << std::endl;
 
@@ -49,6 +50,15 @@ void webserver::print_struct() {
             std::cout << "  Autoindex = " << location.get_autoindex() << std::endl;
         }
         std::cout << "------------- END SERVER BLOCK -------------\n\n";
+    }
+}
+
+void    webserver::print_fd_sets(file_descriptors fd) {
+    for(int i = 0; i < fd.get_max(); i++) {
+        if (fd.rdy_for_reading(i))
+            std::cout << "RDY to read [" << i << "]" << std::endl;
+        if (fd.rdy_for_writing(i))
+            std::cout << "RDY to write [" << i << "]" << std::endl;
     }
 }
 
@@ -80,7 +90,7 @@ void    webserver::load_configuration(char *config_file) {
 		throw std::runtime_error("Error while reading config file");
 	if (!server_block.empty()) // WHY
 		throw std::invalid_argument("Error: missing '{' or '}' in config file");
-    print_struct();                         //  PRINTING STRUCT
+    print_struct();
 }
 
 void    webserver::establish_connection(){
@@ -94,7 +104,6 @@ void    webserver::establish_connection(){
 void    webserver::run() {
     file_descriptors    fd;
     fd.initialize_max(_servers);
-//	initialize_handler_indexes();
     while (true)
     {
         fd.synchronize(_servers);
@@ -109,6 +118,7 @@ void    webserver::run() {
             if (server->_activeFD == ready_for_use_ && fd.rdy_for_reading(server->get_tcp_socket())) //accept request
 			{
 				server->_activeFD = accept(server->get_tcp_socket(), (struct sockaddr *) &server->_addr, (socklen_t *) &server->_addr_len);
+				fd.set_time_out(server->_activeFD);
 				fcntl(server->_activeFD, F_SETFL, O_NONBLOCK);
 				fd.accepted_request_update(server->_activeFD);
 			}
@@ -116,6 +126,8 @@ void    webserver::run() {
             if (fd.rdy_for_reading(server->_activeFD)) //handle request
 			{
 				std::string request_headers = server->_handler.read_browser_request(server->_activeFD);
+                if (!request_headers.empty())
+                    fd.set_time_out(server->_activeFD);
 				if (server->update_request_buffer(server->_activeFD, request_headers) == valid_)
 				{
 					server->_handler.parse_request(server->_activeFD, server->_request_buffer);
@@ -148,6 +160,8 @@ void    webserver::run() {
                 server->_activeFD = ready_for_use_;
                 server->_fileFD = unused_;
 			}
+			if (server->_activeFD != ready_for_use_)
+                server->_activeFD = fd.check_time_out(server->_activeFD, server->_time_out);
 		}
     }
 }
