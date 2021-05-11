@@ -8,7 +8,7 @@ file_descriptors::file_descriptors() : _max(-1) {
 }
 
 file_descriptors::~file_descriptors() {
-
+    _time_out_monitor.clear();
 }
 
 void    file_descriptors::synchronize(file_descriptors::vector servers) {
@@ -75,6 +75,36 @@ int     file_descriptors::rdy_for_writing(int fd) {
     if (fd == -1)
         return 0;
     return FD_ISSET(fd, &_write);
+}
+
+//TIME OUT functions
+void    file_descriptors::set_time_out(int fd) {
+    struct timeval	timeval;
+    long long		time;
+    map_iterator    it = _time_out_monitor.find(fd);
+
+    gettimeofday(&timeval, NULL);
+    time = timeval.tv_sec;
+
+    if (it == _time_out_monitor.end())
+        _time_out_monitor.insert(std::pair<int, long long>(fd, time));
+    else
+        it->second = time;
+}
+
+int     file_descriptors::check_time_out(int fd, int time_out) {
+    struct timeval	timeval;
+    long long		time;
+    map_iterator    it = _time_out_monitor.find(fd);
+
+    gettimeofday(&timeval, NULL);
+    time = timeval.tv_sec;
+    if (it->second != 0 && (time - it->second) >= time_out) {
+        clr_from_read_buffer(fd);
+        close(fd);
+        return -1;
+    }
+    return fd;
 }
 
 //Getter
