@@ -6,7 +6,7 @@
 /*   By: gbouwen <marvin@codam.nl>                    +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2021/05/03 12:34:40 by gbouwen       #+#    #+#                 */
-/*   Updated: 2021/05/12 17:17:39 by gbouwen       ########   odam.nl         */
+/*   Updated: 2021/05/12 17:25:35 by gbouwen       ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -213,7 +213,7 @@ int	compare_file(std::string file_location, std::string location_context)
 		if (end == -1)
 			break ;
 		parent_directory = file_location.substr(0, end);
-		if (parent_directory == location_context || parent_directory.empty())
+		if (parent_directory == location_context)
 			return (1);
 	}
 	return (0);
@@ -302,6 +302,7 @@ void        header_handler::verify_file_location(header_handler::location_vector
 	std::string	referer_part = get_referer_part();
 	struct stat	s;
 
+	std::cout << "INDEX : " << index << std::endl;
 	if (index == -1)
 		correct_location = generate_error_page_location(error_page);
 	else
@@ -309,8 +310,11 @@ void        header_handler::verify_file_location(header_handler::location_vector
         _allow = location_blocks[index].get_method();
 		correct_location = location_blocks[index].get_root();
 		correct_location.append(get_subdirectories_referer(referer_part));
+		std::cout << "0 correct_location : " << correct_location << std::endl;
 		correct_location.append(get_subdirectories(_file_location));
+		std::cout << "1 correct_location : " << correct_location << std::endl;
 		correct_location.append(get_file(location_blocks[index], _file_location, correct_location));
+		std::cout << "2 correct_location : " << correct_location << std::endl;
 	}
 	if (stat(correct_location.c_str(), &s) == -1)
 		correct_location = generate_error_page_location(error_page);
