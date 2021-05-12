@@ -105,3 +105,41 @@ char		*ft_itoa(int n)
     return (result);
 }
 
+size_t		ft_strlen(const char *s)
+{
+	size_t len;
+
+	len = 0;
+	while (s[len] != '\0')
+	{
+		len++;
+	}
+	return (len);
+}
+
+char	*ft_strjoin(char const *s1, char const *s2)
+{
+	size_t	i1;
+	size_t	i2;
+	char	*dst;
+
+	if (s1 == 0 || s2 == 0)
+		return (0);
+	i1 = 0;
+	i2 = 0;
+	dst = (char *)malloc(sizeof(char) * (ft_strlen(s1) + ft_strlen(s2) + 1));
+	if (dst == 0)
+		return (0);
+	while (s1[i1] != '\0')
+	{
+		dst[i1] = s1[i1];
+		i1++;
+	}
+	while (s2[i2] != '\0')
+	{
+		dst[i1 + i2] = s2[i2];
+		i2++;
+	}
+	dst[i1 + i2] = '\0';
+	return (dst);
+}

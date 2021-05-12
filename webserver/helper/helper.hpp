@@ -33,5 +33,6 @@ std::vector<std::string>	parse_vector(const std::string& str);
 std::string					parse_string (const std::string& str);
 int 						parse_number (const std::string& str);
 void 						parse_invalid (const std::string& str);
+char						*ft_strjoin(char const *s1, char const *s2);
 
 #endif

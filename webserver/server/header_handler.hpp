@@ -121,9 +121,9 @@ public:
     void 		    verify_method();
 
 	//CGI functions
-	void 			execute_php(int fileFD, std::string server_name, int server_port);
+	void			execute_php(int fileFD, std::string server_name, int server_port);
 	char 			**create_cgi_args();
-	char 			**create_cgi_envp(const std::string& server_name, int server_port);
+	char 			**create_cgi_envp(const std::string &server_name, int server_port);
 
     //Send response functions
 	std::string     send_response(int activeFD, int fileFD, std::string server_name);
