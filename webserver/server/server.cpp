@@ -6,7 +6,7 @@
 /*   By: roybakker <roybakker@student.codam.nl>       +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2021/03/30 13:54:06 by roybakker     #+#    #+#                 */
-/*   Updated: 2021/04/26 11:22:45 by gbouwen       ########   odam.nl         */
+/*   Updated: 2021/05/12 14:02:15 by gbouwen       ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -159,5 +159,3 @@ std::string                     server::get_server_name(){return _server_name;}
 std::string                     server::get_error_page(){return _error_page;}
 std::vector<location_context>   server::get_location_blocks(){return _location_blocks;}
 int                             server::get_tcp_socket() {return _tcp_socket;}
-int                             server::get_addr_len() {return _addr_len;}
-struct	sockaddr_in             server::get_addr(){return _addr;}
