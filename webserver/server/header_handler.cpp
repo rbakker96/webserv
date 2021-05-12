@@ -6,7 +6,7 @@
 /*   By: gbouwen <marvin@codam.nl>                    +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2021/05/03 12:34:40 by gbouwen       #+#    #+#                 */
-/*   Updated: 2021/05/11 15:07:29 by gbouwen       ########   odam.nl         */
+/*   Updated: 2021/05/12 13:37:09 by gbouwen       ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -186,12 +186,12 @@ std::string	header_handler::get_referer_part()
 	std::string	result;
 
 	if (_referer.empty())
-		return ("/empty");
+		return ("");
 	start = _referer.find(_requested_host);
 	start += _requested_host.length();
 	result = _referer.substr(start, std::string::npos);
 	if (result.empty())
-		return ("/empty");
+		return ("");
 	return (result);
 }
 
@@ -220,7 +220,7 @@ int	compare_directory(std::string file_location, std::string location_context)
 		return (1);
 	while (1)
 	{
-		int	end = parent_directory.find_last_of("/");
+		int	end = parent_directory.find_last_of('/');
 		if (end == 0)
 			break ;
 		parent_directory = file_location.substr(0, end);
@@ -236,11 +236,11 @@ int	compare_file(std::string file_location, std::string location_context)
 
 	while (1)
 	{
-		int	end = parent_directory.find_last_of("/");
+		int	end = parent_directory.find_last_of('/');
 		if (end == -1)
 			break ;
 		parent_directory = file_location.substr(0, end);
-		if (parent_directory == location_context || parent_directory.empty())
+		if (parent_directory == location_context)
 			return (1);
 	}
 	return (0);
@@ -268,6 +268,46 @@ int			header_handler::match_location_block(header_handler::location_vector locat
 	return (-1);
 }
 
+std::string	get_subdirectories(std::string str)
+{
+	int	start_index;
+
+	start_index = str.find_first_of('/', 1);
+	if (start_index == -1)
+		return ("");
+	if (check_if_file(str))
+	{
+		int end_index = str.find_last_of('/', std::string::npos);
+		return (str.substr(start_index, end_index - start_index));
+	}
+	return (str.substr(start_index, std::string::npos));
+}
+
+std::string	get_subdirectories_referer(std::string str)
+{
+	if (check_if_file(str))
+		return ("");
+	else
+		return (get_subdirectories(str));
+}
+
+std::string	get_file(location_context location_block, std::string file_location)
+{
+	int	start_index;
+
+	if (check_if_file(file_location))
+	{
+		start_index = file_location.find_last_of('/', std::string::npos);
+		return (file_location.substr(start_index, std::string::npos));
+	}
+	else
+	{
+		if (location_block.get_autoindex())
+			return ("/index.php");
+		return (location_block.get_index());
+	}
+}
+
 std::string	header_handler::generate_error_page_location(std::string error_page)
 {
 	int pos = _file_location.find_last_of('/');
@@ -281,26 +321,22 @@ void        header_handler::verify_file_location(header_handler::location_vector
 	std::string	referer_part = get_referer_part();
 	struct stat	s;
 
+	std::cout << "INDEX : " << index << std::endl;
 	if (index == -1)
 		correct_location = generate_error_page_location(error_page);
 	else
 	{
 		_allowed_methods_config = location_blocks[index].get_method();
 		correct_location = location_blocks[index].get_root();
-		if (verify_content_type() == "folder" && _referer.empty())
-			correct_location.append(_file_location).append("/").append(location_blocks[index].get_index());
-		else if (verify_content_type() == "folder" && !_referer.empty() && check_if_file(referer_part) == 0)
-			correct_location.append(referer_part).append("/").append(_file_location).append("/").append(location_blocks[index].get_index());
-		else
-			correct_location.append(_file_location);
+		correct_location.append(get_subdirectories_referer(referer_part));
+		std::cout << "0 correct_location " << correct_location << std::endl;
+		correct_location.append(get_subdirectories(_file_location));
+		std::cout << "1 correct_location " << correct_location << std::endl;
+		correct_location.append(get_file(location_blocks[index], _file_location));
+		std::cout << "2 correct_location " << correct_location << std::endl;
 	}
 	if (stat(correct_location.c_str(), &s) == -1)
-	{
-		if (location_blocks[index].get_autoindex())
-			correct_location = location_blocks[index].get_root().append(_file_location).append("/index.php");
-		else
 			correct_location = generate_error_page_location(error_page);
-	}
 	_file_location = correct_location;
 }
 
