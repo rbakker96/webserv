@@ -648,7 +648,7 @@ std::string     header_handler::verify_content_type() {
     extensions.push_back("css");
     extensions.push_back("ico");
     extensions.push_back("png");
-	extensions.push_back("bla"); // add bla type
+//	extensions.push_back("bla"); // add bla type
 
     for (vector_iterator it = extensions.begin(); it != extensions.end(); it++) {
         if (_file_location.find(*it) != std::string::npos) {
