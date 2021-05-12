@@ -13,7 +13,7 @@
 #include "server.hpp"
 #include "../helper/helper.hpp"
 
-server::server() : _activeFD(-1), _fileFD(-1), _max_file_size(0), _port(0), _host(), _server_name(), _error_page(), _location_blocks(), _tcp_socket(0),
+server::server() : _activeFD(-1), _fileFD(-1), _max_file_size(0), _port(0), _host(), _server_name(), _error_page(), _cgi_file_types(), _location_blocks(), _tcp_socket(0),
 				   _addr_len(0), _addr(), _request_buffer(), _handler() {}
 server::~server(){}
 
@@ -21,12 +21,13 @@ server::~server(){}
 //-------------------------------------- GENERAL functions --------------------------------------
 void    server::create_new_server(std::vector <std::string> server_config) {
     location_context                location;
-    configure configure_array[7] = { &server::configure_port,
+    configure configure_array[8] = { &server::configure_port,
                                      &server::configure_host,
                                      &server::configure_server_name,
                                      &server::configure_error_page,
                                      &server::configure_max_file_size,
                                      &server::configure_time_out,
+                                     &server::configure_cgi_file_types,
                                      &server::invalid_element };
 
     reset_server();
@@ -58,6 +59,8 @@ int     server::identify_server_value(const std::string& str) {
         return max_file_size_;
     else if (str.find("time_out") != std::string::npos)
         return time_out_;
+    else if (str.find("cgi_file_types") != std::string::npos)
+        return cgi_file_types_;
     else if (str.find("location") != std::string::npos)
         return location_;
     return unknown_;
@@ -69,6 +72,7 @@ void    server::configure_server_name(const std::string& str) {_server_name = pa
 void    server::configure_error_page(const std::string& str) {_error_page = parse_string(str);}
 void    server::configure_max_file_size(const std::string& str) {_max_file_size = parse_number(str);}
 void    server::configure_time_out(const std::string& str) {_time_out = parse_number(str);}
+void    server::configure_cgi_file_types(const std::string& str) {_cgi_file_types = parse_string(str);}
 void    server::invalid_element(const std::string& str) {parse_invalid(str);}
 
 
@@ -103,6 +107,7 @@ void    server::reset_server(){
     _host.clear();
     _server_name.clear();
     _error_page.clear();
+    _cgi_file_types.clear();
     _location_blocks.clear();
 }
 
@@ -135,6 +140,7 @@ int                             server::get_port() {return _port;}
 std::string                     server::get_host() {return _host;}
 std::string                     server::get_server_name() {return _server_name;}
 std::string                     server::get_error_page() {return _error_page;}
+std::string                     server::get_cgi_file_types() {return _cgi_file_types;}
 std::vector<location_context>   server::get_location_blocks() {return _location_blocks;}
 int                             server::get_tcp_socket() {return _tcp_socket;}
 

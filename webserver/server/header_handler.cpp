@@ -119,7 +119,7 @@ void        header_handler::invalid_argument(const std::string &str) {parse_inva
 
 
 //-------------------------------------- HANDLE functions --------------------------------------
-int        header_handler::handle_request(header_handler::location_vector location_blocks, std::string error_page, int max_file_size) {
+int        header_handler::handle_request(std::string cgi_file_types, header_handler::location_vector location_blocks, std::string error_page, int max_file_size) {
 	struct  stat stats;
 	int		fd = unused_;
 
@@ -133,7 +133,7 @@ int        header_handler::handle_request(header_handler::location_vector locati
 			_status = not_found_; // update the status code after the version is stable
 		else if (!(stats.st_mode & S_IRUSR))
 			_status = forbidden_; // update the status code after the version is stable
-        else if (verify_content_type() == "php")
+        else if (cgi_file_types.find(verify_content_type()) != std::string::npos)
             return cgi_request();
         else if ((fd = open(&_file_location[0], O_RDONLY)) == -1)
 			throw std::runtime_error("Open failed");
@@ -329,6 +329,7 @@ std::string     header_handler::verify_content_type() {
     extensions.push_back("css");
     extensions.push_back("ico");
     extensions.push_back("png");
+    extensions.push_back("bla");
 
     for (vector_iterator it = extensions.begin(); it != extensions.end(); it++) {
         if (_file_location.find(*it) != std::string::npos) {
@@ -392,7 +393,7 @@ std::string	get_correct_directory(std::string &file_location)
 }
 
 // error checking if execve fails
-void header_handler::execute_php(int fileFD, std::string server_name, int server_port)
+void header_handler::execute_cgi(int fileFD, std::string server_name, int server_port)
 {
 	pid_t	pid;
 
@@ -424,7 +425,6 @@ std::string	get_location_without_root(std::string &file_location)
 char	**header_handler::create_cgi_args()
 {
 	char	**args = new char *[3];
-	// test .bla later
 //	char 	buf[PATH_MAX];
 //
 //	getcwd(buf, (size_t)PATH_MAX);

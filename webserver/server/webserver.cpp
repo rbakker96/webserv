@@ -87,7 +87,7 @@ void    webserver::run() {
 				{
 					server->_handler.parse_request(server->_activeFD, server->_request_buffer);
                     server->remove_handled_request(server->_activeFD);
-                    server->_fileFD = server->_handler.handle_request(server->_location_blocks, server->get_error_page(), server->get_file_size());
+                    server->_fileFD = server->_handler.handle_request(server->_cgi_file_types, server->_location_blocks, server->get_error_page(), server->get_file_size());
                     fd.handled_request_update(server->_fileFD, server->_activeFD, server->_handler.verify_content_type(), server->_handler.get_method());
 				}
 			}
@@ -95,8 +95,8 @@ void    webserver::run() {
             if (fd.rdy_for_reading(server->_fileFD)) //read requested file
 			{
 				if (fd.rdy_for_writing(server->_fileFD)) {
-                    if (server->_handler.verify_content_type() == "php")
-						server->_handler.execute_php(server->_fileFD, server->_server_name, server->_port);
+                    if (server->_cgi_file_types.find(server->_handler.verify_content_type()) != std::string::npos)
+                        server->_handler.execute_cgi(server->_fileFD, server->_server_name, server->_port);
                     else
 						server->_handler.write_put_file(server->_fileFD);
 			    }
@@ -136,6 +136,7 @@ void webserver::print_struct() {
         std::cout << "Time out = " << current.get_time_out() << std::endl;
         std::cout << "Server name = " << current.get_server_name() << std::endl;
         std::cout << "Error page = " << current.get_error_page() << std::endl;
+        std::cout << "CGI file types = " << current.get_cgi_file_types() << std::endl;
 
         std::vector<location_context> locations = current.get_location_blocks();
         for (std::vector<location_context>::iterator it = locations.begin(); it != locations.end(); it++) {
