@@ -6,7 +6,7 @@
 /*   By: gbouwen <marvin@codam.nl>                    +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2021/05/03 12:34:40 by gbouwen       #+#    #+#                 */
-/*   Updated: 2021/05/05 13:24:51 by gbouwen       ########   odam.nl         */
+/*   Updated: 2021/05/12 13:37:09 by gbouwen       ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,7 +14,7 @@
 
 //Debug tool
 void header_handler::print_request() {
-    std::cout << BLUE << "------------- REQUEST -------------\n";
+    std::cout << YELLOW << "------------- REQUEST -------------\n";
 
     std::cout << "Request headers\n";
     std::cout << "  Method = " << get_method() << std::endl;
@@ -86,7 +86,7 @@ void        header_handler::parse_request(int fd, header_handler::map request_bu
     }
 
 //    configure_location(location);
-    std::cout << "-----------\n" << BLUE << "REQUEST BUFFER: \n" << request->second << RESET << std::endl; //REMOVE
+    std::cout << "-----------\n" << YELLOW << "REQUEST BUFFER: \n" << request->second << RESET << std::endl; //REMOVE
     print_request(); //REMOVE
 }
 
@@ -180,68 +180,164 @@ int        header_handler::handle_request(header_handler::location_vector locati
     return fd;
 }
 
-int			check_if_directory(header_handler::location_vector location_blocks, std::string &file_location)
+std::string	header_handler::get_referer_part()
 {
-	std::string	full_location;
-	struct stat	s;
+	int			start;
+	std::string	result;
 
-	for (header_handler::location_iterator loc = location_blocks.begin(); loc != location_blocks.end(); loc++)
-	{
-		full_location = loc->get_root().append(file_location);
-		if (stat(full_location.c_str(), &s) == 0)
-		{
-			if (s.st_mode & S_IFDIR)
-				return (1);
+	if (_referer.empty())
+		return ("");
+	start = _referer.find(_requested_host);
+	start += _requested_host.length();
+	result = _referer.substr(start, std::string::npos);
+	if (result.empty())
+		return ("");
+	return (result);
+}
+
+int	check_if_file(std::string file_location)
+{
+	std::vector<std::string>	extensions;
+    extensions.push_back("html");
+    extensions.push_back("php");
+    extensions.push_back("css");
+    extensions.push_back("ico");
+    extensions.push_back("png");
+
+    for (header_handler::vector_iterator it = extensions.begin(); it != extensions.end(); it++) {
+        if (file_location.find(*it) != std::string::npos) {
+			return (1);
 		}
+    }
+    return 0;
+}
+
+int	compare_directory(std::string file_location, std::string location_context)
+{
+	std::string	parent_directory = file_location;
+
+	if (file_location == location_context)
+		return (1);
+	while (1)
+	{
+		int	end = parent_directory.find_last_of('/');
+		if (end == 0)
+			break ;
+		parent_directory = file_location.substr(0, end);
+		if (parent_directory == location_context)
+			return (1);
 	}
 	return (0);
 }
 
-void        header_handler::verify_file_location(header_handler::location_vector location_blocks, std::string error_page) {
-    std::string file_location = _file_location;
-    size_t pos;
+int	compare_file(std::string file_location, std::string location_context)
+{
+	std::string	parent_directory = file_location;
 
-    if (!_referer.empty()) {
-        pos = _referer.find(_requested_host);
-        file_location = _referer.substr(pos + _requested_host.length());
-    }
-	else if (_file_location[_file_location.length() - 1] != '/' && (check_if_directory(location_blocks, file_location) == 0)) {
-		pos = _file_location.find_last_of('/');
-		file_location = _file_location.substr(0, pos);
+	while (1)
+	{
+		int	end = parent_directory.find_last_of('/');
+		if (end == -1)
+			break ;
+		parent_directory = file_location.substr(0, end);
+		if (parent_directory == location_context)
+			return (1);
 	}
+	return (0);
+}
 
-    for (location_iterator loc = location_blocks.begin(); loc != location_blocks.end(); loc++) {
-        if (loc->get_location_context() == file_location) {
-            _allowed_methods_config = loc->get_method();
-			if (_referer.empty())
-				_file_location = loc->get_root().append(_file_location);
-			else
-			{
-				if (file_location[file_location.size() - 1] == '/')
-					file_location = file_location.substr(0, file_location.size() - 1);
-				_file_location = loc->get_root().append(file_location).append(_file_location);
-			}
-            if (verify_content_type() == "folder" && !loc->get_autoindex()) // this searches for index.html
-				_file_location = _file_location.append(loc->get_index());
-			else if (verify_content_type() == "folder" && loc->get_autoindex()) // this gets the auto index script
-			{
-				std::string temp = _file_location;
-				temp.append("/").append(loc->get_index());
-				struct stat	s;
+int			header_handler::match_location_block(header_handler::location_vector location_blocks, std::string file_location)
+{
+	std::string	location_context;
+	std::string	referer_location;
 
-				if (stat(temp.c_str(), &s) == -1)
-					_file_location.append("/index.php");
-				else
-					_file_location.append("/").append(loc->get_index());
-			}
-            break;
-        }
-        else if ((loc + 1) == location_blocks.end()) {
-            pos = _file_location.find_last_of('/');
-            file_location = _file_location.substr(pos+1);
-            _file_location = error_page.append(file_location);
-        }
-    }
+	for (size_t index = 0; index < location_blocks.size(); index++)
+	{
+		location_context = location_blocks[index].get_location_context();
+		referer_location = get_referer_part();
+		if (!_referer.empty() && check_if_file(referer_location) == 0 && location_context == referer_location)
+			return (index);
+		else if (_referer.empty() || check_if_file(referer_location) == 1)
+		{
+			if (check_if_file(file_location) == 1 && compare_file(file_location, location_context) == 1)
+				return (index);
+			else if (check_if_file(file_location) == 0 && compare_directory(file_location, location_context) == 1)
+				return (index);
+		}
+	}
+	return (-1);
+}
+
+std::string	get_subdirectories(std::string str)
+{
+	int	start_index;
+
+	start_index = str.find_first_of('/', 1);
+	if (start_index == -1)
+		return ("");
+	if (check_if_file(str))
+	{
+		int end_index = str.find_last_of('/', std::string::npos);
+		return (str.substr(start_index, end_index - start_index));
+	}
+	return (str.substr(start_index, std::string::npos));
+}
+
+std::string	get_subdirectories_referer(std::string str)
+{
+	if (check_if_file(str))
+		return ("");
+	else
+		return (get_subdirectories(str));
+}
+
+std::string	get_file(location_context location_block, std::string file_location)
+{
+	int	start_index;
+
+	if (check_if_file(file_location))
+	{
+		start_index = file_location.find_last_of('/', std::string::npos);
+		return (file_location.substr(start_index, std::string::npos));
+	}
+	else
+	{
+		if (location_block.get_autoindex())
+			return ("/index.php");
+		return (location_block.get_index());
+	}
+}
+
+std::string	header_handler::generate_error_page_location(std::string error_page)
+{
+	int pos = _file_location.find_last_of('/');
+	std::string temp = _file_location.substr(pos+1);
+	return (error_page.append(temp));
+}
+
+void        header_handler::verify_file_location(header_handler::location_vector location_blocks, std::string error_page) {
+	int 		index = match_location_block(location_blocks, _file_location);
+	std::string	correct_location;
+	std::string	referer_part = get_referer_part();
+	struct stat	s;
+
+	std::cout << "INDEX : " << index << std::endl;
+	if (index == -1)
+		correct_location = generate_error_page_location(error_page);
+	else
+	{
+		_allowed_methods_config = location_blocks[index].get_method();
+		correct_location = location_blocks[index].get_root();
+		correct_location.append(get_subdirectories_referer(referer_part));
+		std::cout << "0 correct_location " << correct_location << std::endl;
+		correct_location.append(get_subdirectories(_file_location));
+		std::cout << "1 correct_location " << correct_location << std::endl;
+		correct_location.append(get_file(location_blocks[index], _file_location));
+		std::cout << "2 correct_location " << correct_location << std::endl;
+	}
+	if (stat(correct_location.c_str(), &s) == -1)
+			correct_location = generate_error_page_location(error_page);
+	_file_location = correct_location;
 }
 
 void 		header_handler::verify_method()

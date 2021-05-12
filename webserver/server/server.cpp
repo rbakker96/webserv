@@ -6,7 +6,7 @@
 /*   By: roybakker <roybakker@student.codam.nl>       +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2021/03/30 13:54:06 by roybakker     #+#    #+#                 */
-/*   Updated: 2021/04/26 11:22:45 by gbouwen       ########   odam.nl         */
+/*   Updated: 2021/05/12 14:02:15 by gbouwen       ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -32,7 +32,7 @@ void    server::create_new_server(std::vector <std::string> server_config) {
     for (vector_iterator it = server_config.begin(); it != server_config.end(); it++) {
         int server_value = identify_server_value(*it);
         if (server_value == location_) {
-			location.configure_location_block(it, (it + location_size(it, server_config.end())));
+			location.configure_location_block(it, (it + location_block_size(it, server_config.end())));
             _location_blocks.push_back(location);
         }
         else {
@@ -105,7 +105,7 @@ void	server::create_connection(int backlog) {
 
 
 //------Helper functions------
-int    server::location_size(vector_iterator it, vector_iterator end) {
+int    server::location_block_size(vector_iterator it, vector_iterator end) {
     for (int i = 0; it != end; it++) {
         std::string str = *it;
 
@@ -126,7 +126,7 @@ int     server::update_request_buffer(int fd, const std::string& request) {
     }
     else
         it->second = it->second.append(request);
-    return (valid_request(it->second));
+    return (validate_request(it->second));
 }
 
 void    server::clear_handled_request(int used_fd){
@@ -135,7 +135,7 @@ void    server::clear_handled_request(int used_fd){
     _request_buffer.erase(request);
 }
 
-int     server::valid_request(const std::string& request) {
+int     server::validate_request(const std::string& request) {
     int header_size;
     int pos;
 
@@ -159,5 +159,3 @@ std::string                     server::get_server_name(){return _server_name;}
 std::string                     server::get_error_page(){return _error_page;}
 std::vector<location_context>   server::get_location_blocks(){return _location_blocks;}
 int                             server::get_tcp_socket() {return _tcp_socket;}
-int                             server::get_addr_len() {return _addr_len;}
-struct	sockaddr_in             server::get_addr(){return _addr;}

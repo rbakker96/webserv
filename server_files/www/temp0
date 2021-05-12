@@ -1,14 +1,1 @@
---- Waiting for activity... ---
-[32mRESPONSE HEADERS: 
-HTTP/1.1 200 OK
-Content-Length: 0
-Content-Type: text/html
-Last-Modified: Tue, 11 May 2021 15:09:47 GMT
-Date: Tue, 11 May 2021 15:09:47 GMT
-Server: webserv/1.1
-Allow: GET, HEAD, POST, PUT, DELETE, CONNECT, OPTIONS, TRACE
-Connection: close
 
-[0m
---- Waiting for activity... ---
---- Waiting for activity... ---
