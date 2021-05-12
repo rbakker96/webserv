@@ -24,6 +24,7 @@
 #include <sys/stat.h>
 
 //Custom includes
+#include "response.hpp"
 #include "location_context.hpp"
 #include "../helper/helper.hpp"
 
@@ -91,7 +92,7 @@ public:
 	header_handler();
 	~header_handler();
 
-    //Parse request functions
+    //PARSE functions
     void            parse_request(int fd, map request_buffer);
     void            parse_first_line(const std::string &str);
     void            parse_requested_host(const std::string &str);
@@ -109,7 +110,7 @@ public:
     void            parse_allow(const std::string &str);
     void            invalid_argument(const std::string &str);
 
-    //Handle request functions
+    //HANDLE functions
     int             handle_request(location_vector location_blocks, std::string error_page, int max_file_size);
     int             put_request(int max_file_size);
     void            write_put_file(int file_fd);
@@ -125,25 +126,17 @@ public:
 	char 			**create_cgi_args();
 	char 			**create_cgi_envp(const std::string& server_name, int server_port);
 
-    //Send response functions
-	std::string     send_response(int activeFD, int fileFD, std::string server_name);
-	void			generate_status_line(std::string &response);
-	void			generate_content_length(std::string &response);
-	void			generate_content_type(std::string &response);
-	void			generate_last_modified(std::string &response, int file_fd);
-	void			generate_date(std::string &response);
-	void			generate_server_name(std::string &response, std::string server_name);
-	void			generate_allowed_methods_config(std::string &response);
-	void 			add_connection_close(std::string &response);
+    //RESPONSE functions
+	void            send_response(int activeFD, int fileFD, std::string server_name);
+
+    //RESET functions
+    void            reset_handler();
 
     //Helper functions
     std::string     read_browser_request(int fd);
     std::string     verify_content_type();
     vector          str_to_vector(std::string request);
     void            read_requested_file(int fd);
-    void		    clear_requested_file();
-    void            reset_handler_atributes();
-    void            reset_status();
 
     //Getter
 	int				get_index();

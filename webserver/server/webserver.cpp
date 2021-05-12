@@ -123,7 +123,7 @@ void    webserver::run() {
 				fd.accepted_request_update(server->_activeFD);
 			}
 
-            if (fd.rdy_for_reading(server->_activeFD)) //handle request
+            if (fd.rdy_for_reading(server->_activeFD)) //handle requested file
 			{
 				std::string request_headers = server->_handler.read_browser_request(server->_activeFD);
                 if (!request_headers.empty())
@@ -150,11 +150,10 @@ void    webserver::run() {
 			    fd.read_request_update(server->_fileFD, server->_activeFD);
 			}
 
-			if (fd.rdy_for_writing(server->_activeFD)) //create response
+			if (fd.rdy_for_writing(server->_activeFD)) //send response
 			{
-				std::string	response_headers = server->_handler.send_response(server->_activeFD, server->_fileFD, server->_server_name);
+				server->_handler.send_response(server->_activeFD, server->_fileFD, server->_server_name);
                 fd.clr_from_write_buffer(server->_activeFD);
-				std::cout << GREEN << "RESPONSE HEADERS: \n" << response_headers << RESET << std::endl;
 				close(server->_activeFD);
                 close(server->_fileFD);
                 server->_activeFD = ready_for_use_;

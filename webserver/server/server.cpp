@@ -159,5 +159,3 @@ std::string                     server::get_server_name(){return _server_name;}
 std::string                     server::get_error_page(){return _error_page;}
 std::vector<location_context>   server::get_location_blocks(){return _location_blocks;}
 int                             server::get_tcp_socket() {return _tcp_socket;}
-int                             server::get_addr_len() {return _addr_len;}
-struct	sockaddr_in             server::get_addr(){return _addr;}

@@ -77,7 +77,7 @@ void        header_handler::parse_request(int fd, header_handler::map request_bu
                                                     &header_handler::parse_allow,
                                                     &header_handler::invalid_argument};
 
-    reset_handler_atributes();
+    reset_handler();
     parse_first_line(*request_elements.begin());
     for (vector_iterator it = request_elements.begin(); it != request_elements.end(); it++) {
         int request_value = identify_request_value(*it);
@@ -428,7 +428,7 @@ char **header_handler::create_cgi_envp(const std::string& server_name, int serve
 
 	if (_content_length)
 	{
-		cgi_envps.push_back(((std::string)"CONTENT_LENGTH=").append(ft_itoa(get_content_length())));
+		cgi_envps.push_back(((std::string)"CONTENT_LENGTH=").append(ft_itoa(get_content_length()))); //leaks ??
 		cgi_envps.push_back(((std::string)"CONTENT_TYPE=").append(get_content_type()));
 	}
 	cgi_envps.push_back((std::string)"GATEWAY_INTERFACE=CGI/1.1");
@@ -454,8 +454,7 @@ char **header_handler::create_cgi_envp(const std::string& server_name, int serve
 	char 	**envp = new char *[cgi_envps.size() + 1];
 	int		i = 0;
 
-	for (vector_iterator it = cgi_envps.begin(); it != cgi_envps.end(); it++)
-	{
+	for (vector_iterator it = cgi_envps.begin(); it != cgi_envps.end(); it++) {
 		envp[i] = ft_strdup((*it).c_str()); // error check on ft_strdup failure
 		i++;
 	}
@@ -464,124 +463,47 @@ char **header_handler::create_cgi_envp(const std::string& server_name, int serve
 }
 
 //------Send response functions------
-std::string header_handler::send_response(int activeFD, int fileFD, std::string server_name) {
-	std::string response;
+void    header_handler::send_response(int activeFD, int fileFD, std::string server_name) {
+    response response;
 
-	generate_status_line(response);
-	generate_content_length(response);
-	generate_content_type(response);
-	generate_last_modified(response, fileFD);
-	generate_date(response);
-	generate_server_name(response, server_name);
-	generate_allowed_methods_config(response);
-	add_connection_close(response);
-	response.append("\r\n");
+    response.generate_status_line(_protocol, _status, _status_phrases);
+    response.generate_content_length(_requested_file);
+    response.generate_content_type(verify_content_type());
+    response.generate_last_modified(fileFD);
+    response.generate_date();
+    response.generate_server_name(server_name);
+    if (_status == method_not_allowed_)
+        response.generate_allowed_methods_config(_allowed_methods_config);
+    response.generate_connection_close();
+    response.close_header_section();
 
-	write(activeFD, response.c_str(), response.size());
-	if (_method != "HEAD")
-	    write(activeFD, this->get_requested_file().c_str(), this->get_requested_file().size());
+    response.write_response_to_browser(activeFD, _requested_file, _method);
 
-	reset_status();
-	clear_requested_file();
-	return response;
-}
-
-void	header_handler::generate_status_line(std::string &response) {
-	std::string status_line = get_protocol();
-
-	status_line.append(" ");
-	status_line.append((ft_itoa(_status))); // this leaks
-    status_line.append(" ");
-    status_line.append(_status_phrases[_status]);
-	status_line.append("\r\n");
-
-	response.append(status_line);
-}
-
-void	header_handler::generate_content_length(std::string &response) {
-	std::string	content_length = "Content-Length: ";
-
-	content_length.append(ft_itoa(this->get_requested_file().size()));
-	content_length.append("\r\n");
-	response.append(content_length);
-}
-
-void	header_handler::generate_content_type(std::string &response) {
-	std::string	content_type_header = "Content-Type: ";
-    _content_type = verify_content_type();
-
-    if (_content_type.compare("php") == 0){
-		_content_type = "html";
-	}
-	if (_content_type.compare("html") == 0 || _content_type.compare("css") == 0)
-		content_type_header.append("text/");
-	else if (_content_type.compare("png") == 0)
-		content_type_header.append("image/");
-	content_type_header.append(_content_type);
-	content_type_header.append("\r\n");
-	response.append(content_type_header);
-}
-
-void	header_handler::generate_last_modified(std::string &response, int fileFD)
-{
-	std::string	last_modified = "Last-Modified: ";
-	struct stat	stat;
-	struct tm	*info;
-	char		timestamp[36];
-
-	fstat(fileFD, &stat);
-	info = localtime(&stat.st_mtime);
-	strftime(timestamp, 36, "%a, %d %h %Y %H:%M:%S GMT", info);
-	last_modified.append(timestamp);
-	last_modified.append("\r\n");
-	response.append(last_modified);
-}
-
-void	header_handler::generate_date(std::string &response)
-{
-	std::string	date = "Date: ";
-	time_t		timer;
-	struct tm	*info;
-	char		timestamp[36];
-
-	timer = time(NULL);
-	info = localtime(&timer);
-	strftime(timestamp, 36, "%a, %d %h %Y %H:%M:%S GMT", info);
-	date.append(timestamp);
-	date.append("\r\n");
-	response.append(date);
-}
-
-void	header_handler::generate_server_name(std::string &response, std::string server_name)
-{
-	std::string server_header = "Server: ";
-
-	server_header.append(server_name);
-	server_header.append("\r\n");
-	response.append(server_header);
-}
-
-// ONLY SEND WITH "405 Method Not Allowed" RESPONSE CODE!
-void	header_handler::generate_allowed_methods_config(std::string &response)
-{
-	std::string allow_header = "Allow: ";
-
-	for (header_handler::vector_iterator it = _allowed_methods_config.begin(); it != _allowed_methods_config.end(); it++)
-	{
-		std::string	method = *it;
-		allow_header.append(method);
-		if (it + 1 != _allowed_methods_config.end())
-			allow_header.append(", ");
-	}
-	allow_header.append("\r\n");
-	response.append(allow_header);
-}
-
-void	header_handler::add_connection_close(std::string &response) {
-	response.append("Connection: close\r\n");
+    print_request(); //DEBUG
+    reset_handler();
 }
 
 //------Helper functions------
+void    header_handler::reset_handler() {
+    _status = 200;
+    _content_length = 0;
+    _method.clear();
+    _file_location.clear();
+    _protocol.clear();
+    _requested_file.clear();
+    _requested_host.clear();
+    _user_agent.clear();
+    _accept_language.clear();
+    _authorization.clear();
+    _referer.clear();
+    _body.clear();
+    _content_type.clear();
+    _content_language = "en";
+    _content_location.clear();
+    _allow.clear();
+}
+
+
 std::string    header_handler::read_browser_request(int fd) {
     std::string tmp;
     char        buff[3000];
@@ -644,26 +566,6 @@ void        header_handler::read_requested_file(int fd) {
         throw std::runtime_error("Read failed");
 }
 
-void		header_handler::clear_requested_file() {_requested_file.clear();}
-
-void        header_handler::reset_handler_atributes() {
-    _content_length = 0;
-    _method.clear();
-    _file_location.clear();
-    _protocol.clear();
-    _requested_host.clear();
-    _user_agent.clear();
-    _accept_language.clear();
-    _authorization.clear();
-    _referer.clear();
-    _body.clear();
-	_content_type.clear();
-    _content_language = "en";
-    _content_location.clear();
-    _allow.clear();
-}
-
-void            header_handler::reset_status() {_status = 200;}
 
 //------Getter------
 int				header_handler::get_index() { return _index;}
