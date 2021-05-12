@@ -6,7 +6,7 @@
 /*   By: gbouwen <marvin@codam.nl>                    +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2021/05/03 12:34:40 by gbouwen       #+#    #+#                 */
-/*   Updated: 2021/05/12 14:43:19 by gbouwen       ########   odam.nl         */
+/*   Updated: 2021/05/12 15:24:35 by gbouwen       ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -173,6 +173,8 @@ int	check_if_file(std::string file_location)
     extensions.push_back("css");
     extensions.push_back("ico");
     extensions.push_back("png");
+	extensions.push_back("bad_extension");
+	extensions.push_back("pouic");
 
     for (header_handler::vector_iterator it = extensions.begin(); it != extensions.end(); it++) {
         if (file_location.find(*it) != std::string::npos) {
@@ -207,8 +209,6 @@ int	compare_file(std::string file_location, std::string location_context)
 	while (1)
 	{
 		int	end = parent_directory.find_last_of('/');
-		if (check_if_file(file_location) && end == 0)
-			return (1);
 		if (end == -1)
 			break ;
 		parent_directory = file_location.substr(0, end);
@@ -242,12 +242,16 @@ int			header_handler::match_location_block(header_handler::location_vector locat
 
 std::string	get_subdirectories(std::string str)
 {
-	int	start_index;
+	int			start_index;
+	std::string	subdir;
 
 	start_index = str.find_first_of('/', 1);
 	if (start_index == -1)
 		return ("");
-	return (str.substr(start_index, std::string::npos));
+	subdir = str.substr(start_index, std::string::npos);
+	if (check_if_file(subdir))
+		return ("");
+	return (subdir);
 }
 
 std::string	get_subdirectories_referer(std::string str)
