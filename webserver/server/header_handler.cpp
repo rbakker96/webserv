@@ -6,7 +6,7 @@
 /*   By: gbouwen <marvin@codam.nl>                    +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2021/05/03 12:34:40 by gbouwen       #+#    #+#                 */
-/*   Updated: 2021/05/12 15:24:35 by gbouwen       ########   odam.nl         */
+/*   Updated: 2021/05/12 16:55:10 by gbouwen       ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -173,6 +173,7 @@ int	check_if_file(std::string file_location)
     extensions.push_back("css");
     extensions.push_back("ico");
     extensions.push_back("png");
+	extensions.push_back("bla");
 	extensions.push_back("bad_extension");
 	extensions.push_back("pouic");
 
@@ -243,12 +244,17 @@ int			header_handler::match_location_block(header_handler::location_vector locat
 std::string	get_subdirectories(std::string str)
 {
 	int			start_index;
+	int			end_index;
 	std::string	subdir;
 
 	start_index = str.find_first_of('/', 1);
 	if (start_index == -1)
 		return ("");
-	subdir = str.substr(start_index, std::string::npos);
+	end_index = str.find_last_of('/', std::string::npos);
+	if (start_index == end_index)
+		subdir = str.substr(start_index, std::string::npos);
+	else
+		subdir = str.substr(start_index, end_index - start_index);
 	if (check_if_file(subdir))
 		return ("");
 	return (subdir);
@@ -299,8 +305,11 @@ void        header_handler::verify_file_location(header_handler::location_vector
         _allow = location_blocks[index].get_method();
 		correct_location = location_blocks[index].get_root();
 		correct_location.append(get_subdirectories_referer(referer_part));
+		std::cout << "0 correct_location : " << correct_location << std::endl;
 		correct_location.append(get_subdirectories(_file_location));
+		std::cout << "1 correct_location : " << correct_location << std::endl;
 		correct_location.append(get_file(location_blocks[index], _file_location));
+		std::cout << "2 correct_location : " << correct_location << std::endl;
 	}
 	if (stat(correct_location.c_str(), &s) == -1)
 		correct_location = generate_error_page_location(error_page);
