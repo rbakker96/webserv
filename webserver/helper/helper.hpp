@@ -33,6 +33,7 @@ int                         validate_request(const std::string& request);
 int							ft_atoi(const char *str);
 char						*ft_itoa(int n);
 char						*ft_strdup(const char *str);
+char						*ft_strjoin(char const *s1, char const *s2);
 
 //parse functions
 std::vector<std::string>	parse_vector(const std::string& str);
@@ -41,5 +42,6 @@ int 						parse_number (const std::string& str);
 void 						parse_invalid (const std::string& str);
 vector                      str_to_vector(std::string request);
 std::string                 read_browser_request(int fd);
+
 
 #endif
