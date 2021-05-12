@@ -52,7 +52,7 @@ public:
     typedef     std::map<int, std::string>::iterator    map_iterator;
     typedef     void (server::*configure)(const std::string&);
     enum        server_values{ port_ = 0, host_ = 1, server_name_ = 2, error_page_ = 3,
-                                max_file_size_ = 4, time_out_ = 5, unknown_ = 6, location_ = 7, valid_ = 7, invalid_ = 8 };
+                                max_file_size_ = 4, time_out_ = 5, cgi_file_types_ = 6, unknown_ = 7, location_ = 8 };
 
 private:
     //Connection
@@ -66,6 +66,7 @@ private:
     std::string                     _host;
     std::string                     _server_name;
     std::string                     _error_page;
+    std::string                     _cgi_file_types;
     std::vector<location_context>   _location_blocks;
 
     //TCP connection
@@ -91,6 +92,7 @@ public:
     void    configure_server_name(const std::string& str);
     void    configure_max_file_size(const std::string& str);
     void    configure_time_out(const std::string& str);
+    void    configure_cgi_file_types(const std::string& str);
     void    configure_error_page(const std::string& str);
     void    invalid_element(const std::string& str);
 
@@ -113,6 +115,7 @@ public:
     std::string                     get_host();
     std::string                     get_server_name();
     std::string                     get_error_page();
+    std::string                     get_cgi_file_types();
     std::vector<location_context>   get_location_blocks();
     int                             get_tcp_socket();
 };

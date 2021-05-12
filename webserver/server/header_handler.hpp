@@ -107,7 +107,7 @@ public:
     void            invalid_argument(const std::string &str);
 
     //HANDLE functions
-    int             handle_request(location_vector location_blocks, std::string error_page, int max_file_size);
+    int             handle_request(std::string cgi_file_types, location_vector location_blocks, std::string error_page, int max_file_size);
     int             put_request(int max_file_size);
     void            write_put_file(int file_fd);
 	int             cgi_request();
@@ -119,7 +119,7 @@ public:
     std::string     verify_content_type();
 
 	//CGI functions
-	void			execute_php(int fileFD, std::string server_name, int server_port);
+	void			execute_cgi(int fileFD, std::string server_name, int server_port);
 	char 			**create_cgi_args();
 	char 			**create_cgi_envp(const std::string &server_name, int server_port);
 
