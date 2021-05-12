@@ -99,10 +99,10 @@ public:
     void	create_connection(int backlog);
 
     //Helper functions
-    int     location_size(vector_iterator it, vector_iterator end);
+    int     location_block_size(vector_iterator it, vector_iterator end);
     int     update_request_buffer(int fd, const std::string& request);
     void    clear_handled_request(int used_fd);
-    int     valid_request(const std::string&);
+    int     validate_request(const std::string &request);
 
     //Getters
     int                             get_file_size();
@@ -113,8 +113,6 @@ public:
     std::string                     get_error_page();
     std::vector<location_context>   get_location_blocks();
     int                             get_tcp_socket();
-    int                             get_addr_len();
-    struct	sockaddr_in             get_addr();
 };
 
 #endif //WEBSERV_SERVER_HPP
