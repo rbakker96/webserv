@@ -1,13 +1,12 @@
 #include "response.hpp"
 #include "../helper/helper.hpp"
 
-//DEBUG
-#include <iostream>
-void    response::print_response() {
-    std::cout << "\033[32m" << "RESPONSE HEADERS: \n" << _response << "\033[0m" << std::endl;
+response::response() {}
+response::~response() {
+    _response.clear();
 }
 
-
+//-------------------------------------- GENERATE functions --------------------------------------
 void	response::generate_status_line(std::string protocol, int status, response::map status_phrases) {
     std::string status_line = protocol;
     char *status_str = ft_itoa(status);
@@ -88,7 +87,7 @@ void	response::generate_server_name(std::string server_name) {
     _response.append(server_header);
 }
 
-void	response::generate_allowed_methods_config(response::vector allowed_methods) {
+void	response::generate_allowe(response::vector allowed_methods) {
     std::string allow_header = "Allow: ";
 
     for (vector_iterator it = allowed_methods.begin(); it != allowed_methods.end(); it++){
@@ -111,9 +110,11 @@ void    response::close_header_section() {
 
 //SEND functions
 void    response::write_response_to_browser(int browser_socket, std::string response_file, std::string method) {
-	std::cout << "RESPONSE = \n" << _response << std::endl;
-
     write(browser_socket, _response.c_str(), _response.size());
 	if (method != "HEAD")
 	    write(browser_socket, response_file.c_str(), response_file.size());
 }
+
+
+//-------------------------------------- GET functions --------------------------------------
+std::string response::get_response() {return _response;}

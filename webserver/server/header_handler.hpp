@@ -53,7 +53,7 @@ public:
 
 	enum		location_values{requested_host_ = 0, user_agent_ = 1, language_ = 2, authorization_ = 3,
 								referer_ = 4, body_ = 5, content_length_ = 6, content_type_ = 7,
-								content_language_ = 8, content_location_ = 9, allow_ = 10, unknown_ = 11,
+								content_language_ = 8, content_location_ = 9, unknown_ = 10,
 								error_code_ = 400, folder_ = -1, unused_ = -1};
 	enum		status_values{	okay_ = 200, created_ = 201, no_content_ = 204,
 								bad_request_ = 400, unauthorized_ = 401, forbidden_ = 403,
@@ -67,15 +67,12 @@ protected:
 	int				_status;
 	map				_status_phrases;
 
-	//Entity headers                        //why not response headers
+	//Headers
 	int				_content_length;
 	std::string		_content_type;
 	std::string		_content_language;
 	std::string		_content_location;
-	std::string		_allow;                 //difference with vector?
-	vector			_allowed_methods_config;
-
-	//Request headers
+	vector			_allow;
 	std::string		_method;
 	std::string		_file_location;
 	std::string		_protocol;
@@ -86,7 +83,8 @@ protected:
 	std::string		_referer;
 	std::string		_body;
 
-	std::string		_requested_file;
+	//Response
+	std::string		_response_file;
 
 public:
 	header_handler();
@@ -94,6 +92,7 @@ public:
 
     //PARSE functions
     void            parse_request(int fd, map request_buffer);
+    int             identify_request_value(const std::string &str);
     void            parse_first_line(const std::string &str);
     void            parse_requested_host(const std::string &str);
     void            parse_user_agent(const std::string &str);
@@ -101,13 +100,10 @@ public:
     void            parse_authorization(const std::string &str);
     void            parse_referer(const std::string &str);
     void            parse_body(const std::string &str);
-    int             identify_request_value(const std::string &str);
-
     void            parse_content_length(const std::string &str);
     void            parse_content_type(const std::string &str);
     void            parse_content_language(const std::string &str);
     void            parse_content_location(const std::string &str);
-    void            parse_allow(const std::string &str);
     void            invalid_argument(const std::string &str);
 
     //HANDLE functions
@@ -138,16 +134,15 @@ public:
     vector          str_to_vector(std::string request);
     void            read_requested_file(int fd);
 
-    //Getter
+    //GET functions
 	int				get_index();
 	int             get_status();
     int             get_content_length();
     std::string     get_content_type();
     std::string     get_content_language();
     std::string     get_content_location();
-    std::string     get_allow();
-	vector			get_allowed_methods_config();
-	std::string	    get_requested_file();
+	vector			get_allowe();
+	std::string	    get_response_file();
     std::string     get_method();
     std::string     get_file_location();
     std::string     get_protocol();
@@ -158,11 +153,12 @@ public:
     std::string     get_referer();
     std::string     get_body();
 
-	//Setter
+	//SET functions
 	void			set_index(int index);
 
-    //Debug tool
-    void            print_request(); //DELETE LATER
+    //Debug functions
+    void            print_request(std::string request);
+    void            print_response(std::string response);
 };
 
 #endif //WEBSERV_HANDLER_HPP

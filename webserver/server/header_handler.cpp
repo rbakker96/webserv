@@ -11,39 +11,13 @@
 /* ************************************************************************** */
 
 #include "header_handler.hpp"
+#include "../helper/helper.hpp"
 
-//Debug tool
-void header_handler::print_request() {
-    std::cout << YELLOW << "------------- REQUEST -------------\n";
+header_handler::header_handler(): _index(0), _status(okay_), _status_phrases(), _content_length(0), _content_type("Content-Type: text/"),
+                                  _content_language("en"), _content_location(), _allow(),
+                                  _method(), _file_location(), _protocol(), _requested_host(), _user_agent(),
+                                  _accept_language(), _authorization(), _referer(), _body(), _response_file()	{
 
-    std::cout << "Request headers\n";
-    std::cout << "  Method = " << get_method() << std::endl;
-    std::cout << "  Location = " << get_file_location() << std::endl;
-    std::cout << "  Protocol = " << get_protocol() << std::endl;
-    std::cout << "  Host = " << get_requested_host() << std::endl;
-    std::cout << "  User agent = " << get_user_agent() << std::endl;
-    std::cout << "  Accept language = " << get_accept_language() << std::endl;
-    std::cout << "  Authorization = " << get_authorization() << std::endl;
-    std::cout << "  Referer = " << get_referer() << std::endl;
-    std::cout << "  Body = " << get_body() << std::endl;
-
-	std::cout << "Entity headers\n";
-	std::cout << "  Content length = " << get_content_length() << std::endl;
-	std::cout << "  Content type = " << get_content_type() << std::endl;
-	std::cout << "  Content language = " << get_content_language() << std::endl;
-	std::cout << "  Content location" << get_content_location() << std::endl;
-	std::cout << "  Allow = " << get_allow() << std::endl;
-
-    std::cout << "------------- END REQUEST -------------\n\n" << RESET;
-}
-//------------------------------------------------------------
-
-
-header_handler::header_handler():	_index(0), _status(okay_), _status_phrases(), _content_length(0), _content_type("Content-Type: text/"),
-									_content_language("en"), _content_location(), _allow(), _allowed_methods_config(),
-									_method(), _file_location(), _protocol(), _requested_host(), _user_agent(),
-									_accept_language(), _authorization(), _referer(), _body(), _requested_file()	{
-	// setup status phrases
 	_status_phrases.insert (pair(200, "OK"));
 	_status_phrases.insert (pair(201, "Created"));
 	_status_phrases.insert (pair(204, "No Content"));
@@ -53,18 +27,18 @@ header_handler::header_handler():	_index(0), _status(okay_), _status_phrases(), 
 	_status_phrases.insert (pair(404, "Not Found"));
 	_status_phrases.insert (pair(405, "Method Not Allowed"));
 	_status_phrases.insert (pair(413, "Payload Too Large"));
-
 }
 
 header_handler::~header_handler(){
+    reset_handler();
     _status_phrases.clear();
 }
 
-//------Parse request functions------
+//-------------------------------------- PARSE functions --------------------------------------
 void        header_handler::parse_request(int fd, header_handler::map request_buffer) {
     map_iterator request                        = request_buffer.find(fd);
     vector request_elements                     = str_to_vector(request->second);
-    parse parse_array[12]                       = { &header_handler::parse_requested_host,
+    parse parse_array[11]                       = { &header_handler::parse_requested_host,
                                                     &header_handler::parse_user_agent,
                                                     &header_handler::parse_language,
                                                     &header_handler::parse_authorization,
@@ -74,7 +48,6 @@ void        header_handler::parse_request(int fd, header_handler::map request_bu
                                                     &header_handler::parse_content_type,
                                                     &header_handler::parse_content_language,
                                                     &header_handler::parse_content_location,
-                                                    &header_handler::parse_allow,
                                                     &header_handler::invalid_argument};
 
     reset_handler();
@@ -85,9 +58,7 @@ void        header_handler::parse_request(int fd, header_handler::map request_bu
         (this->*function)(*it);
     }
 
-//    configure_location(location);
-    std::cout << "-----------\n" << YELLOW << "REQUEST BUFFER: \n" << request->second << RESET << std::endl; //REMOVE
-    print_request(); //REMOVE
+    print_request(request->second); //DEBUG
 }
 
 int         header_handler::identify_request_value(const std::string &str) {
@@ -111,8 +82,6 @@ int         header_handler::identify_request_value(const std::string &str) {
         return content_language_;
     else if (str.find("Content-Location:") != std::string::npos)
         return content_location_;
-    else if (str.find("Allow:") != std::string::npos)
-        return allow_;
     return unknown_;
 }
 
@@ -145,10 +114,9 @@ void        header_handler::parse_content_length(const std::string &str) {_conte
 void        header_handler::parse_content_type(const std::string &str) {_content_type = parse_string(str);}
 void        header_handler::parse_content_language(const std::string &str) {_content_language = parse_string(str);}
 void        header_handler::parse_content_location(const std::string &str) {_content_location = parse_string(str);}
-void        header_handler::parse_allow(const std::string &str) {_allow = parse_string(str);}
 void        header_handler::invalid_argument(const std::string &str) {parse_invalid(str);}
 
-//------Handle request functions------
+//-------------------------------------- HANDLE functions --------------------------------------
 int        header_handler::handle_request(header_handler::location_vector location_blocks, std::string error_page, int max_file_size) {
 	struct  stat stats;
 	int		fd = unused_;
@@ -285,7 +253,7 @@ void        header_handler::verify_file_location(header_handler::location_vector
 		correct_location = generate_error_page_location(error_page);
 	else
 	{
-		_allowed_methods_config = location_blocks[index].get_method();
+        _allow = location_blocks[index].get_method();
 		correct_location = location_blocks[index].get_root();
 		if (verify_content_type() == "folder" && _referer.empty())
 			correct_location.append(_file_location).append("/").append(location_blocks[index].get_index());
@@ -308,9 +276,9 @@ void 		header_handler::verify_method()
 {
 	if (_method == "POST" && get_body().empty())
 		_status = method_not_allowed_;
-	if (!_allowed_methods_config.empty())
+	if (!_allow.empty())
 	{
-		for (vector_iterator it = _allowed_methods_config.begin(); it != _allowed_methods_config.end(); it++)
+		for (vector_iterator it = _allow.begin(); it != _allow.end(); it++)
 		{
 			if (*it == _method)
 				return;
@@ -358,13 +326,11 @@ int     	header_handler::put_request(int max_file_size)
 }
 
 void        header_handler::write_put_file(int file_fd) {
-    if ((write(file_fd, _body.c_str(), _body.length())) == -1) {
-        std::cout << "HERE\n";
+    if ((write(file_fd, _body.c_str(), _body.length())) == -1)
         throw std::runtime_error("Write failed");
-    }
 }
 
-//------CGI functions------
+//-------------------------------------- CGI functions --------------------------------------
 std::string	get_correct_directory(std::string &file_location)
 {
 	int			last_index = file_location.find_last_of("/", std::string::npos);
@@ -462,35 +428,35 @@ char **header_handler::create_cgi_envp(const std::string& server_name, int serve
 	return envp;
 }
 
-//------Send response functions------
+//-------------------------------------- RESPONSE functions --------------------------------------
 void    header_handler::send_response(int activeFD, int fileFD, std::string server_name) {
     response response;
 
     response.generate_status_line(_protocol, _status, _status_phrases);
-    response.generate_content_length(_requested_file);
+    response.generate_content_length(_response_file);
     response.generate_content_type(verify_content_type());
     response.generate_last_modified(fileFD);
     response.generate_date();
     response.generate_server_name(server_name);
     if (_status == method_not_allowed_)
-        response.generate_allowed_methods_config(_allowed_methods_config);
+        response.generate_allowe(_allow);
     response.generate_connection_close();
     response.close_header_section();
 
-    response.write_response_to_browser(activeFD, _requested_file, _method);
+    response.write_response_to_browser(activeFD, _response_file, _method);
 
-    print_request(); //DEBUG
+    print_response(response.get_response()); //DEBUG
     reset_handler();
 }
 
-//------Helper functions------
+//-------------------------------------- RESET functions --------------------------------------
 void    header_handler::reset_handler() {
     _status = 200;
     _content_length = 0;
     _method.clear();
     _file_location.clear();
     _protocol.clear();
-    _requested_file.clear();
+    _response_file.clear();
     _requested_host.clear();
     _user_agent.clear();
     _accept_language.clear();
@@ -500,10 +466,9 @@ void    header_handler::reset_handler() {
     _content_type.clear();
     _content_language = "en";
     _content_location.clear();
-    _allow.clear();
 }
 
-
+//------Helper functions------
 std::string    header_handler::read_browser_request(int fd) {
     std::string tmp;
     char        buff[3000];
@@ -516,11 +481,9 @@ std::string    header_handler::read_browser_request(int fd) {
     }
     if (ret == -1)
         throw std::runtime_error("Read failed");
-    std::cout << "TMP = \n [" << tmp << "]" << std::endl;
     return tmp;
 }
 
-// can't change php to html here, then no php file can go into the execute_php function
 std::string     header_handler::verify_content_type() {
     vector extensions;
     extensions.push_back("html");
@@ -558,7 +521,7 @@ void        header_handler::read_requested_file(int fd) {
 	lseek(fd, 0, SEEK_SET);
     while (ret > 0) {
         ret = read(fd, buff, 3000);
-        _requested_file.append(buff, ret);
+        _response_file.append(buff, ret);
         if (ret < 3000)
             break;
     }
@@ -567,26 +530,55 @@ void        header_handler::read_requested_file(int fd) {
 }
 
 
-//------Getter------
-int				header_handler::get_index() { return _index;}
-int             header_handler::get_status() { return _status;}
-int             header_handler::get_content_length() { return _content_length;}
-std::string     header_handler::get_content_type() { return _content_type;}
-std::string     header_handler::get_content_language() { return _content_language;}
-std::string     header_handler::get_content_location() { return _content_location;}
-std::string     header_handler::get_allow() { return _allow;}
-header_handler::vector	header_handler::get_allowed_methods_config() { return _allowed_methods_config; }
-std::string	    header_handler::get_requested_file() { return (_requested_file);}
-std::string     header_handler::get_method() { return _method;}
-std::string     header_handler::get_file_location() { return _file_location;}
-std::string     header_handler::get_protocol() { return _protocol;}
-std::string     header_handler::get_requested_host() { return _requested_host;}
-std::string     header_handler::get_user_agent() { return _user_agent;}
-std::string     header_handler::get_accept_language() { return _accept_language;}
-std::string     header_handler::get_authorization() { return _authorization;}
-std::string     header_handler::get_referer() { return _referer;}
-std::string     header_handler::get_body() { return _body;}
+//-------------------------------------- GET functions --------------------------------------
+int				        header_handler::get_index() { return _index;}
+int                     header_handler::get_status() { return _status;}
+int                     header_handler::get_content_length() { return _content_length;}
+std::string             header_handler::get_content_type() { return _content_type;}
+std::string             header_handler::get_content_language() { return _content_language;}
+std::string             header_handler::get_content_location() { return _content_location;}
+header_handler::vector	header_handler::get_allowe() { return _allow; }
+std::string	            header_handler::get_response_file() { return (_response_file);}
+std::string             header_handler::get_method() { return _method;}
+std::string             header_handler::get_file_location() { return _file_location;}
+std::string             header_handler::get_protocol() { return _protocol;}
+std::string             header_handler::get_requested_host() { return _requested_host;}
+std::string             header_handler::get_user_agent() { return _user_agent;}
+std::string             header_handler::get_accept_language() { return _accept_language;}
+std::string             header_handler::get_authorization() { return _authorization;}
+std::string             header_handler::get_referer() { return _referer;}
+std::string             header_handler::get_body() { return _body;}
 
-//------Setter------
-void			header_handler::set_index(int index) { _index = index;}
 
+//-------------------------------------- SET functions --------------------------------------
+void			        header_handler::set_index(int index) { _index = index;}
+
+
+// // // // // // // // // // // // //  DEBUG functions // // // // // // // // // // // // //
+void header_handler::print_request(std::string request) {
+    std::cout << "-----------\n" << YELLOW << "REQUEST BUFFER: \n" << request << RESET << std::endl;
+
+    std::cout << YELLOW << "------------- REQUEST -------------\n";
+    std::cout << "Request headers\n";
+    std::cout << "  Method = " << get_method() << std::endl;
+    std::cout << "  Location = " << get_file_location() << std::endl;
+    std::cout << "  Protocol = " << get_protocol() << std::endl;
+    std::cout << "  Host = " << get_requested_host() << std::endl;
+    std::cout << "  User agent = " << get_user_agent() << std::endl;
+    std::cout << "  Accept language = " << get_accept_language() << std::endl;
+    std::cout << "  Authorization = " << get_authorization() << std::endl;
+    std::cout << "  Referer = " << get_referer() << std::endl;
+    std::cout << "  Body = " << get_body() << std::endl;
+
+    std::cout << "Entity headers\n";
+    std::cout << "  Content length = " << get_content_length() << std::endl;
+    std::cout << "  Content type = " << get_content_type() << std::endl;
+    std::cout << "  Content language = " << get_content_language() << std::endl;
+    std::cout << "  Content location = " << get_content_location() << std::endl;
+    std::cout << "------------- END REQUEST -------------\n\n" << RESET;
+}
+
+void    header_handler::print_response(std::string response) {
+    std::cout << MAGENTA << "\n------------- RESPONSE -------------\n";
+    std::cout << response << RESET << std::endl;
+}
