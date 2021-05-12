@@ -35,7 +35,7 @@ void	response::generate_content_type(std::string type) {
     std::string	content_type_header = "Content-Type: ";
     std::string content_type = type;
 
-    if (content_type.compare("php") == 0){
+    if (content_type.compare("php") == 0 || content_type.compare("bla") == 0){
         content_type = "html";
     }
     if (content_type.compare("html") == 0 || content_type.compare("css") == 0)

@@ -6,7 +6,7 @@
 /*   By: gbouwen <marvin@codam.nl>                    +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2021/05/03 12:34:40 by gbouwen       #+#    #+#                 */
-/*   Updated: 2021/05/12 15:24:35 by gbouwen       ########   odam.nl         */
+/*   Updated: 2021/05/12 17:17:39 by gbouwen       ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -173,8 +173,10 @@ int	check_if_file(std::string file_location)
     extensions.push_back("css");
     extensions.push_back("ico");
     extensions.push_back("png");
+	extensions.push_back("bla");
 	extensions.push_back("bad_extension");
 	extensions.push_back("pouic");
+	extensions.push_back("bla");
 
     for (header_handler::vector_iterator it = extensions.begin(); it != extensions.end(); it++) {
         if (file_location.find(*it) != std::string::npos) {
@@ -212,7 +214,7 @@ int	compare_file(std::string file_location, std::string location_context)
 		if (end == -1)
 			break ;
 		parent_directory = file_location.substr(0, end);
-		if (parent_directory == location_context)
+		if (parent_directory == location_context || parent_directory.empty())
 			return (1);
 	}
 	return (0);
@@ -243,12 +245,17 @@ int			header_handler::match_location_block(header_handler::location_vector locat
 std::string	get_subdirectories(std::string str)
 {
 	int			start_index;
+	int			end_index;
 	std::string	subdir;
 
 	start_index = str.find_first_of('/', 1);
 	if (start_index == -1)
 		return ("");
-	subdir = str.substr(start_index, std::string::npos);
+	end_index = str.find_last_of('/', std::string::npos);
+	if (start_index == end_index)
+		subdir = str.substr(start_index, std::string::npos);
+	else
+		subdir = str.substr(start_index, end_index - start_index);
 	if (check_if_file(subdir))
 		return ("");
 	return (subdir);
@@ -262,7 +269,7 @@ std::string	get_subdirectories_referer(std::string str)
 		return (get_subdirectories(str));
 }
 
-std::string	get_file(location_context location_block, std::string file_location)
+std::string	get_file(location_context location_block, std::string file_location, std::string correct_location)
 {
 	int	start_index;
 
@@ -273,7 +280,11 @@ std::string	get_file(location_context location_block, std::string file_location)
 	}
 	else
 	{
-		if (location_block.get_autoindex())
+		struct stat	s;
+		std::string	temp = correct_location;
+
+		temp.append(location_block.get_index());
+		if (stat(temp.c_str(), &s) == -1 && location_block.get_autoindex())
 			return ("/index.php");
 		return (location_block.get_index());
 	}
@@ -300,7 +311,7 @@ void        header_handler::verify_file_location(header_handler::location_vector
 		correct_location = location_blocks[index].get_root();
 		correct_location.append(get_subdirectories_referer(referer_part));
 		correct_location.append(get_subdirectories(_file_location));
-		correct_location.append(get_file(location_blocks[index], _file_location));
+		correct_location.append(get_file(location_blocks[index], _file_location, correct_location));
 	}
 	if (stat(correct_location.c_str(), &s) == -1)
 		correct_location = generate_error_page_location(error_page);
@@ -425,12 +436,12 @@ std::string	get_location_without_root(std::string &file_location)
 char	**header_handler::create_cgi_args()
 {
 	char	**args = new char *[3];
-//	char 	buf[PATH_MAX];
-//
-//	getcwd(buf, (size_t)PATH_MAX);
-//	if (get_content_type() == "bla")
-//		args[0] = ft_strjoin(buf, "/tester_executables/cgi_tester");
-//	else if (get_content_type() == "php")
+	char 	buf[PATH_MAX];
+
+	getcwd(buf, (size_t)PATH_MAX);
+	if (get_content_type() == "bla")
+		args[0] = ft_strjoin(buf, "/tester_executables/cgi_tester");
+	else if (get_content_type() == "php")
 		args[0] = ft_strdup("/usr/bin/php");
 
 	args[1] = ft_strdup(get_location_without_root(_file_location).c_str());

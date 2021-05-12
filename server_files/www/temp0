@@ -1,0 +1,62 @@
+<html>
+<body>
+<h2>Firstname: </h2></br><h2>Lastname: </h2></br><p>--add phpinfo for debugging--
+</p><p>phpinfo()
+
+Environment
+
+Variable => Value
+GATEWAY_INTERFACE => CGI/1.1
+SERVER_SOFTWARE => webserv/1.1
+QUERY_STRING => firstname=&lastname=
+REQUEST_METHOD => GET
+SERVER_PROTOCOL => HTTP/1.1
+SERVER_NAME => webserv/1.1
+SERVER_PORT => 8080
+PATH_INFO => server_files/www/adduser.php
+SCRIPT_NAME => server_files/www/adduser.php
+PATH_TRANSLATED => /Users/gbouwen/Desktop/codam/subjects/webserv/
+REQUEST_URI => /adduser.php?firstname=&lastname=
+__CF_USER_TEXT_ENCODING => 0xFA27:0x0:0x0
+</p><p>phpinfo()
+
+PHP Variables
+
+Variable => Value
+$_SERVER['GATEWAY_INTERFACE'] => CGI/1.1
+$_SERVER['SERVER_SOFTWARE'] => webserv/1.1
+$_SERVER['QUERY_STRING'] => firstname=&lastname=
+$_SERVER['REQUEST_METHOD'] => GET
+$_SERVER['SERVER_PROTOCOL'] => HTTP/1.1
+$_SERVER['SERVER_NAME'] => webserv/1.1
+$_SERVER['SERVER_PORT'] => 8080
+$_SERVER['PATH_INFO'] => server_files/www/adduser.php
+$_SERVER['SCRIPT_NAME'] => adduser.php
+$_SERVER['PATH_TRANSLATED'] => adduser.php
+$_SERVER['REQUEST_URI'] => /adduser.php?firstname=&lastname=
+$_SERVER['__CF_USER_TEXT_ENCODING'] => 0xFA27:0x0:0x0
+$_SERVER['PHP_SELF'] => adduser.php
+$_SERVER['SCRIPT_FILENAME'] => adduser.php
+$_SERVER['DOCUMENT_ROOT'] => 
+$_SERVER['REQUEST_TIME_FLOAT'] => 1620832615.6289
+$_SERVER['REQUEST_TIME'] => 1620832615
+$_SERVER['argv'] => Array
+(
+    [0] => adduser.php
+)
+
+$_SERVER['argc'] => 1
+$_ENV['GATEWAY_INTERFACE'] => CGI/1.1
+$_ENV['SERVER_SOFTWARE'] => webserv/1.1
+$_ENV['QUERY_STRING'] => firstname=&lastname=
+$_ENV['REQUEST_METHOD'] => GET
+$_ENV['SERVER_PROTOCOL'] => HTTP/1.1
+$_ENV['SERVER_NAME'] => webserv/1.1
+$_ENV['SERVER_PORT'] => 8080
+$_ENV['PATH_INFO'] => server_files/www/adduser.php
+$_ENV['SCRIPT_NAME'] => server_files/www/adduser.php
+$_ENV['PATH_TRANSLATED'] => /Users/gbouwen/Desktop/codam/subjects/webserv/
+$_ENV['REQUEST_URI'] => /adduser.php?firstname=&lastname=
+$_ENV['__CF_USER_TEXT_ENCODING'] => 0xFA27:0x0:0x0
+</p></body>
+</html>
