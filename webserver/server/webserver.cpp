@@ -104,10 +104,10 @@ void    webserver::establish_connection(){
 void    webserver::run() {
     file_descriptors    fd;
     fd.initialize_max(_servers);
+    std::cout << "--- Waiting for activity... ---" << std::endl;
     while (true)
     {
         fd.synchronize(_servers);
-		std::cout << "--- Waiting for activity... ---" << std::endl;
         if (select(fd.get_max(), &fd.get_read(), &fd.get_write(), 0, 0) == -1)
 		{
 			std::cout << RED << strerror(errno) << RESET << std::endl;
