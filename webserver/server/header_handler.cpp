@@ -176,7 +176,6 @@ int	check_if_file(std::string file_location)
 	extensions.push_back("bla");
 	extensions.push_back("bad_extension");
 	extensions.push_back("pouic");
-	extensions.push_back("bla");
 
     for (header_handler::vector_iterator it = extensions.begin(); it != extensions.end(); it++) {
         if (file_location.find(*it) != std::string::npos) {
