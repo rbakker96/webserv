@@ -6,6 +6,7 @@ response::~response() {
     _response.clear();
 }
 
+
 //-------------------------------------- GENERATE functions --------------------------------------
 void	response::generate_status_line(std::string protocol, int status, response::map status_phrases) {
     std::string status_line = protocol;
@@ -108,7 +109,8 @@ void    response::close_header_section() {
     _response.append("\r\n");
 }
 
-//SEND functions
+
+//-------------------------------------- SEND functions --------------------------------------
 void    response::write_response_to_browser(int browser_socket, std::string response_file, std::string method) {
     write(browser_socket, _response.c_str(), _response.size());
 	if (method != "HEAD")

@@ -15,56 +15,11 @@
 #include "webserver.hpp"
 #include "server.hpp"
 
-#include <iostream>
-void webserver::print_struct() {
-    std::cout << "Content of struct\n";
-
-    for (std::vector<server>::iterator it = _servers.begin(); it != _servers.end(); it++) {
-        server current = *it;
-
-        std::cout << "------------- BEGIN SERVER BLOCK -------------\n";
-        std::cout << "Port = " << current.get_port() << std::endl;
-        std::cout << "Host = " << current.get_host() << std::endl;
-        std::cout << "File size = " << current.get_file_size() << std::endl;
-        std::cout << "Time out = " << current.get_time_out() << std::endl;
-        std::cout << "Server name = " << current.get_server_name() << std::endl;
-        std::cout << "Error page = " << current.get_error_page() << std::endl;
-
-        std::vector<location_context> locations = current.get_location_blocks();
-        for (std::vector<location_context>::iterator it = locations.begin(); it != locations.end(); it++) {
-            location_context location = *it;
-
-            std::cout << "\n  ------------- location block -------------\n";
-            std::cout << "  location = " << location.get_location_context() << std::endl;
-            std::cout << "  Root = " << location.get_root() << std::endl;
-
-            std::vector<std::string> methods = location.get_method();
-            std::cout << "  Allowed methods = ";
-            for (std::vector<std::string>::iterator it1 = methods.begin(); it1 != methods.end(); it1++) {
-                std::string method = *it1;
-                std::cout << method << " ";
-            }
-            std::cout << "\n";
-
-            std::cout << "  Index = " << location.get_index() << std::endl;
-            std::cout << "  Autoindex = " << location.get_autoindex() << std::endl;
-        }
-        std::cout << "------------- END SERVER BLOCK -------------\n\n";
-    }
-}
-
-void    webserver::print_fd_sets(file_descriptors fd) {
-    for(int i = 0; i < fd.get_max(); i++) {
-        if (fd.rdy_for_reading(i))
-            std::cout << "RDY to read [" << i << "]" << std::endl;
-        if (fd.rdy_for_writing(i))
-            std::cout << "RDY to write [" << i << "]" << std::endl;
-    }
-}
-
 webserver::webserver() : _servers() {}
 webserver::~webserver(){}
 
+
+//-------------------------------------- GENERAL functions --------------------------------------
 void    webserver::load_configuration(char *config_file) {
     std::vector<std::string>    server_block;
     server                      server;
@@ -125,13 +80,13 @@ void    webserver::run() {
 
             if (fd.rdy_for_reading(server->_activeFD)) //handle requested file
 			{
-				std::string request_headers = server->_handler.read_browser_request(server->_activeFD);
+				std::string request_headers = read_browser_request(server->_activeFD);
                 if (!request_headers.empty())
                     fd.set_time_out(server->_activeFD);
 				if (server->update_request_buffer(server->_activeFD, request_headers) == valid_)
 				{
 					server->_handler.parse_request(server->_activeFD, server->_request_buffer);
-                    server->clear_handled_request(server->_activeFD);
+                    server->remove_handled_request(server->_activeFD);
                     server->_fileFD = server->_handler.handle_request(server->_location_blocks, server->get_error_page(), server->get_file_size());
                     fd.handled_request_update(server->_fileFD, server->_activeFD, server->_handler.verify_content_type(), server->_handler.get_method());
 				}
@@ -162,5 +117,54 @@ void    webserver::run() {
 			if (server->_activeFD != ready_for_use_)
                 server->_activeFD = fd.check_time_out(server->_activeFD, server->_time_out);
 		}
+    }
+}
+
+
+// // // // // // // // // // // // //  DEBUG functions // // // // // // // // // // // // //
+#include <iostream>
+void webserver::print_struct() {
+    std::cout << "Content of struct\n";
+
+    for (std::vector<server>::iterator it = _servers.begin(); it != _servers.end(); it++) {
+        server current = *it;
+
+        std::cout << "------------- BEGIN SERVER BLOCK -------------\n";
+        std::cout << "Port = " << current.get_port() << std::endl;
+        std::cout << "Host = " << current.get_host() << std::endl;
+        std::cout << "File size = " << current.get_file_size() << std::endl;
+        std::cout << "Time out = " << current.get_time_out() << std::endl;
+        std::cout << "Server name = " << current.get_server_name() << std::endl;
+        std::cout << "Error page = " << current.get_error_page() << std::endl;
+
+        std::vector<location_context> locations = current.get_location_blocks();
+        for (std::vector<location_context>::iterator it = locations.begin(); it != locations.end(); it++) {
+            location_context location = *it;
+
+            std::cout << "\n  ------------- location block -------------\n";
+            std::cout << "  location = " << location.get_location_context() << std::endl;
+            std::cout << "  Root = " << location.get_root() << std::endl;
+
+            std::vector<std::string> methods = location.get_method();
+            std::cout << "  Allowed methods = ";
+            for (std::vector<std::string>::iterator it1 = methods.begin(); it1 != methods.end(); it1++) {
+                std::string method = *it1;
+                std::cout << method << " ";
+            }
+            std::cout << "\n";
+
+            std::cout << "  Index = " << location.get_index() << std::endl;
+            std::cout << "  Autoindex = " << location.get_autoindex() << std::endl;
+        }
+        std::cout << "------------- END SERVER BLOCK -------------\n\n";
+    }
+}
+
+void    webserver::print_fd_sets(file_descriptors fd) {
+    for(int i = 0; i < fd.get_max(); i++) {
+        if (fd.rdy_for_reading(i))
+            std::cout << "RDY to read [" << i << "]" << std::endl;
+        if (fd.rdy_for_writing(i))
+            std::cout << "RDY to write [" << i << "]" << std::endl;
     }
 }

@@ -16,6 +16,8 @@
 location_context::location_context() : _location_context(), _root(), _index(), _allowed_method(0), _autoindex(false) {}
 location_context::~location_context(){}
 
+
+//-------------------------------------- CONFIG functions --------------------------------------
 void location_context::configure_location_block(vector_iterator it, vector_iterator end) {
     configure configure_array[5] = { &location_context::configure_root,
                                      &location_context::configure_allowed_method,
@@ -69,7 +71,7 @@ void    location_context::configure_autoindex(const std::string &str){
 }
 
 
-//Getters
+//-------------------------------------- GET functions --------------------------------------
 std::string                 location_context::get_location_context() {return _location_context;}
 std::string                 location_context::get_root() {return _root;}
 std::string                 location_context::get_index() {return _index;}

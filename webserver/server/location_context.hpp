@@ -29,13 +29,12 @@ private:
     std::string                 _index;
     std::vector<std::string>    _allowed_method;
     bool                        _autoindex;
-    //something with the CGI
 
 public:
     location_context();
     ~location_context();
 
-    //Configure functions
+    //CONFIG functions
     void    configure_location_block(vector_iterator it, vector_iterator end);
     void    clean_location_instance();
     int     identify_location_value(const std::string &str);
@@ -46,7 +45,7 @@ public:
     void    configure_autoindex(const std::string &str);
     void    invalid_element(const std::string &str);
 
-    //Getters
+    //GET functions
     std::string                 get_location_context();
     std::string                 get_root();
     std::string                 get_index();

@@ -58,7 +58,7 @@ public:
 	enum		status_values{	okay_ = 200, created_ = 201, no_content_ = 204,
 								bad_request_ = 400, unauthorized_ = 401, forbidden_ = 403,
 								not_found_ = 404, method_not_allowed_ = 405,
-								payload_too_large_ = 413	};
+								payload_too_large_ = 413 };
 
 protected:
 	int				_index;
@@ -116,6 +116,7 @@ public:
 	std::string		generate_error_page_location(std::string error_page);
 	std::string		get_referer_part();
     void 		    verify_method();
+    std::string     verify_content_type();
 
 	//CGI functions
 	void 			execute_php(int fileFD, std::string server_name, int server_port);
@@ -123,16 +124,11 @@ public:
 	char 			**create_cgi_envp(const std::string& server_name, int server_port);
 
     //RESPONSE functions
+    void            read_requested_file(int fd);
 	void            send_response(int activeFD, int fileFD, std::string server_name);
 
     //RESET functions
     void            reset_handler();
-
-    //Helper functions
-    std::string     read_browser_request(int fd);
-    std::string     verify_content_type();
-    vector          str_to_vector(std::string request);
-    void            read_requested_file(int fd);
 
     //GET functions
 	int				get_index();
@@ -141,7 +137,7 @@ public:
     std::string     get_content_type();
     std::string     get_content_language();
     std::string     get_content_location();
-	vector			get_allowe();
+	vector			get_allow();
 	std::string	    get_response_file();
     std::string     get_method();
     std::string     get_file_location();
@@ -156,7 +152,7 @@ public:
 	//SET functions
 	void			set_index(int index);
 
-    //Debug functions
+    //DEBUG functions
     void            print_request(std::string request);
     void            print_response(std::string response);
 };

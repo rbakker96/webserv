@@ -28,6 +28,7 @@ public:
     file_descriptors();
     ~file_descriptors();
 
+    //GENERAL functions
     void    	synchronize(vector servers);
     void    	initialize_max(vector servers);
     void		update_max(int fd);

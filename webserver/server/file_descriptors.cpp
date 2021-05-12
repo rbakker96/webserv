@@ -11,6 +11,8 @@ file_descriptors::~file_descriptors() {
     _time_out_monitor.clear();
 }
 
+
+//-------------------------------------- GENERAL functions --------------------------------------
 void    file_descriptors::synchronize(file_descriptors::vector servers) {
     _read = _read_buffer;
     _write = _write_buffer;
@@ -33,7 +35,8 @@ void	file_descriptors::update_max(int fd) {
     _max = fd;
 }
 
-//UPDATE functions
+
+//-------------------------------------- UPDATE functions --------------------------------------
 void     file_descriptors::accepted_request_update(int activeFD) {
     set_read_buffer(activeFD);
     update_max(activeFD);
@@ -57,15 +60,18 @@ void     file_descriptors:: read_request_update(int fileFD, int activeFD) {
     set_write_buffer(activeFD);
 }
 
-//SET functions
+
+//-------------------------------------- SET functions --------------------------------------
 void     file_descriptors::set_read_buffer(int fd) {FD_SET(fd, &_read_buffer);}
 void     file_descriptors::set_write_buffer(int fd) {FD_SET(fd, &_write_buffer);}
 
-//CLR functions
+
+//-------------------------------------- CLR functions --------------------------------------
 void     file_descriptors::clr_from_read_buffer(int fd) {FD_CLR(fd, &_read_buffer);}
 void     file_descriptors::clr_from_write_buffer(int fd) {FD_CLR(fd, &_write_buffer);}
 
-//IS_SET functions
+
+//-------------------------------------- IS_SET functions --------------------------------------
 int     file_descriptors::rdy_for_reading(int fd) {
     if (fd == -1)
         return 0;
@@ -77,7 +83,8 @@ int     file_descriptors::rdy_for_writing(int fd) {
     return FD_ISSET(fd, &_write);
 }
 
-//TIME OUT functions
+
+//-------------------------------------- TIME OUT functions --------------------------------------
 void    file_descriptors::set_time_out(int fd) {
     struct timeval	timeval;
     long long		time;
@@ -107,7 +114,8 @@ int     file_descriptors::check_time_out(int fd, int time_out) {
     return fd;
 }
 
-//Getter
+
+//-------------------------------------- GET functions --------------------------------------
 fd_set&  file_descriptors::get_read() {return _read;}
 fd_set&  file_descriptors::get_write() {return _write;}
 fd_set&  file_descriptors::get_read_buffer() {return _read_buffer;}

@@ -35,7 +35,7 @@ class webserver {
 public:
 	typedef     std::vector<std::string>      			vector;
 	typedef     std::vector<std::string>::iterator      vector_iterator;
-    enum        webserver_values{ error_page_ = -2, unused_ = -1, ready_for_use_ = -1, valid_ = 7, invalid_ = 8, error_code_ = 399 };
+    enum        webserver_values{ unused_ = -1, ready_for_use_ = -1 };
 
 private:
     std::vector<server>     _servers;
@@ -44,11 +44,12 @@ public:
     webserver();
     ~webserver();
 
+    //GENERAL functions
     void    	load_configuration(char* config_file);
     void    	establish_connection();
     void    	run();
 
-    //Debug-tool
+    //DEBUG functions
     void        print_struct();
     void        print_fd_sets(file_descriptors fd);
 };

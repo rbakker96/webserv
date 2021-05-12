@@ -34,6 +34,7 @@ header_handler::~header_handler(){
     _status_phrases.clear();
 }
 
+
 //-------------------------------------- PARSE functions --------------------------------------
 void        header_handler::parse_request(int fd, header_handler::map request_buffer) {
     map_iterator request                        = request_buffer.find(fd);
@@ -115,6 +116,7 @@ void        header_handler::parse_content_type(const std::string &str) {_content
 void        header_handler::parse_content_language(const std::string &str) {_content_language = parse_string(str);}
 void        header_handler::parse_content_location(const std::string &str) {_content_location = parse_string(str);}
 void        header_handler::invalid_argument(const std::string &str) {parse_invalid(str);}
+
 
 //-------------------------------------- HANDLE functions --------------------------------------
 int        header_handler::handle_request(header_handler::location_vector location_blocks, std::string error_page, int max_file_size) {
@@ -287,6 +289,22 @@ void 		header_handler::verify_method()
 	_status = method_not_allowed_;
 }
 
+std::string     header_handler::verify_content_type() {
+    vector extensions;
+    extensions.push_back("html");
+    extensions.push_back("php");
+    extensions.push_back("css");
+    extensions.push_back("ico");
+    extensions.push_back("png");
+
+    for (vector_iterator it = extensions.begin(); it != extensions.end(); it++) {
+        if (_file_location.find(*it) != std::string::npos) {
+            return *it;
+        }
+    }
+    return "folder";
+}
+
 int			header_handler::cgi_request()
 {
 	std::string	str_filename = "server_files/www/temp";
@@ -329,6 +347,7 @@ void        header_handler::write_put_file(int file_fd) {
     if ((write(file_fd, _body.c_str(), _body.length())) == -1)
         throw std::runtime_error("Write failed");
 }
+
 
 //-------------------------------------- CGI functions --------------------------------------
 std::string	get_correct_directory(std::string &file_location)
@@ -428,7 +447,23 @@ char **header_handler::create_cgi_envp(const std::string& server_name, int serve
 	return envp;
 }
 
+
 //-------------------------------------- RESPONSE functions --------------------------------------
+void        header_handler::read_requested_file(int fd) {
+    char    buff[3000];
+    int     ret = 1;
+
+    lseek(fd, 0, SEEK_SET);
+    while (ret > 0) {
+        ret = read(fd, buff, 3000);
+        _response_file.append(buff, ret);
+        if (ret < 3000)
+            break;
+    }
+    if (ret == -1)
+        throw std::runtime_error("Read failed");
+}
+
 void    header_handler::send_response(int activeFD, int fileFD, std::string server_name) {
     response response;
 
@@ -449,6 +484,7 @@ void    header_handler::send_response(int activeFD, int fileFD, std::string serv
     reset_handler();
 }
 
+
 //-------------------------------------- RESET functions --------------------------------------
 void    header_handler::reset_handler() {
     _status = 200;
@@ -468,86 +504,25 @@ void    header_handler::reset_handler() {
     _content_location.clear();
 }
 
-//------Helper functions------
-std::string    header_handler::read_browser_request(int fd) {
-    std::string tmp;
-    char        buff[3000];
-    int         ret;
-
-    while ((ret = read(fd, buff, 3000)) > 0) {
-        tmp.append(buff, ret);
-        if (ret < 3000)
-            break;
-    }
-    if (ret == -1)
-        throw std::runtime_error("Read failed");
-    return tmp;
-}
-
-std::string     header_handler::verify_content_type() {
-    vector extensions;
-    extensions.push_back("html");
-    extensions.push_back("php");
-    extensions.push_back("css");
-    extensions.push_back("ico");
-    extensions.push_back("png");
-
-    for (vector_iterator it = extensions.begin(); it != extensions.end(); it++) {
-        if (_file_location.find(*it) != std::string::npos) {
-			return *it;
-		}
-    }
-    return "folder";
-}
-
-header_handler::vector    header_handler::str_to_vector(std::string request) {
-    std::vector<std::string> request_elements;
-    size_t      pos;
-    std::string value;
-
-    while ((int)(pos = request.find_first_of('\r')) != -1) {
-        value = request.substr(0, pos);
-        request_elements.push_back(value);
-        request = request. substr(pos + 2);
-    }
-    request_elements.push_back(request);
-    return request_elements;
-}
-
-void        header_handler::read_requested_file(int fd) {
-    char    buff[3000];
-    int     ret = 1;
-
-	lseek(fd, 0, SEEK_SET);
-    while (ret > 0) {
-        ret = read(fd, buff, 3000);
-        _response_file.append(buff, ret);
-        if (ret < 3000)
-            break;
-    }
-    if (ret == -1)
-        throw std::runtime_error("Read failed");
-}
-
 
 //-------------------------------------- GET functions --------------------------------------
-int				        header_handler::get_index() { return _index;}
-int                     header_handler::get_status() { return _status;}
-int                     header_handler::get_content_length() { return _content_length;}
-std::string             header_handler::get_content_type() { return _content_type;}
-std::string             header_handler::get_content_language() { return _content_language;}
-std::string             header_handler::get_content_location() { return _content_location;}
-header_handler::vector	header_handler::get_allowe() { return _allow; }
-std::string	            header_handler::get_response_file() { return (_response_file);}
-std::string             header_handler::get_method() { return _method;}
-std::string             header_handler::get_file_location() { return _file_location;}
-std::string             header_handler::get_protocol() { return _protocol;}
-std::string             header_handler::get_requested_host() { return _requested_host;}
-std::string             header_handler::get_user_agent() { return _user_agent;}
-std::string             header_handler::get_accept_language() { return _accept_language;}
-std::string             header_handler::get_authorization() { return _authorization;}
-std::string             header_handler::get_referer() { return _referer;}
-std::string             header_handler::get_body() { return _body;}
+int				        header_handler::get_index() {return _index;}
+int                     header_handler::get_status() {return _status;}
+int                     header_handler::get_content_length() {return _content_length;}
+std::string             header_handler::get_content_type() {return _content_type;}
+std::string             header_handler::get_content_language() {return _content_language;}
+std::string             header_handler::get_content_location() {return _content_location;}
+header_handler::vector	header_handler::get_allow() {return _allow;}
+std::string	            header_handler::get_response_file() {return (_response_file);}
+std::string             header_handler::get_method() {return _method;}
+std::string             header_handler::get_file_location() {return _file_location;}
+std::string             header_handler::get_protocol() {return _protocol;}
+std::string             header_handler::get_requested_host() {return _requested_host;}
+std::string             header_handler::get_user_agent() {return _user_agent;}
+std::string             header_handler::get_accept_language() {return _accept_language;}
+std::string             header_handler::get_authorization() {return _authorization;}
+std::string             header_handler::get_referer() {return _referer;}
+std::string             header_handler::get_body() {return _body;}
 
 
 //-------------------------------------- SET functions --------------------------------------

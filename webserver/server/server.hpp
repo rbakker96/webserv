@@ -81,10 +81,11 @@ public:
     server();
     ~server();
 
-    //Configure functions
-    void    clean_server_instance();
-    int     identify_server_value(const std::string& str);
+    //GENERAL functions
     void    create_new_server(std::vector<std::string> server_config);
+
+    //CONFIG functions
+    int     identify_server_value(const std::string& str);
     void    configure_port(const std::string& str);
     void    configure_host(const std::string& str);
     void    configure_server_name(const std::string& str);
@@ -93,18 +94,19 @@ public:
     void    configure_error_page(const std::string& str);
     void    invalid_element(const std::string& str);
 
-    //TCP-connection functions
+    //TCP functions
     void	create_socket();
     void	bind_socket_address(int port);
     void	create_connection(int backlog);
 
-    //Helper functions
-    int     location_block_size(vector_iterator it, vector_iterator end);
-    int     update_request_buffer(int fd, const std::string& request);
-    void    clear_handled_request(int used_fd);
-    int     validate_request(const std::string &request);
+    //RESET functions
+    void    reset_server();
+    void    remove_handled_request(int used_fd);
 
-    //Getters
+    //REQUEST functions
+    int     update_request_buffer(int fd, const std::string& request);
+
+    //GET functions
     int                             get_file_size();
     int                             get_time_out();
     int                             get_port();
