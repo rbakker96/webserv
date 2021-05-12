@@ -6,7 +6,7 @@
 /*   By: roybakker <roybakker@student.codam.nl>       +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2021/03/30 13:54:06 by roybakker     #+#    #+#                 */
-/*   Updated: 2021/04/26 11:22:45 by gbouwen       ########   odam.nl         */
+/*   Updated: 2021/05/12 14:02:15 by gbouwen       ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -132,8 +132,9 @@ int     server::update_request_buffer(int fd, const std::string& request) {
 int                             server::get_file_size() {return _max_file_size;}
 int                             server::get_time_out() {return _time_out;}
 int                             server::get_port() {return _port;}
-std::string                     server::get_host(){return _host;}
-std::string                     server::get_server_name(){return _server_name;}
-std::string                     server::get_error_page(){return _error_page;}
-std::vector<location_context>   server::get_location_blocks(){return _location_blocks;}
+std::string                     server::get_host() {return _host;}
+std::string                     server::get_server_name() {return _server_name;}
+std::string                     server::get_error_page() {return _error_page;}
+std::vector<location_context>   server::get_location_blocks() {return _location_blocks;}
 int                             server::get_tcp_socket() {return _tcp_socket;}
+

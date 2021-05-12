@@ -119,9 +119,9 @@ public:
     std::string     verify_content_type();
 
 	//CGI functions
-	void 			execute_php(int fileFD, std::string server_name, int server_port);
+	void			execute_php(int fileFD, std::string server_name, int server_port);
 	char 			**create_cgi_args();
-	char 			**create_cgi_envp(const std::string& server_name, int server_port);
+	char 			**create_cgi_envp(const std::string &server_name, int server_port);
 
     //RESPONSE functions
     void            read_requested_file(int fd);

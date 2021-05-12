@@ -6,7 +6,7 @@
 /*   By: gbouwen <marvin@codam.nl>                    +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2021/05/03 12:34:40 by gbouwen       #+#    #+#                 */
-/*   Updated: 2021/05/11 15:07:29 by gbouwen       ########   odam.nl         */
+/*   Updated: 2021/05/12 14:43:19 by gbouwen       ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -130,9 +130,9 @@ int        header_handler::handle_request(header_handler::location_vector locati
         if (_method == "PUT")
             fd = put_request(max_file_size);
 		else if (stat(_file_location.c_str(), &stats) == -1)
-			_status = not_found_;
+			_status = not_found_; // update the status code after the version is stable
 		else if (!(stats.st_mode & S_IRUSR))
-			_status = forbidden_;
+			_status = forbidden_; // update the status code after the version is stable
         else if (verify_content_type() == "php")
             return cgi_request();
         else if ((fd = open(&_file_location[0], O_RDONLY)) == -1)
@@ -156,12 +156,12 @@ std::string	header_handler::get_referer_part()
 	std::string	result;
 
 	if (_referer.empty())
-		return ("/empty");
+		return ("");
 	start = _referer.find(_requested_host);
 	start += _requested_host.length();
 	result = _referer.substr(start, std::string::npos);
 	if (result.empty())
-		return ("/empty");
+		return ("");
 	return (result);
 }
 
@@ -190,7 +190,7 @@ int	compare_directory(std::string file_location, std::string location_context)
 		return (1);
 	while (1)
 	{
-		int	end = parent_directory.find_last_of("/");
+		int	end = parent_directory.find_last_of('/');
 		if (end == 0)
 			break ;
 		parent_directory = file_location.substr(0, end);
@@ -206,11 +206,13 @@ int	compare_file(std::string file_location, std::string location_context)
 
 	while (1)
 	{
-		int	end = parent_directory.find_last_of("/");
+		int	end = parent_directory.find_last_of('/');
+		if (check_if_file(file_location) && end == 0)
+			return (1);
 		if (end == -1)
 			break ;
 		parent_directory = file_location.substr(0, end);
-		if (parent_directory == location_context || parent_directory.empty())
+		if (parent_directory == location_context)
 			return (1);
 	}
 	return (0);
@@ -238,6 +240,41 @@ int			header_handler::match_location_block(header_handler::location_vector locat
 	return (-1);
 }
 
+std::string	get_subdirectories(std::string str)
+{
+	int	start_index;
+
+	start_index = str.find_first_of('/', 1);
+	if (start_index == -1)
+		return ("");
+	return (str.substr(start_index, std::string::npos));
+}
+
+std::string	get_subdirectories_referer(std::string str)
+{
+	if (check_if_file(str))
+		return ("");
+	else
+		return (get_subdirectories(str));
+}
+
+std::string	get_file(location_context location_block, std::string file_location)
+{
+	int	start_index;
+
+	if (check_if_file(file_location))
+	{
+		start_index = file_location.find_last_of('/', std::string::npos);
+		return (file_location.substr(start_index, std::string::npos));
+	}
+	else
+	{
+		if (location_block.get_autoindex())
+			return ("/index.php");
+		return (location_block.get_index());
+	}
+}
+
 std::string	header_handler::generate_error_page_location(std::string error_page)
 {
 	int pos = _file_location.find_last_of('/');
@@ -257,20 +294,12 @@ void        header_handler::verify_file_location(header_handler::location_vector
 	{
         _allow = location_blocks[index].get_method();
 		correct_location = location_blocks[index].get_root();
-		if (verify_content_type() == "folder" && _referer.empty())
-			correct_location.append(_file_location).append("/").append(location_blocks[index].get_index());
-		else if (verify_content_type() == "folder" && !_referer.empty() && check_if_file(referer_part) == 0)
-			correct_location.append(referer_part).append("/").append(_file_location).append("/").append(location_blocks[index].get_index());
-		else
-			correct_location.append(_file_location);
+		correct_location.append(get_subdirectories_referer(referer_part));
+		correct_location.append(get_subdirectories(_file_location));
+		correct_location.append(get_file(location_blocks[index], _file_location));
 	}
 	if (stat(correct_location.c_str(), &s) == -1)
-	{
-		if (location_blocks[index].get_autoindex())
-			correct_location = location_blocks[index].get_root().append(_file_location).append("/index.php");
-		else
-			correct_location = generate_error_page_location(error_page);
-	}
+		correct_location = generate_error_page_location(error_page);
 	_file_location = correct_location;
 }
 
@@ -359,7 +388,7 @@ std::string	get_correct_directory(std::string &file_location)
 }
 
 // error checking if execve fails
-void	header_handler::execute_php(int fileFD, std::string server_name, int server_port)
+void header_handler::execute_php(int fileFD, std::string server_name, int server_port)
 {
 	pid_t	pid;
 
@@ -385,31 +414,32 @@ std::string	get_location_without_root(std::string &file_location)
 	std::string	result;
 
 	result = file_location.substr(file_location.find_last_of("/") + 1);
-//	result = file_location.substr(file_location.find_last_of("/", std::string::npos) + 1, std::string::npos);
 	return (result);
 }
 
 char	**header_handler::create_cgi_args()
 {
 	char	**args = new char *[3];
+//	char 	buf[PATH_MAX];
+//	getcwd(buf, (size_t)PATH_MAX); // check error
+//
+//	if (get_content_type() == "bla")
+//		args[0] = ft_strjoin(buf, "/tester_executables/cgi_tester");
+	if (get_content_type() == "php")
+		args[0] = ft_strdup("/usr/bin/php");
 
-//	if (file location extension == .bla)
-//		use cgi tester
-//	else if (file location extension == .php)
-//		use usr bin php
-
-	args[0] = ft_strdup("/usr/bin/php");
-//	args[0] = ft_strdup("/Users/gbouwen/Desktop/codam/subjects/webserv/tester_executables/cgi_tester");
 	args[1] = ft_strdup(get_location_without_root(_file_location).c_str());
 	args[2] = NULL;
 	return args;
 }
 
-char **header_handler::create_cgi_envp(const std::string& server_name, int server_port)
+char **header_handler::create_cgi_envp(const std::string &server_name, int server_port)
 {
 	// for later
 	// AUTH_TYPE, REMOTE_ADDR, REMOTE_IDENT, REMOTE_USER
 	vector	cgi_envps;
+	char 	server_root[PATH_MAX];
+	getcwd(server_root, (size_t)PATH_MAX); // check error
 
 	if (_content_length)
 	{
@@ -425,16 +455,23 @@ char **header_handler::create_cgi_envp(const std::string& server_name, int serve
 	cgi_envps.push_back(((std::string)"SERVER_PORT=").append(ft_itoa(server_port)));
 
 	// PATH related
+	// [RFC] PATH_INFO -> need to save the part after '.php'; if not existing, set as NULL
+	// [SLACK] PATH_INFO -> URI (/directory/youpi.bla)
+	cgi_envps.push_back(((std::string)"PATH_INFO=").append(get_file_location()));
 
-	// PATH_INFO -> need to save the part after '.php'; if not existing, set as NULL
-	// PATH_TRANSLATED -> /DOCUMENT_ROOT + PATH_INFO ; if PATH_INFO is NULL, set to NULL as well
-	// REQUEST_URI -> /SCRIPT_NAME + ? QUERY_STRING /test.php?foo=bar
-	// SCRIPT_NAME -> file name of the CGI script
-	cgi_envps.push_back(((std::string)"PATH_INFO=").append("/"));
-	cgi_envps.push_back(((std::string)"PATH_TRANSLATED=").append("/"));
+	// [RFC] SCRIPT_NAME -> file name of the CGI script
+	// [SLACK] SCRIPT_NAME -> URI (/directory/youpi.bla)
+	cgi_envps.push_back(((std::string)"SCRIPT_NAME=").append(get_file_location()));
+
+	// [RFC] PATH_TRANSLATED -> /DOCUMENT_ROOT + PATH_INFO ; if PATH_INFO is NULL, set to NULL as well
+	// [SLACK] PATH_TRANSLATED -> <server_root>/YoupiBanane -> server_root + location_root
+	cgi_envps.push_back(((((std::string)"PATH_TRANSLATED=").append(server_root)).append("/"))); // NEED UPDATE
+
+	// [SLACK] SCRIPT_FILENAME -> <server_root>/YoupiBanane/youpi.bla
+
+	// [ROOT] REQUEST_URI -> /SCRIPT_NAME + ? QUERY_STRING /test.php?foo=bar
 	std::string	request_uri = ((std::string)"REQUEST_URI=/").append(get_location_without_root(_file_location)).append("?");
 	cgi_envps.push_back(request_uri.append(get_body()));
-	cgi_envps.push_back(((std::string)"SCRIPT_NAME=").append(get_location_without_root(_file_location)));
 
 	char 	**envp = new char *[cgi_envps.size() + 1];
 	int		i = 0;
