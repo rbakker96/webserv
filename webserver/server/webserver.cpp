@@ -95,7 +95,7 @@ void    webserver::run() {
             if (fd.rdy_for_reading(server->_fileFD)) //read requested file
 			{
 				if (fd.rdy_for_writing(server->_fileFD)) {
-                    if (server->_handler.verify_content_type() == "php")
+                    if (server->_handler.verify_content_type() == "php" || server->_handler.verify_content_type() == "bla")
 						server->_handler.execute_php(server->_fileFD, server->_server_name, server->_port);
                     else
 						server->_handler.write_put_file(server->_fileFD);
