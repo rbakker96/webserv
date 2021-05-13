@@ -1,16 +1,16 @@
 <html>
 <body>
-<h2>Firstname: asdf</h2></br><h2>Lastname: asdf</h2></br><p>--add phpinfo for debugging--
+<h2>Firstname: </h2></br><h2>Lastname: </h2></br><p>--add phpinfo for debugging--
 </p><p>phpinfo()
 
 Environment
 
 Variable => Value
-CONTENT_LENGTH => 28
+CONTENT_LENGTH => 20
 CONTENT_TYPE => application/x-www-form-urlencoded
 GATEWAY_INTERFACE => CGI/1.1
 SERVER_SOFTWARE => webserv/1.1
-QUERY_STRING => firstname=asdf&lastname=asdf
+QUERY_STRING => firstname=&lastname=
 REQUEST_METHOD => POST
 SERVER_PROTOCOL => HTTP/1.1
 SERVER_NAME => webserv/1.1
@@ -18,18 +18,18 @@ SERVER_PORT => 8080
 PATH_INFO => server_files/www/adduser.php
 SCRIPT_NAME => server_files/www/adduser.php
 PATH_TRANSLATED => /Users/qli/Desktop/webserv_git/
-REQUEST_URI => /adduser.php?firstname=asdf&lastname=asdf
+REQUEST_URI => /adduser.php?firstname=&lastname=
 __CF_USER_TEXT_ENCODING => 0xFA4E:0x0:0x0
 </p><p>phpinfo()
 
 PHP Variables
 
 Variable => Value
-$_SERVER['CONTENT_LENGTH'] => 28
+$_SERVER['CONTENT_LENGTH'] => 20
 $_SERVER['CONTENT_TYPE'] => application/x-www-form-urlencoded
 $_SERVER['GATEWAY_INTERFACE'] => CGI/1.1
 $_SERVER['SERVER_SOFTWARE'] => webserv/1.1
-$_SERVER['QUERY_STRING'] => firstname=asdf&lastname=asdf
+$_SERVER['QUERY_STRING'] => firstname=&lastname=
 $_SERVER['REQUEST_METHOD'] => POST
 $_SERVER['SERVER_PROTOCOL'] => HTTP/1.1
 $_SERVER['SERVER_NAME'] => webserv/1.1
@@ -37,24 +37,24 @@ $_SERVER['SERVER_PORT'] => 8080
 $_SERVER['PATH_INFO'] => server_files/www/adduser.php
 $_SERVER['SCRIPT_NAME'] => adduser.php
 $_SERVER['PATH_TRANSLATED'] => adduser.php
-$_SERVER['REQUEST_URI'] => /adduser.php?firstname=asdf&lastname=asdf
+$_SERVER['REQUEST_URI'] => /adduser.php?firstname=&lastname=
 $_SERVER['__CF_USER_TEXT_ENCODING'] => 0xFA4E:0x0:0x0
 $_SERVER['PHP_SELF'] => adduser.php
 $_SERVER['SCRIPT_FILENAME'] => adduser.php
 $_SERVER['DOCUMENT_ROOT'] => 
-$_SERVER['REQUEST_TIME_FLOAT'] => 1620896638.3209
-$_SERVER['REQUEST_TIME'] => 1620896638
+$_SERVER['REQUEST_TIME_FLOAT'] => 1620896678.9635
+$_SERVER['REQUEST_TIME'] => 1620896678
 $_SERVER['argv'] => Array
 (
     [0] => adduser.php
 )
 
 $_SERVER['argc'] => 1
-$_ENV['CONTENT_LENGTH'] => 28
+$_ENV['CONTENT_LENGTH'] => 20
 $_ENV['CONTENT_TYPE'] => application/x-www-form-urlencoded
 $_ENV['GATEWAY_INTERFACE'] => CGI/1.1
 $_ENV['SERVER_SOFTWARE'] => webserv/1.1
-$_ENV['QUERY_STRING'] => firstname=asdf&lastname=asdf
+$_ENV['QUERY_STRING'] => firstname=&lastname=
 $_ENV['REQUEST_METHOD'] => POST
 $_ENV['SERVER_PROTOCOL'] => HTTP/1.1
 $_ENV['SERVER_NAME'] => webserv/1.1
@@ -62,7 +62,7 @@ $_ENV['SERVER_PORT'] => 8080
 $_ENV['PATH_INFO'] => server_files/www/adduser.php
 $_ENV['SCRIPT_NAME'] => server_files/www/adduser.php
 $_ENV['PATH_TRANSLATED'] => /Users/qli/Desktop/webserv_git/
-$_ENV['REQUEST_URI'] => /adduser.php?firstname=asdf&lastname=asdf
+$_ENV['REQUEST_URI'] => /adduser.php?firstname=&lastname=
 $_ENV['__CF_USER_TEXT_ENCODING'] => 0xFA4E:0x0:0x0
 </p></body>
 </html>
