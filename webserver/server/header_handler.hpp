@@ -6,7 +6,7 @@
 /*   By: roybakker <roybakker@student.codam.nl>       +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2021/04/07 13:23:53 by roybakker     #+#    #+#                 */
-/*   Updated: 2021/05/11 14:24:48 by gbouwen       ########   odam.nl         */
+/*   Updated: 2021/05/13 13:50:25 by gbouwen       ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -75,6 +75,8 @@ protected:
 	vector			_allow;
 	std::string		_method;
 	std::string		_file_location;
+	std::string 	_uri_location;
+	std::string		_location_block_root;
 	std::string		_protocol;
 	std::string		_requested_host;
 	std::string		_user_agent;
@@ -141,6 +143,8 @@ public:
 	std::string	    get_response_file();
     std::string     get_method();
     std::string     get_file_location();
+    std::string     get_uri_location();
+	std::string		get_location_block_root();
     std::string     get_protocol();
     std::string     get_requested_host();
     std::string     get_user_agent();

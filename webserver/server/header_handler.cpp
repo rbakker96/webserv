@@ -6,7 +6,7 @@
 /*   By: gbouwen <marvin@codam.nl>                    +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2021/05/03 12:34:40 by gbouwen       #+#    #+#                 */
-/*   Updated: 2021/05/13 11:12:01 by gbouwen       ########   odam.nl         */
+/*   Updated: 2021/05/13 13:50:24 by gbouwen       ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,8 +14,8 @@
 #include "../helper/helper.hpp"
 
 header_handler::header_handler(): _index(0), _status(okay_), _status_phrases(), _content_length(0), _content_type("Content-Type: text/"),
-                                  _content_language("en"), _content_location(), _allow(),
-                                  _method(), _file_location(), _protocol(), _requested_host(), _user_agent(),
+                                  _content_language("en"), _content_location(), _allow(), _method(), _file_location(),
+                                  _uri_location(), _protocol(), _requested_host(), _user_agent(),
                                   _accept_language(), _authorization(), _referer(), _body(), _response_file()	{
 
 	_status_phrases.insert (pair(200, "OK"));
@@ -94,12 +94,12 @@ void        header_handler::parse_first_line(const std::string &str) {
     end = str.find_first_of(' ', start);
 	if ((index = str.find('?', start)) != -1)
 	{
-		_file_location = str.substr(start, index - start);
+		_uri_location = str.substr(start, index - start);
 		index++;
 		_body = str.substr(index, end - index);
 	}
 	else
-		_file_location = str.substr(start, end - start);
+		_uri_location = str.substr(start, end - start);
     _protocol = str.substr(end + 1);
 }
 
@@ -179,16 +179,17 @@ std::string	header_handler::get_referer_part()
 int	check_if_file(std::string file_location)
 {
 	std::vector<std::string>	extensions;
-    extensions.push_back("html");
-    extensions.push_back("php");
-    extensions.push_back("css");
-    extensions.push_back("ico");
-    extensions.push_back("png");
-	extensions.push_back("bla");
-	extensions.push_back("bad_extension");
-	extensions.push_back("pouic");
-	extensions.push_back("pouac");
+    extensions.push_back(".html");
+    extensions.push_back(".php");
+    extensions.push_back(".css");
+    extensions.push_back(".ico");
+    extensions.push_back(".png");
+	extensions.push_back(".bla");
+	extensions.push_back(".bad_extension");
+	extensions.push_back(".pouic");
+	extensions.push_back(".pouac"); // check directory first and then file
 
+	// search for entire len after . and strcmp
     for (header_handler::vector_iterator it = extensions.begin(); it != extensions.end(); it++) {
         if (file_location.find(*it) != std::string::npos) {
 			return (1);
@@ -306,13 +307,13 @@ std::string	get_file(location_context location_block, std::string file_location,
 
 std::string	header_handler::generate_error_page_location(std::string error_page)
 {
-	int pos = _file_location.find_last_of('/');
-	std::string temp = _file_location.substr(pos+1);
+	int pos = _uri_location.find_last_of('/');
+	std::string temp = _uri_location.substr(pos+1);
 	return (error_page.append(temp));
 }
 
 void        header_handler::verify_file_location(header_handler::location_vector location_blocks, std::string error_page) {
-	int 		index = match_location_block(location_blocks, _file_location);
+	int 		index = match_location_block(location_blocks, _uri_location);
 	std::string	correct_location;
 	std::string	referer_part = get_referer_part();
 	struct stat	s;
@@ -323,12 +324,13 @@ void        header_handler::verify_file_location(header_handler::location_vector
 	else
 	{
         _allow = location_blocks[index].get_method();
-		correct_location = location_blocks[index].get_root();
+		_location_block_root = location_blocks[index].get_root();
+		correct_location = _location_block_root;
 		correct_location.append(get_subdirectories_referer(referer_part));
 		std::cout << "0 correct_location : " << correct_location << std::endl;
-		correct_location.append(get_subdirectories(_file_location));
+		correct_location.append(get_subdirectories(_uri_location));
 		std::cout << "1 correct_location : " << correct_location << std::endl;
-		correct_location.append(get_file(location_blocks[index], _file_location, correct_location));
+		correct_location.append(get_file(location_blocks[index], _uri_location, correct_location));
 		std::cout << "2 correct_location : " << correct_location << std::endl;
 	}
 	if (stat(correct_location.c_str(), &s) == -1)
@@ -351,6 +353,7 @@ void 		header_handler::verify_method()
 	_status = method_not_allowed_;
 }
 
+// look into the other content type
 std::string     header_handler::verify_content_type() {
     vector extensions;
     extensions.push_back("html");
@@ -452,16 +455,19 @@ std::string	get_location_without_root(std::string &file_location)
 char	**header_handler::create_cgi_args()
 {
 	char	**args = new char *[3];
-//	char 	buf[PATH_MAX];
-//
-//	getcwd(buf, (size_t)PATH_MAX);
-//	if (get_content_type() == "bla")
-//		args[0] = ft_strjoin(buf, "/tester_executables/cgi_tester");
-//	else if (get_content_type() == "php")
+	char 	buf[PATH_MAX];
+
+	getcwd(buf, (size_t)PATH_MAX);
+	if (_file_location.find(".php") != std::string::npos)
 		args[0] = ft_strdup("/usr/bin/php");
+	else if (_file_location.find(".bla") != std::string::npos)
+		args[0] = ft_strjoin(buf, "/tester_executables/cgi_tester");
 
 	args[1] = ft_strdup(get_location_without_root(_file_location).c_str());
 	args[2] = NULL;
+
+	std::cout << RED << "_content_type: "<< _content_type << std::endl;
+	std::cout << RED << "_file_location: "<< _file_location << std::endl;
 	std::cout << RED << "args[0]: "<< args[0] << std::endl;
 	std::cout << RED << "args[1]: "<< args[1] << RESET << std::endl;
 	return args;
@@ -491,20 +497,21 @@ char **header_handler::create_cgi_envp(const std::string &server_name, int serve
 	// PATH related
 	// [RFC] PATH_INFO -> need to save the part after '.php'; if not existing, set as NULL
 	// [SLACK] PATH_INFO -> URI (/directory/youpi.bla)
-	cgi_envps.push_back(((std::string)"PATH_INFO=").append(get_file_location()));
+	cgi_envps.push_back(((std::string)"PATH_INFO=").append(_uri_location));
 
 	// [RFC] SCRIPT_NAME -> file name of the CGI script
 	// [SLACK] SCRIPT_NAME -> URI (/directory/youpi.bla)
-	cgi_envps.push_back(((std::string)"SCRIPT_NAME=").append(get_file_location()));
+	cgi_envps.push_back(((std::string)"SCRIPT_NAME=").append(_uri_location));
 
 	// [RFC] PATH_TRANSLATED -> /DOCUMENT_ROOT + PATH_INFO ; if PATH_INFO is NULL, set to NULL as well
 	// [SLACK] PATH_TRANSLATED -> <server_root>/YoupiBanane -> server_root + location_root
-	cgi_envps.push_back(((((std::string)"PATH_TRANSLATED=").append(server_root)).append("/"))); // NEED UPDATE
+	cgi_envps.push_back(((((std::string)"PATH_TRANSLATED=").append(server_root)).append("/"))); // NEED LOCATION ROOT
 
-	// [SLACK] SCRIPT_FILENAME -> <server_root>/YoupiBanane/youpi.bla
+	// [SLACK] SCRIPT_FILENAME -> <server_root>/YoupiBanane/youpi.bla -> server_root + file_location
+	cgi_envps.push_back(((((std::string)"SCRIPT_FILENAME=").append(server_root)).append("/")).append(_file_location));
 
 	// [ROOT] REQUEST_URI -> /SCRIPT_NAME + ? QUERY_STRING /test.php?foo=bar
-	std::string	request_uri = ((std::string)"REQUEST_URI=/").append(get_location_without_root(_file_location)).append("?");
+	std::string	request_uri = ((std::string)"REQUEST_URI=/").append(_uri_location).append("?");
 	cgi_envps.push_back(request_uri.append(get_body()));
 
 	char 	**envp = new char *[cgi_envps.size() + 1];
@@ -587,6 +594,8 @@ header_handler::vector	header_handler::get_allow() {return _allow;}
 std::string	            header_handler::get_response_file() {return (_response_file);}
 std::string             header_handler::get_method() {return _method;}
 std::string             header_handler::get_file_location() {return _file_location;}
+std::string             header_handler::get_uri_location() {return _uri_location;}
+std::string				header_handler::get_location_block_root() { return _location_block_root; }
 std::string             header_handler::get_protocol() {return _protocol;}
 std::string             header_handler::get_requested_host() {return _requested_host;}
 std::string             header_handler::get_user_agent() {return _user_agent;}

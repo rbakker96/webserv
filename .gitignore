@@ -5,3 +5,7 @@
 CMakeLists.txt
 
 /practice_CGI
+
+server_files/www/temp0
+
+server_files/www/downloads/file_should_exist_after
