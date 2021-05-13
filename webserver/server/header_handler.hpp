@@ -75,6 +75,7 @@ protected:
 	vector			_allow;
 	std::string		_method;
 	std::string		_file_location;
+	std::string 	_uri_location;
 	std::string		_protocol;
 	std::string		_requested_host;
 	std::string		_user_agent;
@@ -141,6 +142,7 @@ public:
 	std::string	    get_response_file();
     std::string     get_method();
     std::string     get_file_location();
+    std::string     get_uri_location();
     std::string     get_protocol();
     std::string     get_requested_host();
     std::string     get_user_agent();
