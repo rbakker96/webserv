@@ -6,7 +6,7 @@
 /*   By: gbouwen <marvin@codam.nl>                    +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2021/05/03 12:34:40 by gbouwen       #+#    #+#                 */
-/*   Updated: 2021/05/12 17:25:35 by gbouwen       ########   odam.nl         */
+/*   Updated: 2021/05/13 11:07:09 by gbouwen       ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -210,6 +210,8 @@ int	compare_file(std::string file_location, std::string location_context)
 	while (1)
 	{
 		int	end = parent_directory.find_last_of('/');
+		if (end == 0 && (check_if_file(parent_directory)))
+			return (1);
 		if (end == -1)
 			break ;
 		parent_directory = file_location.substr(0, end);
@@ -222,12 +224,13 @@ int	compare_file(std::string file_location, std::string location_context)
 int			header_handler::match_location_block(header_handler::location_vector location_blocks, std::string file_location)
 {
 	std::string	location_context;
-	std::string	referer_location;
+	std::string	referer_location = get_referer_part();
 
 	for (size_t index = 0; index < location_blocks.size(); index++)
 	{
 		location_context = location_blocks[index].get_location_context();
-		referer_location = get_referer_part();
+		std::cout << "LOCATION_CONTEXT : " << location_context << std::endl;
+		std::cout << "FILE_LOCATION : " << file_location << std::endl;
 		if (!_referer.empty() && check_if_file(referer_location) == 0 && location_context == referer_location)
 			return (index);
 		else if (_referer.empty() || check_if_file(referer_location) == 1)
