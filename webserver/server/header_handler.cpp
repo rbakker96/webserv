@@ -6,7 +6,7 @@
 /*   By: gbouwen <marvin@codam.nl>                    +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2021/05/03 12:34:40 by gbouwen       #+#    #+#                 */
-/*   Updated: 2021/05/13 11:12:01 by gbouwen       ########   odam.nl         */
+/*   Updated: 2021/05/13 13:50:24 by gbouwen       ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -313,7 +313,8 @@ void        header_handler::verify_file_location(header_handler::location_vector
 	else
 	{
         _allow = location_blocks[index].get_method();
-		correct_location = location_blocks[index].get_root();
+		_location_block_root = location_blocks[index].get_root();
+		correct_location = _location_block_root;
 		correct_location.append(get_subdirectories_referer(referer_part));
 		std::cout << "0 correct_location : " << correct_location << std::endl;
 		correct_location.append(get_subdirectories(_uri_location));
@@ -585,6 +586,7 @@ std::string	            header_handler::get_response_file() {return (_response_f
 std::string             header_handler::get_method() {return _method;}
 std::string             header_handler::get_file_location() {return _file_location;}
 std::string             header_handler::get_uri_location() {return _uri_location;}
+std::string				header_handler::get_location_block_root() { return _location_block_root; }
 std::string             header_handler::get_protocol() {return _protocol;}
 std::string             header_handler::get_requested_host() {return _requested_host;}
 std::string             header_handler::get_user_agent() {return _user_agent;}
