@@ -49,7 +49,7 @@ void     file_descriptors::handled_request_update(int fileFD, int activeFD, std:
         set_read_buffer(fileFD);
     else
         set_write_buffer(activeFD);
-    if (content_type == "php" || method == "PUT")
+    if (content_type == "php" || method == "PUT" || (content_type == "bla" && method == "POST"))
         set_write_buffer(fileFD);
 }
 

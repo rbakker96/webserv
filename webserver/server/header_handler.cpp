@@ -145,7 +145,7 @@ int        header_handler::handle_request(std::string cgi_file_types, header_han
 		else if (!(stats.st_mode & S_IRUSR))
 			_status = forbidden_; // update the status code after the version is stable
         else if (cgi_file_types.find(verify_content_type()) != std::string::npos)
-            return cgi_request();
+			return cgi_request();
         else if ((fd = open(&_file_location[0], O_RDONLY)) == -1)
 			throw std::runtime_error("Open failed");
     }
@@ -340,6 +340,8 @@ void        header_handler::verify_file_location(header_handler::location_vector
 
 void 		header_handler::verify_method()
 {
+	if (_method == "POST" && verify_content_type() == "bla")
+		return;
 	if (_method == "POST" && get_body().empty())
 		_status = method_not_allowed_;
 	if (!_allow.empty())
@@ -442,6 +444,8 @@ void header_handler::execute_cgi(int fileFD, std::string server_name, int server
 	}
 	else
 		wait(NULL);
+	std::cout << RED << "LEFT CGI\n" << RESET;
+
 }
 
 std::string	get_location_without_root(std::string &file_location)
@@ -466,10 +470,10 @@ char	**header_handler::create_cgi_args()
 	args[1] = ft_strdup(get_location_without_root(_file_location).c_str());
 	args[2] = NULL;
 
-	std::cout << RED << "_content_type: "<< _content_type << std::endl;
-	std::cout << RED << "_file_location: "<< _file_location << std::endl;
 	std::cout << RED << "args[0]: "<< args[0] << std::endl;
 	std::cout << RED << "args[1]: "<< args[1] << RESET << std::endl;
+	std::cout << RED << "_uri_location: " << _uri_location << std::endl << RESET;
+	std::cout << RED << "_file_location: "<< _file_location << std::endl << RESET;
 	return args;
 }
 
@@ -477,6 +481,8 @@ char **header_handler::create_cgi_envp(const std::string &server_name, int serve
 {
 	// for later
 	// AUTH_TYPE, REMOTE_ADDR, REMOTE_IDENT, REMOTE_USER
+	std::cout << RED << " ENTER ENVP\n" << RESET;
+
 	vector	cgi_envps;
 	char 	server_root[PATH_MAX];
 	getcwd(server_root, (size_t)PATH_MAX); // check error
@@ -497,22 +503,36 @@ char **header_handler::create_cgi_envp(const std::string &server_name, int serve
 	// PATH related
 	// [RFC] PATH_INFO -> need to save the part after '.php'; if not existing, set as NULL
 	// [SLACK] PATH_INFO -> URI (/directory/youpi.bla)
-	cgi_envps.push_back(((std::string)"PATH_INFO=").append(_uri_location));
+//	cgi_envps.push_back(((std::string)"PATH_INFO=").append(_uri_location));
+
+	std::string path_info = ((std::string)"PATH_INFO=").append(_uri_location);
+	cgi_envps.push_back(path_info);
 
 	// [RFC] SCRIPT_NAME -> file name of the CGI script
 	// [SLACK] SCRIPT_NAME -> URI (/directory/youpi.bla)
-	cgi_envps.push_back(((std::string)"SCRIPT_NAME=").append(_uri_location));
+	std::string script_name = ((std::string)"SCRIPT_NAME=").append(_uri_location);
+	cgi_envps.push_back(script_name);
 
 	// [RFC] PATH_TRANSLATED -> /DOCUMENT_ROOT + PATH_INFO ; if PATH_INFO is NULL, set to NULL as well
 	// [SLACK] PATH_TRANSLATED -> <server_root>/YoupiBanane -> server_root + location_root
-	cgi_envps.push_back(((((std::string)"PATH_TRANSLATED=").append(server_root)).append("/"))); // NEED LOCATION ROOT
+	std::string path_translated = ((((std::string)"PATH_TRANSLATED=").append(server_root)).append("/")).append(_location_block_root);
+	cgi_envps.push_back(path_translated);
 
 	// [SLACK] SCRIPT_FILENAME -> <server_root>/YoupiBanane/youpi.bla -> server_root + file_location
-	cgi_envps.push_back(((((std::string)"SCRIPT_FILENAME=").append(server_root)).append("/")).append(_file_location));
+	std::string script_filename = ((((std::string)"SCRIPT_FILENAME=").append(server_root)).append("/")).append(_file_location);
+	cgi_envps.push_back(script_filename);
 
 	// [ROOT] REQUEST_URI -> /SCRIPT_NAME + ? QUERY_STRING /test.php?foo=bar
-	std::string	request_uri = ((std::string)"REQUEST_URI=").append(_uri_location).append("?");
-	cgi_envps.push_back(request_uri.append(get_body()));
+//	std::string	request_uri = ((std::string)"REQUEST_URI=").append(_file_location).append("?");
+//	cgi_envps.push_back(request_uri.append(get_body()));
+	std::string request_uri = ((std::string)"REQUEST_URI=/").append(_file_location);
+	cgi_envps.push_back(request_uri);
+
+	std::cout << RED << path_info << std::endl << RESET;
+	std::cout << RED << script_name << std::endl<< RESET;
+	std::cout << RED << path_translated << std::endl<< RESET;
+	std::cout << RED << script_filename << std::endl<< RESET;
+	std::cout << RED << request_uri << std::endl<< RESET;
 
 	char 	**envp = new char *[cgi_envps.size() + 1];
 	int		i = 0;
@@ -522,6 +542,7 @@ char **header_handler::create_cgi_envp(const std::string &server_name, int serve
 		i++;
 	}
 	envp[cgi_envps.size()] = NULL;
+	std::cout << RED << " LEFT ENVP\n" << RESET;
 	return envp;
 }
 
