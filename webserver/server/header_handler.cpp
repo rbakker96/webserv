@@ -6,7 +6,7 @@
 /*   By: gbouwen <marvin@codam.nl>                    +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2021/05/03 12:34:40 by gbouwen       #+#    #+#                 */
-/*   Updated: 2021/05/13 11:07:09 by gbouwen       ########   odam.nl         */
+/*   Updated: 2021/05/13 11:12:01 by gbouwen       ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -176,6 +176,7 @@ int	check_if_file(std::string file_location)
 	extensions.push_back("bla");
 	extensions.push_back("bad_extension");
 	extensions.push_back("pouic");
+	extensions.push_back("pouac");
 
     for (header_handler::vector_iterator it = extensions.begin(); it != extensions.end(); it++) {
         if (file_location.find(*it) != std::string::npos) {
