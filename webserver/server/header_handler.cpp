@@ -443,16 +443,19 @@ std::string	get_location_without_root(std::string &file_location)
 char	**header_handler::create_cgi_args()
 {
 	char	**args = new char *[3];
-//	char 	buf[PATH_MAX];
-//
-//	getcwd(buf, (size_t)PATH_MAX);
-//	if (get_content_type() == "bla")
-//		args[0] = ft_strjoin(buf, "/tester_executables/cgi_tester");
-//	else if (get_content_type() == "php")
+	char 	buf[PATH_MAX];
+
+	getcwd(buf, (size_t)PATH_MAX);
+	if (_file_location.find("php") != std::string::npos)
 		args[0] = ft_strdup("/usr/bin/php");
+	else if (_file_location.find("bla") != std::string::npos)
+		args[0] = ft_strjoin(buf, "/tester_executables/cgi_tester");
 
 	args[1] = ft_strdup(get_location_without_root(_file_location).c_str());
 	args[2] = NULL;
+
+	std::cout << RED << "_content_type: "<< _content_type << std::endl;
+	std::cout << RED << "_file_location: "<< _file_location << std::endl;
 	std::cout << RED << "args[0]: "<< args[0] << std::endl;
 	std::cout << RED << "args[1]: "<< args[1] << RESET << std::endl;
 	return args;
