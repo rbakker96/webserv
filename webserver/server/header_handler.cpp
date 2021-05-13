@@ -39,12 +39,11 @@ header_handler::~header_handler(){
 void        header_handler::parse_request(int fd, header_handler::map request_buffer) {
     map_iterator request                        = request_buffer.find(fd);
     vector request_elements                     = str_to_vector(request->second);
-    parse parse_array[11]                       = { &header_handler::parse_requested_host,
+    parse parse_array[10]                       = { &header_handler::parse_requested_host,
                                                     &header_handler::parse_user_agent,
                                                     &header_handler::parse_language,
                                                     &header_handler::parse_authorization,
                                                     &header_handler::parse_referer,
-                                                    &header_handler::parse_body,
                                                     &header_handler::parse_content_length,
                                                     &header_handler::parse_content_type,
                                                     &header_handler::parse_content_language,
@@ -53,6 +52,7 @@ void        header_handler::parse_request(int fd, header_handler::map request_bu
 
     reset_handler();
     parse_first_line(*request_elements.begin());
+    parse_body(request->second);
     for (vector_iterator it = request_elements.begin(); it != request_elements.end(); it++) {
         int request_value = identify_request_value(*it);
         parse function = parse_array[request_value];
@@ -73,8 +73,6 @@ int         header_handler::identify_request_value(const std::string &str) {
         return authorization_;
     else if (str.find("Referer:") != std::string::npos)
         return referer_;
-    else if ((int)str.length() == _content_length && _content_length != 0)
-        return body_;
     else if (str.find("Content-Length:") != std::string::npos)
         return content_length_;
     else if (str.find("Content-Type:") != std::string::npos)
@@ -105,12 +103,25 @@ void        header_handler::parse_first_line(const std::string &str) {
     _protocol = str.substr(end + 1);
 }
 
+void        header_handler::parse_body(const std::string &str) {
+    int header_size;
+
+    if ((header_size = (int)str.find("\r\n\r\n")) != -1) {
+        if (str.find("Content-Length:") != std::string::npos) {
+            _body = str.substr(header_size + 4);
+        }
+        else if (str.find("chunked") != std::string::npos) {
+            std::string body = str.substr(header_size + 4);
+            _body = body.substr(0, body.length() - 4);
+        }
+    }
+}
+
 void        header_handler::parse_requested_host(const std::string &str) {_requested_host = parse_string(str);}
 void        header_handler::parse_user_agent(const std::string &str) {_user_agent = parse_string(str);}
 void        header_handler::parse_language(const std::string &str) {_accept_language = parse_string(str);}
 void        header_handler::parse_authorization(const std::string &str) {_authorization = parse_string(str);}
 void        header_handler::parse_referer(const std::string &str) {_referer = parse_string(str);}
-void        header_handler::parse_body(const std::string &str) {_body = str;}
 void        header_handler::parse_content_length(const std::string &str) {_content_length = parse_number(str);}
 void        header_handler::parse_content_type(const std::string &str) {_content_type = parse_string(str);}
 void        header_handler::parse_content_language(const std::string &str) {_content_language = parse_string(str);}
@@ -119,7 +130,7 @@ void        header_handler::invalid_argument(const std::string &str) {parse_inva
 
 
 //-------------------------------------- HANDLE functions --------------------------------------
-int        header_handler::handle_request(std::string cgi_file_types, header_handler::location_vector location_blocks, std::string error_page, int max_file_size) {
+int        header_handler::handle_request(std::string cgi_file_types, header_handler::location_vector location_blocks, std::string error_page) {
 	struct  stat stats;
 	int		fd = unused_;
 
@@ -128,7 +139,7 @@ int        header_handler::handle_request(std::string cgi_file_types, header_han
 	if (_status < error_code_)
     {
         if (_method == "PUT")
-            fd = put_request(max_file_size);
+            fd = put_request();
 		else if (stat(_file_location.c_str(), &stats) == -1)
 			_status = not_found_; // update the status code after the version is stable
 		else if (!(stats.st_mode & S_IRUSR))
@@ -372,7 +383,7 @@ int			header_handler::cgi_request()
 	return (cgiFD);
 }
 
-int     	header_handler::put_request(int max_file_size)
+int     	header_handler::put_request()
 {
     int fd = unused_;
 	struct  stat stats;
@@ -380,9 +391,7 @@ int     	header_handler::put_request(int max_file_size)
     std::string file = _file_location.substr(_file_location.find_last_of('/') + 1);
     std::string put_file = folder.append(file);
 
-	if ((int)_body.length() > max_file_size)
-		_status = payload_too_large_;
-	else if (stat(put_file.c_str(), &stats) != -1) {
+	if (stat(put_file.c_str(), &stats) != -1) {
         _status = no_content_;
         fd = open(&put_file[0], O_RDWR | O_TRUNC, S_IRWXU);
     }
