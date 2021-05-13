@@ -6,7 +6,7 @@
 /*   By: roybakker <roybakker@student.codam.nl>       +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2021/04/07 13:23:53 by roybakker     #+#    #+#                 */
-/*   Updated: 2021/05/11 14:24:48 by gbouwen       ########   odam.nl         */
+/*   Updated: 2021/05/13 13:50:25 by gbouwen       ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -52,8 +52,8 @@ public:
 	typedef		void (header_handler::*parse)(const std::string &str);
 
 	enum		location_values{requested_host_ = 0, user_agent_ = 1, language_ = 2, authorization_ = 3,
-								referer_ = 4, body_ = 5, content_length_ = 6, content_type_ = 7,
-								content_language_ = 8, content_location_ = 9, unknown_ = 10,
+								referer_ = 4, content_length_ = 5, content_type_ = 6,
+								content_language_ = 7, content_location_ = 8, unknown_ = 9,
 								error_code_ = 400, folder_ = -1, unused_ = -1};
 	enum		status_values{	okay_ = 200, created_ = 201, no_content_ = 204,
 								bad_request_ = 400, unauthorized_ = 401, forbidden_ = 403,
@@ -76,6 +76,7 @@ protected:
 	std::string		_method;
 	std::string		_file_location;
 	std::string 	_uri_location;
+	std::string		_location_block_root;
 	std::string		_protocol;
 	std::string		_requested_host;
 	std::string		_user_agent;
@@ -108,8 +109,8 @@ public:
     void            invalid_argument(const std::string &str);
 
     //HANDLE functions
-    int             handle_request(std::string cgi_file_types, location_vector location_blocks, std::string error_page, int max_file_size);
-    int             put_request(int max_file_size);
+    int             handle_request(std::string cgi_file_types, location_vector location_blocks, std::string error_page);
+    int             put_request();
     void            write_put_file(int file_fd);
 	int             cgi_request();
     void            verify_file_location(location_vector location_blocks, std::string error_page);
@@ -143,6 +144,7 @@ public:
     std::string     get_method();
     std::string     get_file_location();
     std::string     get_uri_location();
+	std::string		get_location_block_root();
     std::string     get_protocol();
     std::string     get_requested_host();
     std::string     get_user_agent();
