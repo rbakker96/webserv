@@ -6,7 +6,7 @@
 /*   By: gbouwen <marvin@codam.nl>                    +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2021/05/03 12:34:40 by gbouwen       #+#    #+#                 */
-/*   Updated: 2021/05/12 17:17:39 by gbouwen       ########   odam.nl         */
+/*   Updated: 2021/05/13 11:12:01 by gbouwen       ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -176,6 +176,7 @@ int	check_if_file(std::string file_location)
 	extensions.push_back("bla");
 	extensions.push_back("bad_extension");
 	extensions.push_back("pouic");
+	extensions.push_back("pouac");
 
     for (header_handler::vector_iterator it = extensions.begin(); it != extensions.end(); it++) {
         if (file_location.find(*it) != std::string::npos) {
@@ -210,10 +211,12 @@ int	compare_file(std::string file_location, std::string location_context)
 	while (1)
 	{
 		int	end = parent_directory.find_last_of('/');
+		if (end == 0 && (check_if_file(parent_directory)))
+			return (1);
 		if (end == -1)
 			break ;
 		parent_directory = file_location.substr(0, end);
-		if (parent_directory == location_context || parent_directory.empty())
+		if (parent_directory == location_context)
 			return (1);
 	}
 	return (0);
@@ -222,12 +225,13 @@ int	compare_file(std::string file_location, std::string location_context)
 int			header_handler::match_location_block(header_handler::location_vector location_blocks, std::string file_location)
 {
 	std::string	location_context;
-	std::string	referer_location;
+	std::string	referer_location = get_referer_part();
 
 	for (size_t index = 0; index < location_blocks.size(); index++)
 	{
 		location_context = location_blocks[index].get_location_context();
-		referer_location = get_referer_part();
+		std::cout << "LOCATION_CONTEXT : " << location_context << std::endl;
+		std::cout << "FILE_LOCATION : " << file_location << std::endl;
 		if (!_referer.empty() && check_if_file(referer_location) == 0 && location_context == referer_location)
 			return (index);
 		else if (_referer.empty() || check_if_file(referer_location) == 1)
@@ -302,6 +306,7 @@ void        header_handler::verify_file_location(header_handler::location_vector
 	std::string	referer_part = get_referer_part();
 	struct stat	s;
 
+	std::cout << "INDEX : " << index << std::endl;
 	if (index == -1)
 		correct_location = generate_error_page_location(error_page);
 	else
@@ -309,8 +314,11 @@ void        header_handler::verify_file_location(header_handler::location_vector
         _allow = location_blocks[index].get_method();
 		correct_location = location_blocks[index].get_root();
 		correct_location.append(get_subdirectories_referer(referer_part));
+		std::cout << "0 correct_location : " << correct_location << std::endl;
 		correct_location.append(get_subdirectories(_file_location));
+		std::cout << "1 correct_location : " << correct_location << std::endl;
 		correct_location.append(get_file(location_blocks[index], _file_location, correct_location));
+		std::cout << "2 correct_location : " << correct_location << std::endl;
 	}
 	if (stat(correct_location.c_str(), &s) == -1)
 		correct_location = generate_error_page_location(error_page);
@@ -435,12 +443,12 @@ std::string	get_location_without_root(std::string &file_location)
 char	**header_handler::create_cgi_args()
 {
 	char	**args = new char *[3];
-	char 	buf[PATH_MAX];
-
-	getcwd(buf, (size_t)PATH_MAX);
-	if (get_content_type() == "bla")
-		args[0] = ft_strjoin(buf, "/tester_executables/cgi_tester");
-	else if (get_content_type() == "php")
+//	char 	buf[PATH_MAX];
+//
+//	getcwd(buf, (size_t)PATH_MAX);
+//	if (get_content_type() == "bla")
+//		args[0] = ft_strjoin(buf, "/tester_executables/cgi_tester");
+//	else if (get_content_type() == "php")
 		args[0] = ft_strdup("/usr/bin/php");
 
 	args[1] = ft_strdup(get_location_without_root(_file_location).c_str());
