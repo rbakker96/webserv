@@ -501,7 +501,7 @@ char **header_handler::create_cgi_envp(const std::string &server_name, int serve
 	cgi_envps.push_back(((((std::string)"SCRIPT_FILENAME=").append(server_root)).append("/")).append(_file_location));
 
 	// [ROOT] REQUEST_URI -> /SCRIPT_NAME + ? QUERY_STRING /test.php?foo=bar
-	std::string	request_uri = ((std::string)"REQUEST_URI=/").append(_uri_location).append("?");
+	std::string	request_uri = ((std::string)"REQUEST_URI=").append(_uri_location).append("?");
 	cgi_envps.push_back(request_uri.append(get_body()));
 
 	char 	**envp = new char *[cgi_envps.size() + 1];
