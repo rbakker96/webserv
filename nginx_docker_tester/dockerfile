@@ -11,11 +11,11 @@ RUN apt-get install -y nginx openssl
 RUN		apt-get -y install php7.3 php-mysql php-fpm php-cli php-mbstring
 
 # copy nginx config file to the right place
-COPY srcs/test_nginx.conf /etc/nginx/sites-available/localhost
-RUN mkdir /tmp/downloads
-COPY srcs/index.html /tmp/downloads
-RUN mkdir /tmp/downloads/test
-COPY srcs/test_index.html /tmp/downloads/test/index.html
+COPY srcs/nginx.conf /etc/nginx/sites-available/localhost
+COPY srcs/index.html /var/www/html
+COPY srcs/style.css /var/www/html
+RUN	 mkdir /var/www/html/test
+COPY srcs/test_index.html /var/www/html/test
 
 # symlin this to sites-enabled to enable it
 RUN ln -s /etc/nginx/sites-available/localhost /etc/nginx/sites-enabled

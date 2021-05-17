@@ -6,7 +6,7 @@
 /*   By: gbouwen <marvin@codam.nl>                    +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2021/05/03 12:34:40 by gbouwen       #+#    #+#                 */
-/*   Updated: 2021/05/17 11:26:36 by gbouwen       ########   odam.nl         */
+/*   Updated: 2021/05/17 14:18:30 by gbouwen       ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -176,127 +176,39 @@ std::string	header_handler::get_referer_part()
 	return (result);
 }
 
-int	check_if_file(std::string file_location)
+std::string	remove_duplicate_forward_slashes(std::string location)
 {
-	std::vector<std::string>	extensions;
-    extensions.push_back(".html");
-    extensions.push_back(".php");
-    extensions.push_back(".css");
-    extensions.push_back(".ico");
-    extensions.push_back(".png");
-	extensions.push_back(".bla");
-	extensions.push_back(".bad_extension");
-	extensions.push_back(".pouic");
-	extensions.push_back(".pouac"); // check directory first and then file
-
-	// search for entire len after . and strcmp
-    for (header_handler::vector_iterator it = extensions.begin(); it != extensions.end(); it++) {
-        if (file_location.find(*it) != std::string::npos) {
-			return (1);
-		}
-    }
-    return 0;
-}
-
-int	compare_directory(std::string file_location, std::string location_context)
-{
-	std::string	parent_directory = file_location;
-
-	if (file_location == location_context)
-		return (1);
-	while (1)
-	{
-		int	end = parent_directory.find_last_of('/');
-		if (end == 0)
-			break ;
-		parent_directory = file_location.substr(0, end);
-		if (parent_directory == location_context)
-			return (1);
-	}
-	return (0);
-}
-
-int	compare_file(std::string file_location, std::string location_context)
-{
-	std::string	parent_directory = file_location;
-
-	while (1)
-	{
-		int	end = parent_directory.find_last_of('/');
-		if (end == 0 && (check_if_file(parent_directory)))
-			return (1);
-		if (end == -1)
-			break ;
-		parent_directory = file_location.substr(0, end);
-		if (parent_directory == location_context)
-			return (1);
-	}
-	return (0);
-}
-
-int			header_handler::match_location_block(header_handler::location_vector location_blocks, std::string file_location)
-{
-	std::string	location_context;
-	std::string	referer_location = get_referer_part();
-
-	for (size_t index = 0; index < location_blocks.size(); index++)
-	{
-		location_context = location_blocks[index].get_location_context();
-		std::cout << "LOCATION_CONTEXT : " << location_context << std::endl;
-		std::cout << "FILE_LOCATION : " << file_location << std::endl;
-		std::cout << "REFERER_LOCATION : " << referer_location << std::endl;
-		if (!_referer.empty() && check_if_file(referer_location) == 0 && location_context == referer_location)
-			return (index);
-		else if (_referer.empty() || check_if_file(referer_location) == 1)
-		{
-			if (check_if_file(file_location) == 1 && compare_file(file_location, location_context) == 1)
-				return (index);
-			else if (check_if_file(file_location) == 0 && compare_directory(file_location, location_context) == 1)
-				return (index);
-		}
-	}
-	return (-1);
-}
-
-std::string	get_subdirectories(std::string str)
-{
-	int			start_index;
-	int			end_index;
-	std::string	subdir;
-
-	start_index = str.find_first_of('/', 1);
-	if (start_index == -1)
-		return ("");
-	end_index = str.find_last_of('/', std::string::npos);
-	if (start_index == end_index)
-		subdir = str.substr(start_index, std::string::npos);
-	else
-		subdir = str.substr(start_index, end_index - start_index);
-	if (check_if_file(subdir))
-		return ("");
-	return (subdir);
-}
-
-std::string	get_subdirectories_referer(std::string str)
-{
-	if (check_if_file(str))
-		return ("");
-	else
-		return (get_subdirectories(str));
-}
-
-std::string	get_file(location_context location_block, std::string uri_location, std::string correct_location)
-{
-	std::string	temp;
 	std::string	result;
+	size_t		x = 0;
+
+	while (x < location.length())
+	{
+		result += location[x];
+		if (location[x] == '/')
+		{
+			while (location[x] == '/')
+				x++;
+		}
+		else
+			x++;
+	}
+	return (result);
+}
+
+std::string	get_file(location_context location_block, std::string location)
+{
+	std::string	result;
+	std::string	temp;
 	struct stat	s;
 
-	temp = correct_location;
-	temp.append(uri_location);
-	result = uri_location;
-	if (stat(temp.c_str(), &s) == 0)
+	location = remove_duplicate_forward_slashes(location);
+	result = location;
+	temp = location;
+	if (stat(location.c_str(), &s) == 0)
 	{
-		if (s.st_mode & S_IFDIR)
+		if (s.st_mode & S_IFREG)
+			return (result);
+		else if (s.st_mode & S_IFDIR)
 		{
 			temp.append(location_block.get_index());
 			if (stat(temp.c_str(), &s) == -1)
@@ -304,16 +216,48 @@ std::string	get_file(location_context location_block, std::string uri_location, 
 				if (location_block.get_autoindex())
 					result.append("/index.php");
 				else
-					result = "/error_page";
+					result = "not found";
 			}
 			else
 				result.append(location_block.get_index());
 		}
-		else if (s.st_mode & S_IFREG)
-			result = uri_location;
 	}
 	else
-		result = "/error_page";
+		result = "not found";
+	return (result);
+}
+
+std::string	header_handler::match_location_block(header_handler::location_vector location_blocks, std::string uri_location)
+{
+	std::string	result;
+	std::string	referer_location = get_referer_part();
+	referer_location = remove_duplicate_forward_slashes(referer_location);
+	uri_location = remove_duplicate_forward_slashes(uri_location);
+
+	for (size_t index = 0; index < location_blocks.size(); index++)
+	{
+		_allow = location_blocks[index].get_method();
+		std::string location_context = location_blocks[index].get_location_context();
+		result = location_blocks[index].get_root();
+		if (!_referer.empty())
+		{
+			struct stat	s;
+
+			result.append(referer_location);
+			if (stat(result.c_str(), &s) == 0)
+			{
+				if (s.st_mode & S_IFREG)
+				{
+					int	end = result.find_last_of('/');
+					result.substr(0, end);
+				}
+			}
+		}
+		result.append(uri_location);
+		result = get_file(location_blocks[index], result);
+		if (result.compare("not found") != 0)
+			break ;
+	}
 	return (result);
 }
 
@@ -325,28 +269,12 @@ std::string	header_handler::generate_error_page_location(std::string error_page)
 }
 
 void        header_handler::verify_file_location(header_handler::location_vector location_blocks, std::string error_page) {
-	int 		index = match_location_block(location_blocks, _uri_location);
-	std::string	correct_location;
-	std::string	referer_part = get_referer_part();
-	struct stat	s;
-
-	std::cout << "INDEX : " << index << std::endl;
-	if (index == -1)
-		correct_location = generate_error_page_location(error_page);
+	std::string result = match_location_block(location_blocks, _uri_location);
+	if (result.compare("not found") == 0)
+		_file_location = generate_error_page_location(error_page);
 	else
-	{
-        _allow = location_blocks[index].get_method();
-		_location_block_root = location_blocks[index].get_root();
-		correct_location = _location_block_root;
-		std::cout << "0 correct_location : " << correct_location << std::endl;
-		correct_location.append(get_subdirectories_referer(referer_part));
-		std::cout << "1 correct_location : " << correct_location << std::endl;
-		correct_location.append(get_file(location_blocks[index], _uri_location, correct_location));
-		std::cout << "2 correct_location : " << correct_location << std::endl;
-	}
-	if (stat(correct_location.c_str(), &s) == -1)
-		correct_location = generate_error_page_location(error_page);
-	_file_location = correct_location;
+		_file_location = result;
+	_file_location = remove_duplicate_forward_slashes(_file_location);
 }
 
 void 		header_handler::verify_method()
