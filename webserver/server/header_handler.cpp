@@ -130,7 +130,7 @@ void        header_handler::invalid_argument(const std::string &str) {parse_inva
 
 
 //-------------------------------------- HANDLE functions --------------------------------------
-int        header_handler::handle_request(std::string cgi_file_types, header_handler::location_vector location_blocks, std::string error_page) {
+int        header_handler::handle_request(std::string cgi_file_types, header_handler::location_vector location_blocks, std::string error_page, int max_file_size) {
 	struct  stat stats;
 	int		fd = unused_;
 
@@ -140,6 +140,8 @@ int        header_handler::handle_request(std::string cgi_file_types, header_han
     {
         if (_method == "PUT")
             fd = put_request();
+        else if (_method == "POST" && !_body.empty())
+            fd = post_request(max_file_size);
 		else if (stat(_file_location.c_str(), &stats) == -1)
 			_status = not_found_; // update the status code after the version is stable
 		else if (!(stats.st_mode & S_IRUSR))
@@ -344,8 +346,7 @@ void 		header_handler::verify_method()
 		_status = method_not_allowed_;
 	if (!_allow.empty())
 	{
-		for (vector_iterator it = _allow.begin(); it != _allow.end(); it++)
-		{
+		for (vector_iterator it = _allow.begin(); it != _allow.end(); it++) {
 			if (*it == _method)
 				return;
 		}
@@ -407,7 +408,23 @@ int     	header_handler::put_request()
     return fd;
 }
 
-void        header_handler::write_put_file(int file_fd) {
+int         header_handler::post_request(int max_file_size) {
+    int fd = unused_;
+    std::string put_file = "server_files/www/downloads/POST_file";
+
+    if (max_file_size < _content_length) {
+        _status = payload_too_large_;
+        std::cout << "Status in post request = " << _status << std::endl;
+        return fd;
+    }
+    _status = okay_;
+    fd = open(&put_file[0], O_RDWR | O_TRUNC| O_CREAT, S_IRWXU);
+    if (fd == -1)
+        throw std::runtime_error("Open failed");
+    return fd;
+}
+
+void        header_handler::write_body_to_file(int file_fd) {
     if ((write(file_fd, _body.c_str(), _body.length())) == -1)
         throw std::runtime_error("Write failed");
 }

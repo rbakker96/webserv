@@ -35,7 +35,7 @@ class webserver {
 public:
 	typedef     std::vector<std::string>      			vector;
 	typedef     std::vector<std::string>::iterator      vector_iterator;
-    enum        webserver_values{ unused_ = -1, ready_for_use_ = -1 };
+    enum        webserver_values{ unused_ = -1, ready_for_use_ = -1, error_ = 400};
 
 private:
     std::vector<server>     _servers;
