@@ -6,7 +6,7 @@
 /*   By: gbouwen <marvin@codam.nl>                    +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2021/05/03 12:34:40 by gbouwen       #+#    #+#                 */
-/*   Updated: 2021/05/17 14:29:18 by gbouwen       ########   odam.nl         */
+/*   Updated: 2021/05/17 15:58:27 by gbouwen       ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -216,7 +216,7 @@ std::string	get_file(location_context location_block, std::string location)
 				if (location_block.get_autoindex())
 					result.append("/index.php");
 				else
-					result = "not found";
+					result = "not found"; // result = forbidden instead?
 			}
 			else
 				result.append(location_block.get_index());
@@ -224,6 +224,19 @@ std::string	get_file(location_context location_block, std::string location)
 	}
 	else
 		result = "not found";
+	return (result);
+}
+
+std::string	skip_first_directory(std::string uri_location)
+{
+	int			start;
+	std::string	result;
+
+	start = uri_location.find_first_of('/', 1);
+	if (start == -1)
+		result = "";
+	else
+		result = uri_location.substr(start, std::string::npos);
 	return (result);
 }
 
@@ -254,7 +267,10 @@ std::string	header_handler::match_location_block(header_handler::location_vector
 				}
 			}
 		}
-		result.append(uri_location);
+		if (location_blocks[index].get_redirect())
+			result.append(skip_first_directory(uri_location));
+		else
+			result.append(uri_location);
 		result = get_file(location_blocks[index], result);
 		if (result.compare("not found") != 0)
 			break ;

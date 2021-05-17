@@ -16,6 +16,7 @@ COPY srcs/index.html /var/www/html
 COPY srcs/style.css /var/www/html
 RUN	 mkdir /var/www/html/test
 COPY srcs/test_index.html /var/www/html/test
+RUN mkdir /var/www/html/test/subdirectory
 
 # symlin this to sites-enabled to enable it
 RUN ln -s /etc/nginx/sites-available/localhost /etc/nginx/sites-enabled
