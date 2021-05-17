@@ -103,16 +103,37 @@ void        header_handler::parse_first_line(const std::string &str) {
     _protocol = str.substr(end + 1);
 }
 
+#include <stdlib.h>
 void        header_handler::parse_body(const std::string &str) {
     int header_size;
 
     if ((header_size = (int)str.find("\r\n\r\n")) != -1) {
+        header_size += 4;
         if (str.find("Content-Length:") != std::string::npos) {
-            _body = str.substr(header_size + 4);
+            _body = str.substr(header_size);
         }
         else if (str.find("chunked") != std::string::npos) {
-            std::string body = str.substr(header_size + 4);
-            _body = body.substr(0, body.length() - 4);
+            std::string chunked_body = str.substr(header_size);
+            std::cout << CYAN << "chucked body size = " << chunked_body.size() << std::endl;
+            int pos = header_size;
+            long int chunk_size = 0;
+            char * pEnd;
+            while(true) {
+                int size = (int)str.find("\r\n", pos);
+                std::cout << CYAN << "size = " << size << RESET << std::endl;
+                std::string hex_size = str.substr(pos, (size-pos));
+//                if ((chunk_size = convert_hex_to_int(hex_size)) == 0)
+                if ((chunk_size = strtol(hex_size.c_str(), &pEnd, 16)) == 0)
+                    break;
+                std::cout << CYAN << "CHUNK size = " << chunk_size << RESET << std::endl;
+                std::cout << CYAN << "size = " << size << RESET << std::endl;
+                _body.append(chunked_body.substr((size-pos), chunk_size-4));
+                std::cout << CYAN << "body = " << _body << RESET << std::endl;
+                std::cout << CYAN << "body size  = " << _body.size() << RESET << std::endl;
+                pos = size + chunk_size + 8;
+            }
+//            std::string body = str.substr(header_size);
+//            _body = body.substr(0, body.length() - 4);
         }
     }
 }
