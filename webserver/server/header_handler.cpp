@@ -10,6 +10,7 @@
 /*                                                                            */
 /* ************************************************************************** */
 
+#include <sstream>
 #include "header_handler.hpp"
 #include "../helper/helper.hpp"
 
@@ -428,22 +429,22 @@ std::string	get_correct_directory(std::string &file_location)
 void header_handler::execute_cgi(int fileFD, std::string server_name, int server_port)
 {
 	pid_t	pid;
+	int 	status = 0;
 
 	pid = fork();
 	if (pid == -1)
 		throw std::runtime_error("Fork failed");
 	if (pid == 0)
 	{
-		// error management
-		char	**args = create_cgi_args();
-		char 	**envp = create_cgi_envp(server_name, server_port);
-		chdir(get_correct_directory(_file_location).c_str());
-		close(STDOUT_FILENO);
+		char	**args = create_cgi_args(); // error management
+		char 	**envp = create_cgi_envp(server_name, server_port); // error management
+
 		dup2(fileFD, STDOUT_FILENO);
 		execve(args[0], args, envp);
+		exit(EXIT_FAILURE);
 	}
 	else
-		wait(NULL);
+		waitpid(pid, &status, 0);
 	std::cout << RED << "LEFT CGI\n" << RESET;
 
 }
@@ -459,15 +460,16 @@ std::string	get_location_without_root(std::string &file_location)
 char	**header_handler::create_cgi_args()
 {
 	char	**args = new char *[3];
-	char 	buf[PATH_MAX];
+	char 	server_root[PATH_MAX];
 
-	getcwd(buf, (size_t)PATH_MAX);
+	getcwd(server_root, (size_t)PATH_MAX);
 	if (_file_location.find(".php") != std::string::npos)
 		args[0] = ft_strdup("/usr/bin/php");
 	else if (_file_location.find(".bla") != std::string::npos)
-		args[0] = ft_strjoin(buf, "/tester_executables/cgi_tester");
+		args[0] = ft_strjoin(server_root, "/tester_executables/cgi_tester");
 
-	args[1] = ft_strdup(get_location_without_root(_file_location).c_str());
+	char *tmp = ft_strjoin(server_root, "/");
+	args[1] = ft_strjoin(tmp, _file_location.c_str());
 	args[2] = NULL;
 
 	std::cout << RED << "args[0]: "<< args[0] << std::endl;
@@ -481,68 +483,43 @@ char **header_handler::create_cgi_envp(const std::string &server_name, int serve
 {
 	// for later
 	// AUTH_TYPE, REMOTE_ADDR, REMOTE_IDENT, REMOTE_USER
-	std::cout << RED << " ENTER ENVP\n" << RESET;
+	std::cout << "ENTER ENVP\n" << RESET;
 
 	vector	cgi_envps;
 	char 	server_root[PATH_MAX];
 	getcwd(server_root, (size_t)PATH_MAX); // check error
 
-	if (_content_length)
-	{
-		cgi_envps.push_back(((std::string)"CONTENT_LENGTH=").append(ft_itoa(get_content_length()))); //leaks ??
-		cgi_envps.push_back(((std::string)"CONTENT_TYPE=").append(get_content_type()));
-	}
+	cgi_envps.push_back((std::string)"AUTH_TYPE=");
+	cgi_envps.push_back(((std::string)"CONTENT_LENGTH=").append(ft_itoa(get_content_length()))); //leaks ??
+	cgi_envps.push_back(((std::string)"CONTENT_TYPE=").append(get_content_type()));
 	cgi_envps.push_back((std::string)"GATEWAY_INTERFACE=CGI/1.1");
-	cgi_envps.push_back((std::string)"SERVER_SOFTWARE=webserv/1.1");
-	cgi_envps.push_back(((std::string)"QUERY_STRING=").append(get_body()));
+	cgi_envps.push_back((std::string)"HTTP_REFERER=");
+	cgi_envps.push_back(((std::string)"PATH_INFO=").append(_uri_location));
+	cgi_envps.push_back(((((std::string)"PATH_TRANSLATED=").append(server_root)).append("/")).append(_location_block_root).append(_uri_location));
+	cgi_envps.push_back(((std::string)"QUERY_STRING="));
+	cgi_envps.push_back(((std::string)"REDIRECT_STATUS=true"));
+	cgi_envps.push_back(((std::string)"REMOTE_IDENT="));
+	cgi_envps.push_back(((std::string)"REMOTE_USER="));
 	cgi_envps.push_back(((std::string)"REQUEST_METHOD=").append(get_method()));
-	cgi_envps.push_back(((std::string)"SERVER_PROTOCOL=").append(get_protocol()));
+	cgi_envps.push_back(((std::string)"REQUEST_URI=").append(_uri_location));
+	cgi_envps.push_back(((((std::string)"SCRIPT_FILENAME=").append(server_root)).append("/")).append(_file_location));
+	cgi_envps.push_back(((std::string)"SCRIPT_NAME=").append(get_location_without_root(_uri_location)));
 	cgi_envps.push_back(((std::string)"SERVER_NAME=").append(server_name));
 	cgi_envps.push_back(((std::string)"SERVER_PORT=").append(ft_itoa(server_port)));
-
-	// PATH related
-	// [RFC] PATH_INFO -> need to save the part after '.php'; if not existing, set as NULL
-	// [SLACK] PATH_INFO -> URI (/directory/youpi.bla)
-//	cgi_envps.push_back(((std::string)"PATH_INFO=").append(_uri_location));
-
-	std::string path_info = ((std::string)"PATH_INFO=").append(_uri_location);
-	cgi_envps.push_back(path_info);
-
-	// [RFC] SCRIPT_NAME -> file name of the CGI script
-	// [SLACK] SCRIPT_NAME -> URI (/directory/youpi.bla)
-	std::string script_name = ((std::string)"SCRIPT_NAME=").append(_uri_location);
-	cgi_envps.push_back(script_name);
-
-	// [RFC] PATH_TRANSLATED -> /DOCUMENT_ROOT + PATH_INFO ; if PATH_INFO is NULL, set to NULL as well
-	// [SLACK] PATH_TRANSLATED -> <server_root>/YoupiBanane -> server_root + location_root
-	std::string path_translated = ((((std::string)"PATH_TRANSLATED=").append(server_root)).append("/")).append(_location_block_root);
-	cgi_envps.push_back(path_translated);
-
-	// [SLACK] SCRIPT_FILENAME -> <server_root>/YoupiBanane/youpi.bla -> server_root + file_location
-	std::string script_filename = ((((std::string)"SCRIPT_FILENAME=").append(server_root)).append("/")).append(_file_location);
-	cgi_envps.push_back(script_filename);
-
-	// [ROOT] REQUEST_URI -> /SCRIPT_NAME + ? QUERY_STRING /test.php?foo=bar
-//	std::string	request_uri = ((std::string)"REQUEST_URI=").append(_file_location).append("?");
-//	cgi_envps.push_back(request_uri.append(get_body()));
-	std::string request_uri = ((std::string)"REQUEST_URI=/").append(_file_location);
-	cgi_envps.push_back(request_uri);
-
-	std::cout << RED << path_info << std::endl << RESET;
-	std::cout << RED << script_name << std::endl<< RESET;
-	std::cout << RED << path_translated << std::endl<< RESET;
-	std::cout << RED << script_filename << std::endl<< RESET;
-	std::cout << RED << request_uri << std::endl<< RESET;
+	cgi_envps.push_back(((std::string)"SERVER_PROTOCOL=").append(get_protocol()));
+	cgi_envps.push_back((std::string)"SERVER_SOFTWARE=HTTP 1.1");
 
 	char 	**envp = new char *[cgi_envps.size() + 1];
 	int		i = 0;
 
 	for (vector_iterator it = cgi_envps.begin(); it != cgi_envps.end(); it++) {
 		envp[i] = ft_strdup((*it).c_str()); // error check on ft_strdup failure
+		std::cout << CYAN << envp[i] << RESET << std::endl;
 		i++;
 	}
+	std::cout << std::endl;
 	envp[cgi_envps.size()] = NULL;
-	std::cout << RED << " LEFT ENVP\n" << RESET;
+	std::cout << "LEFT ENVP\n" << RESET;
 	return envp;
 }
 
