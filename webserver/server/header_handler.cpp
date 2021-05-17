@@ -6,7 +6,7 @@
 /*   By: gbouwen <marvin@codam.nl>                    +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2021/05/03 12:34:40 by gbouwen       #+#    #+#                 */
-/*   Updated: 2021/05/17 15:58:27 by gbouwen       ########   odam.nl         */
+/*   Updated: 2021/05/17 17:58:05 by gbouwen       ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -216,7 +216,7 @@ std::string	get_file(location_context location_block, std::string location)
 				if (location_block.get_autoindex())
 					result.append("/index.php");
 				else
-					result = "not found"; // result = forbidden instead?
+					result = "not found"; // result = "forbidden"; instead?
 			}
 			else
 				result.append(location_block.get_index());
@@ -237,6 +237,39 @@ std::string	skip_first_directory(std::string uri_location)
 		result = "";
 	else
 		result = uri_location.substr(start, std::string::npos);
+	return (result);
+}
+
+std::string	get_first_directory(std::string uri_location)
+{
+	int			end;
+	std::string	result;
+
+	end = uri_location.find_first_of('/', 1);
+	if (end == -1)
+		result = uri_location;
+	else
+		result = uri_location.substr(0, end);
+	return (result);
+}
+
+std::string	header_handler::location_of_uploaded_file(location_context location_block, std::string root, std::string uri_location)
+{
+	std::vector<std::string>	allowed_methods = location_block.get_method();
+	std::string					directory = root;
+	struct stat					s;
+	std::string					result = "not found";
+
+	directory.append(get_first_directory(uri_location));
+	for (size_t index = 0; index < allowed_methods.size(); index++)
+	{
+		if (stat(directory.c_str(), &s) == 0 && (s.st_mode & S_IFDIR) && _method.compare(allowed_methods[index]) == 0)
+		{
+			result = root;
+			result.append(uri_location);
+			break ;
+		}
+	}
 	return (result);
 }
 
@@ -269,9 +302,14 @@ std::string	header_handler::match_location_block(header_handler::location_vector
 		}
 		if (location_blocks[index].get_redirect())
 			result.append(skip_first_directory(uri_location));
+		else if (_method.compare("PUT") == 0) // add post with file upload later
+			result.append("");
 		else
 			result.append(uri_location);
-		result = get_file(location_blocks[index], result);
+		if (_method.compare("PUT") == 0) // add post with file upload later
+			result = location_of_uploaded_file(location_blocks[index], result, uri_location);
+		else
+			result = get_file(location_blocks[index], result);
 		if (result.compare("not found") != 0)
 			break ;
 	}
@@ -285,13 +323,15 @@ std::string	header_handler::generate_error_page_location(std::string error_page)
 	return (error_page.append(temp));
 }
 
-void        header_handler::verify_file_location(header_handler::location_vector location_blocks, std::string error_page) {
+void        header_handler::verify_file_location(header_handler::location_vector location_blocks, std::string error_page)
+{
 	std::string result = match_location_block(location_blocks, _uri_location);
 	if (result.compare("not found") == 0)
 		_file_location = generate_error_page_location(error_page);
 	else
 		_file_location = result;
 	_file_location = remove_duplicate_forward_slashes(_file_location);
+	std::cout << "verify_file_location() : _file_location = " << _file_location << std::endl;
 }
 
 void 		header_handler::verify_method()
