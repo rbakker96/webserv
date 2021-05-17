@@ -6,7 +6,7 @@
 /*   By: gbouwen <marvin@codam.nl>                    +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2021/05/03 12:34:40 by gbouwen       #+#    #+#                 */
-/*   Updated: 2021/05/17 14:18:30 by gbouwen       ########   odam.nl         */
+/*   Updated: 2021/05/17 14:29:18 by gbouwen       ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -237,8 +237,9 @@ std::string	header_handler::match_location_block(header_handler::location_vector
 	for (size_t index = 0; index < location_blocks.size(); index++)
 	{
 		_allow = location_blocks[index].get_method();
+		_location_block_root = location_blocks[index].get_root();
 		std::string location_context = location_blocks[index].get_location_context();
-		result = location_blocks[index].get_root();
+		result = _location_block_root;
 		if (!_referer.empty())
 		{
 			struct stat	s;
