@@ -6,7 +6,7 @@
 #    By: roybakker <roybakker@student.codam.nl>       +#+                      #
 #                                                    +#+                       #
 #    Created: 2021/02/25 14:55:06 by roybakker     #+#    #+#                  #
-#    Updated: 2021/05/18 11:48:46 by gbouwen       ########   odam.nl          #
+#    Updated: 2021/05/18 14:53:56 by gbouwen       ########   odam.nl          #
 #                                                                              #
 # **************************************************************************** #
 
@@ -24,7 +24,8 @@ SOURCES			=	webserver/main.cpp \
                     webserver/helper/check_functions.cpp \
 					webserver/helper/lib_functions.cpp \
 					webserver/helper/parse_functions.cpp \
-					webserver/helper/signal_handler.cpp
+					webserver/helper/signal_handler.cpp \
+					webserver/helper/verify_file_location_functions.cpp
 
 OBJECTS 		=	${SOURCES:%.c=%.o}
 
