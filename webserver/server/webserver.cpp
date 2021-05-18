@@ -41,11 +41,26 @@ void    webserver::load_configuration(char *config_file) {
     }
 	free(line);
     close(fd);
+
 	if (ret == -1)
 		throw std::runtime_error("Error while reading config file");
-	if (!server_block.empty()) // WHY
+	if (!server_block.empty()) // WHY -> on success the server_block gets cleared on failure there is partial (wrong) input
 		throw std::invalid_argument("Error: missing '{' or '}' in config file");
     print_struct();
+}
+
+void    webserver::validate_configuration() {
+    for( std::vector<server>::iterator it = _servers.begin(); it != _servers.end(); it++) {
+        bool duplicate = false;
+        int port = it->_port;
+        for(std::vector<server>::iterator compare = _servers.begin(); compare != _servers.end(); compare++) {
+            if (port == compare->_port) {
+                if (duplicate == true)
+                    throw std::invalid_argument("Error: duplicate port in configuration file");
+                duplicate = true;
+            }
+        }
+    }
 }
 
 void    webserver::establish_connection(){

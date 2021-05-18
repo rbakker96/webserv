@@ -46,6 +46,7 @@ public:
 
     //GENERAL functions
     void    	load_configuration(char* config_file);
+    void        validate_configuration();
     void    	establish_connection();
     void    	run();
 
