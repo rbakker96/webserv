@@ -28,6 +28,7 @@ enum        helper_values{valid_ = 7, invalid_ = 8 };
 int                         check_server_block(std::vector<std::string> server_block);
 int                         location_block_size(vector_iterator it, vector_iterator end);
 int                         validate_request(const std::string& request);
+int                         hex_to_dec(std::string str, int base);
 
 //lib functions
 int							ft_atoi(const char *str);

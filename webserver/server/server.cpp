@@ -143,4 +143,3 @@ std::string                     server::get_error_page() {return _error_page;}
 std::string                     server::get_cgi_file_types() {return _cgi_file_types;}
 std::vector<location_context>   server::get_location_blocks() {return _location_blocks;}
 int                             server::get_tcp_socket() {return _tcp_socket;}
-

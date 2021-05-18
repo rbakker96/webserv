@@ -107,12 +107,22 @@ void        header_handler::parse_body(const std::string &str) {
     int header_size;
 
     if ((header_size = (int)str.find("\r\n\r\n")) != -1) {
+        header_size += 4;
         if (str.find("Content-Length:") != std::string::npos) {
-            _body = str.substr(header_size + 4);
+            _body = str.substr(header_size);
         }
         else if (str.find("chunked") != std::string::npos) {
-            std::string body = str.substr(header_size + 4);
-            _body = body.substr(0, body.length() - 4);
+            std::string chunked_body = str.substr(header_size);
+            int pos = header_size;
+            long int chunk_size;
+            while(true) {
+                int size = (int)str.find("\r\n", pos);
+                std::string hex_size = str.substr(pos, (size-pos));
+                if ((chunk_size = hex_to_dec(hex_size, 16)) == 0)
+                    break;
+                _body.append(chunked_body.substr((size-pos)+2, chunk_size));
+                pos = size + chunk_size + 4;
+            }
         }
     }
 }

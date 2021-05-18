@@ -1,0 +1,721 @@
+Content of struct
+------------- BEGIN SERVER BLOCK -------------
+Port = 8080
+Host = localhost
+File size = 100
+Time out = 10
+Server name = webserv/1.1
+Error page = server_files/www/error_pages/
+CGI file types = .php .bla
+
+  ------------- location block -------------
+  location = /
+  Root = server_files/www
+  Allowed methods = GET 
+  Index = /index.html
+  Autoindex = 0
+
+  ------------- location block -------------
+  location = /put_test
+  Root = server_files/www/put
+  Allowed methods = PUT 
+  Index = 
+  Autoindex = 0
+
+  ------------- location block -------------
+  location = /post_body
+  Root = server_files/www
+  Allowed methods = POST 
+  Index = 
+  Autoindex = 0
+
+  ------------- location block -------------
+  location = /directory
+  Root = YoupiBanane
+  Allowed methods = GET 
+  Index = /youpi.bad_extension
+  Autoindex = 0
+------------- END SERVER BLOCK -------------
+
+--- Waiting for activity... ---
+-----------
+[33mREQUEST BUFFER: 
+GET / HTTP/1.1
+Host: localhost:8080
+User-Agent: Go-http-client/1.1
+Accept-Encoding: gzip
+
+[0m
+[33m------------- REQUEST -------------
+Request headers
+  Method = GET
+  Location = 
+  Protocol = HTTP/1.1
+  Host = localhost:8080
+  User agent = Go-http-client/1.1
+  Accept language = 
+  Authorization = 
+  Referer = 
+  Body = 
+Entity headers
+  Content length = 0
+  Content type = 
+  Content language = en
+  Content location = 
+------------- END REQUEST -------------
+
+[0mLOCATION_CONTEXT : /
+FILE_LOCATION : /
+INDEX : 0
+0 correct_location : server_files/www
+1 correct_location : server_files/www
+2 correct_location : server_files/www/index.html
+[35m
+------------- RESPONSE -------------
+HTTP/1.1 200 OK
+Content-Length: 1148
+Content-Type: text/html
+Last-Modified: Wed, 12 May 2021 16:47:23 GMT
+Date: Mon, 17 May 2021 17:42:49 GMT
+Server: webserv/1.1
+Connection: close
+
+[0m
+[36mstr len = 1[0m
+[36mHEX size = 0[0m
+-----------
+[33mREQUEST BUFFER: 
+POST / HTTP/1.1
+Host: localhost:8080
+User-Agent: Go-http-client/1.1
+Transfer-Encoding: chunked
+Content-Type: test/file
+Accept-Encoding: gzip
+
+0
+
+[0m
+[33m------------- REQUEST -------------
+Request headers
+  Method = POST
+  Location = 
+  Protocol = HTTP/1.1
+  Host = localhost:8080
+  User agent = Go-http-client/1.1
+  Accept language = 
+  Authorization = 
+  Referer = 
+  Body = 
+Entity headers
+  Content length = 0
+  Content type = test/file
+  Content language = en
+  Content location = 
+------------- END REQUEST -------------
+
+[0mLOCATION_CONTEXT : /
+FILE_LOCATION : /
+INDEX : 0
+0 correct_location : server_files/www
+1 correct_location : server_files/www
+2 correct_location : server_files/www/index.html
+[35m
+------------- RESPONSE -------------
+HTTP/1.1 405 Method Not Allowed
+Content-Length: 652
+Content-Type: text/html
+Last-Modified: Wed, 12 May 2021 16:47:23 GMT
+Date: Mon, 17 May 2021 17:42:49 GMT
+Server: webserv/1.1
+Allow: GET
+Connection: close
+
+[0m
+-----------
+[33mREQUEST BUFFER: 
+HEAD / HTTP/1.1
+Host: localhost:8080
+User-Agent: Go-http-client/1.1
+
+[0m
+[33m------------- REQUEST -------------
+Request headers
+  Method = HEAD
+  Location = 
+  Protocol = HTTP/1.1
+  Host = localhost:8080
+  User agent = Go-http-client/1.1
+  Accept language = 
+  Authorization = 
+  Referer = 
+  Body = 
+Entity headers
+  Content length = 0
+  Content type = 
+  Content language = en
+  Content location = 
+------------- END REQUEST -------------
+
+[0mLOCATION_CONTEXT : /
+FILE_LOCATION : /
+INDEX : 0
+0 correct_location : server_files/www
+1 correct_location : server_files/www
+2 correct_location : server_files/www/index.html
+[35m
+------------- RESPONSE -------------
+HTTP/1.1 405 Method Not Allowed
+Content-Length: 652
+Content-Type: text/html
+Last-Modified: Wed, 12 May 2021 16:47:23 GMT
+Date: Mon, 17 May 2021 17:42:49 GMT
+Server: webserv/1.1
+Allow: GET
+Connection: close
+
+[0m
+-----------
+[33mREQUEST BUFFER: 
+GET /directory HTTP/1.1
+Host: localhost:8080
+User-Agent: Go-http-client/1.1
+Accept-Encoding: gzip
+
+[0m
+[33m------------- REQUEST -------------
+Request headers
+  Method = GET
+  Location = 
+  Protocol = HTTP/1.1
+  Host = localhost:8080
+  User agent = Go-http-client/1.1
+  Accept language = 
+  Authorization = 
+  Referer = 
+  Body = 
+Entity headers
+  Content length = 0
+  Content type = 
+  Content language = en
+  Content location = 
+------------- END REQUEST -------------
+
+[0mLOCATION_CONTEXT : /
+FILE_LOCATION : /directory
+LOCATION_CONTEXT : /put_test
+FILE_LOCATION : /directory
+LOCATION_CONTEXT : /post_body
+FILE_LOCATION : /directory
+LOCATION_CONTEXT : /directory
+FILE_LOCATION : /directory
+INDEX : 3
+0 correct_location : YoupiBanane
+1 correct_location : YoupiBanane
+2 correct_location : YoupiBanane/youpi.bad_extension
+[35m
+------------- RESPONSE -------------
+HTTP/1.1 200 OK
+Content-Length: 45
+Content-Type: folder
+Last-Modified: Wed, 12 May 2021 16:47:23 GMT
+Date: Mon, 17 May 2021 17:42:49 GMT
+Server: webserv/1.1
+Connection: close
+
+[0m
+-----------
+[33mREQUEST BUFFER: 
+GET /directory/youpi.bad_extension HTTP/1.1
+Host: localhost:8080
+User-Agent: Go-http-client/1.1
+Accept-Encoding: gzip
+
+[0m
+[33m------------- REQUEST -------------
+Request headers
+  Method = GET
+  Location = 
+  Protocol = HTTP/1.1
+  Host = localhost:8080
+  User agent = Go-http-client/1.1
+  Accept language = 
+  Authorization = 
+  Referer = 
+  Body = 
+Entity headers
+  Content length = 0
+  Content type = 
+  Content language = en
+  Content location = 
+------------- END REQUEST -------------
+
+[0mLOCATION_CONTEXT : /
+FILE_LOCATION : /directory/youpi.bad_extension
+LOCATION_CONTEXT : /put_test
+FILE_LOCATION : /directory/youpi.bad_extension
+LOCATION_CONTEXT : /post_body
+FILE_LOCATION : /directory/youpi.bad_extension
+LOCATION_CONTEXT : /directory
+FILE_LOCATION : /directory/youpi.bad_extension
+INDEX : 3
+0 correct_location : YoupiBanane
+1 correct_location : YoupiBanane
+2 correct_location : YoupiBanane/youpi.bad_extension
+[35m
+------------- RESPONSE -------------
+HTTP/1.1 200 OK
+Content-Length: 45
+Content-Type: folder
+Last-Modified: Wed, 12 May 2021 16:47:23 GMT
+Date: Mon, 17 May 2021 17:42:49 GMT
+Server: webserv/1.1
+Connection: close
+
+[0m
+-----------
+[33mREQUEST BUFFER: 
+GET /directory/youpi.bla HTTP/1.1
+Host: localhost:8080
+User-Agent: Go-http-client/1.1
+Accept-Encoding: gzip
+
+[0m
+[33m------------- REQUEST -------------
+Request headers
+  Method = GET
+  Location = 
+  Protocol = HTTP/1.1
+  Host = localhost:8080
+  User agent = Go-http-client/1.1
+  Accept language = 
+  Authorization = 
+  Referer = 
+  Body = 
+Entity headers
+  Content length = 0
+  Content type = 
+  Content language = en
+  Content location = 
+------------- END REQUEST -------------
+
+[0mLOCATION_CONTEXT : /
+FILE_LOCATION : /directory/youpi.bla
+LOCATION_CONTEXT : /put_test
+FILE_LOCATION : /directory/youpi.bla
+LOCATION_CONTEXT : /post_body
+FILE_LOCATION : /directory/youpi.bla
+LOCATION_CONTEXT : /directory
+FILE_LOCATION : /directory/youpi.bla
+INDEX : 3
+0 correct_location : YoupiBanane
+1 correct_location : YoupiBanane
+2 correct_location : YoupiBanane/youpi.bla
+[35m
+------------- RESPONSE -------------
+HTTP/1.1 200 OK
+Content-Length: 0
+Content-Type: text/html
+Last-Modified: Mon, 17 May 2021 17:42:49 GMT
+Date: Mon, 17 May 2021 17:42:49 GMT
+Server: webserv/1.1
+Connection: close
+
+[0m
+-----------
+[33mREQUEST BUFFER: 
+GET /directory/oulalala HTTP/1.1
+Host: localhost:8080
+User-Agent: Go-http-client/1.1
+Accept-Encoding: gzip
+
+[0m
+[33m------------- REQUEST -------------
+Request headers
+  Method = GET
+  Location = 
+  Protocol = HTTP/1.1
+  Host = localhost:8080
+  User agent = Go-http-client/1.1
+  Accept language = 
+  Authorization = 
+  Referer = 
+  Body = 
+Entity headers
+  Content length = 0
+  Content type = 
+  Content language = en
+  Content location = 
+------------- END REQUEST -------------
+
+[0mLOCATION_CONTEXT : /
+FILE_LOCATION : /directory/oulalala
+LOCATION_CONTEXT : /put_test
+FILE_LOCATION : /directory/oulalala
+LOCATION_CONTEXT : /post_body
+FILE_LOCATION : /directory/oulalala
+LOCATION_CONTEXT : /directory
+FILE_LOCATION : /directory/oulalala
+INDEX : 3
+0 correct_location : YoupiBanane
+1 correct_location : YoupiBanane/oulalala
+2 correct_location : YoupiBanane/oulalala/youpi.bad_extension
+[35m
+------------- RESPONSE -------------
+HTTP/1.1 404 Not Found
+Content-Length: 771
+Content-Type: text/html
+Last-Modified: Wed, 12 May 2021 16:47:23 GMT
+Date: Mon, 17 May 2021 17:42:49 GMT
+Server: webserv/1.1
+Connection: close
+
+[0m
+-----------
+[33mREQUEST BUFFER: 
+GET /directory/nop HTTP/1.1
+Host: localhost:8080
+User-Agent: Go-http-client/1.1
+Accept-Encoding: gzip
+
+[0m
+[33m------------- REQUEST -------------
+Request headers
+  Method = GET
+  Location = 
+  Protocol = HTTP/1.1
+  Host = localhost:8080
+  User agent = Go-http-client/1.1
+  Accept language = 
+  Authorization = 
+  Referer = 
+  Body = 
+Entity headers
+  Content length = 0
+  Content type = 
+  Content language = en
+  Content location = 
+------------- END REQUEST -------------
+
+[0mLOCATION_CONTEXT : /
+FILE_LOCATION : /directory/nop
+LOCATION_CONTEXT : /put_test
+FILE_LOCATION : /directory/nop
+LOCATION_CONTEXT : /post_body
+FILE_LOCATION : /directory/nop
+LOCATION_CONTEXT : /directory
+FILE_LOCATION : /directory/nop
+INDEX : 3
+0 correct_location : YoupiBanane
+1 correct_location : YoupiBanane/nop
+2 correct_location : YoupiBanane/nop/youpi.bad_extension
+[35m
+------------- RESPONSE -------------
+HTTP/1.1 200 OK
+Content-Length: 49
+Content-Type: folder
+Last-Modified: Wed, 12 May 2021 16:47:23 GMT
+Date: Mon, 17 May 2021 17:42:49 GMT
+Server: webserv/1.1
+Connection: close
+
+[0m
+-----------
+[33mREQUEST BUFFER: 
+GET /directory/nop/ HTTP/1.1
+Host: localhost:8080
+User-Agent: Go-http-client/1.1
+Accept-Encoding: gzip
+
+[0m
+[33m------------- REQUEST -------------
+Request headers
+  Method = GET
+  Location = 
+  Protocol = HTTP/1.1
+  Host = localhost:8080
+  User agent = Go-http-client/1.1
+  Accept language = 
+  Authorization = 
+  Referer = 
+  Body = 
+Entity headers
+  Content length = 0
+  Content type = 
+  Content language = en
+  Content location = 
+------------- END REQUEST -------------
+
+[0mLOCATION_CONTEXT : /
+FILE_LOCATION : /directory/nop/
+LOCATION_CONTEXT : /put_test
+FILE_LOCATION : /directory/nop/
+LOCATION_CONTEXT : /post_body
+FILE_LOCATION : /directory/nop/
+LOCATION_CONTEXT : /directory
+FILE_LOCATION : /directory/nop/
+INDEX : 3
+0 correct_location : YoupiBanane
+1 correct_location : YoupiBanane/nop
+2 correct_location : YoupiBanane/nop/youpi.bad_extension
+[35m
+------------- RESPONSE -------------
+HTTP/1.1 200 OK
+Content-Length: 49
+Content-Type: folder
+Last-Modified: Wed, 12 May 2021 16:47:23 GMT
+Date: Mon, 17 May 2021 17:42:49 GMT
+Server: webserv/1.1
+Connection: close
+
+[0m
+-----------
+[33mREQUEST BUFFER: 
+GET /directory/nop/other.pouic HTTP/1.1
+Host: localhost:8080
+User-Agent: Go-http-client/1.1
+Accept-Encoding: gzip
+
+[0m
+[33m------------- REQUEST -------------
+Request headers
+  Method = GET
+  Location = 
+  Protocol = HTTP/1.1
+  Host = localhost:8080
+  User agent = Go-http-client/1.1
+  Accept language = 
+  Authorization = 
+  Referer = 
+  Body = 
+Entity headers
+  Content length = 0
+  Content type = 
+  Content language = en
+  Content location = 
+------------- END REQUEST -------------
+
+[0mLOCATION_CONTEXT : /
+FILE_LOCATION : /directory/nop/other.pouic
+LOCATION_CONTEXT : /put_test
+FILE_LOCATION : /directory/nop/other.pouic
+LOCATION_CONTEXT : /post_body
+FILE_LOCATION : /directory/nop/other.pouic
+LOCATION_CONTEXT : /directory
+FILE_LOCATION : /directory/nop/other.pouic
+INDEX : 3
+0 correct_location : YoupiBanane
+1 correct_location : YoupiBanane/nop
+2 correct_location : YoupiBanane/nop/other.pouic
+[35m
+------------- RESPONSE -------------
+HTTP/1.1 200 OK
+Content-Length: 41
+Content-Type: folder
+Last-Modified: Wed, 12 May 2021 16:47:23 GMT
+Date: Mon, 17 May 2021 17:42:49 GMT
+Server: webserv/1.1
+Connection: close
+
+[0m
+-----------
+[33mREQUEST BUFFER: 
+GET /directory/nop/other.pouac HTTP/1.1
+Host: localhost:8080
+User-Agent: Go-http-client/1.1
+Accept-Encoding: gzip
+
+[0m
+[33m------------- REQUEST -------------
+Request headers
+  Method = GET
+  Location = 
+  Protocol = HTTP/1.1
+  Host = localhost:8080
+  User agent = Go-http-client/1.1
+  Accept language = 
+  Authorization = 
+  Referer = 
+  Body = 
+Entity headers
+  Content length = 0
+  Content type = 
+  Content language = en
+  Content location = 
+------------- END REQUEST -------------
+
+[0mLOCATION_CONTEXT : /
+FILE_LOCATION : /directory/nop/other.pouac
+LOCATION_CONTEXT : /put_test
+FILE_LOCATION : /directory/nop/other.pouac
+LOCATION_CONTEXT : /post_body
+FILE_LOCATION : /directory/nop/other.pouac
+LOCATION_CONTEXT : /directory
+FILE_LOCATION : /directory/nop/other.pouac
+INDEX : 3
+0 correct_location : YoupiBanane
+1 correct_location : YoupiBanane/nop
+2 correct_location : YoupiBanane/nop/other.pouac
+[35m
+------------- RESPONSE -------------
+HTTP/1.1 404 Not Found
+Content-Length: 771
+Content-Type: text/html
+Last-Modified: Wed, 12 May 2021 16:47:23 GMT
+Date: Mon, 17 May 2021 17:42:49 GMT
+Server: webserv/1.1
+Connection: close
+
+[0m
+-----------
+[33mREQUEST BUFFER: 
+GET /directory/Yeah HTTP/1.1
+Host: localhost:8080
+User-Agent: Go-http-client/1.1
+Accept-Encoding: gzip
+
+[0m
+[33m------------- REQUEST -------------
+Request headers
+  Method = GET
+  Location = 
+  Protocol = HTTP/1.1
+  Host = localhost:8080
+  User agent = Go-http-client/1.1
+  Accept language = 
+  Authorization = 
+  Referer = 
+  Body = 
+Entity headers
+  Content length = 0
+  Content type = 
+  Content language = en
+  Content location = 
+------------- END REQUEST -------------
+
+[0mLOCATION_CONTEXT : /
+FILE_LOCATION : /directory/Yeah
+LOCATION_CONTEXT : /put_test
+FILE_LOCATION : /directory/Yeah
+LOCATION_CONTEXT : /post_body
+FILE_LOCATION : /directory/Yeah
+LOCATION_CONTEXT : /directory
+FILE_LOCATION : /directory/Yeah
+INDEX : 3
+0 correct_location : YoupiBanane
+1 correct_location : YoupiBanane/Yeah
+2 correct_location : YoupiBanane/Yeah/youpi.bad_extension
+[35m
+------------- RESPONSE -------------
+HTTP/1.1 404 Not Found
+Content-Length: 771
+Content-Type: text/html
+Last-Modified: Wed, 12 May 2021 16:47:23 GMT
+Date: Mon, 17 May 2021 17:42:49 GMT
+Server: webserv/1.1
+Connection: close
+
+[0m
+-----------
+[33mREQUEST BUFFER: 
+GET /directory/Yeah/not_happy.bad_extension HTTP/1.1
+Host: localhost:8080
+User-Agent: Go-http-client/1.1
+Accept-Encoding: gzip
+
+[0m
+[33m------------- REQUEST -------------
+Request headers
+  Method = GET
+  Location = 
+  Protocol = HTTP/1.1
+  Host = localhost:8080
+  User agent = Go-http-client/1.1
+  Accept language = 
+  Authorization = 
+  Referer = 
+  Body = 
+Entity headers
+  Content length = 0
+  Content type = 
+  Content language = en
+  Content location = 
+------------- END REQUEST -------------
+
+[0mLOCATION_CONTEXT : /
+FILE_LOCATION : /directory/Yeah/not_happy.bad_extension
+LOCATION_CONTEXT : /put_test
+FILE_LOCATION : /directory/Yeah/not_happy.bad_extension
+LOCATION_CONTEXT : /post_body
+FILE_LOCATION : /directory/Yeah/not_happy.bad_extension
+LOCATION_CONTEXT : /directory
+FILE_LOCATION : /directory/Yeah/not_happy.bad_extension
+INDEX : 3
+0 correct_location : YoupiBanane
+1 correct_location : YoupiBanane/Yeah
+2 correct_location : YoupiBanane/Yeah/not_happy.bad_extension
+[35m
+------------- RESPONSE -------------
+HTTP/1.1 200 OK
+Content-Length: 0
+Content-Type: folder
+Last-Modified: Wed, 12 May 2021 16:47:23 GMT
+Date: Mon, 17 May 2021 17:42:49 GMT
+Server: webserv/1.1
+Connection: close
+
+[0m
+[36mstr len = 3[0m
+[36mHEX size = 3e8[0m
+[36mCHUNK size = 3[0m
+[36mstr len = 991[0m
+[36mHEX size = eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee[0m
+-----------
+[33mREQUEST BUFFER: 
+PUT /put_test/file_should_exist_after HTTP/1.1
+Host: localhost:8080
+User-Agent: Go-http-client/1.1
+Transfer-Encoding: chunked
+Accept-Encoding: gzip
+
+3e8
+eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee
+0
+
+[0m
+[33m------------- REQUEST -------------
+Request headers
+  Method = PUT
+  Location = 
+  Protocol = HTTP/1.1
+  Host = localhost:8080
+  User agent = Go-http-client/1.1
+  Accept language = 
+  Authorization = 
+  Referer = 
+  Body = eee
+Entity headers
+  Content length = 0
+  Content type = 
+  Content language = en
+  Content location = 
+------------- END REQUEST -------------
+
+[0mLOCATION_CONTEXT : /
+FILE_LOCATION : /put_test/file_should_exist_after
+LOCATION_CONTEXT : /put_test
+FILE_LOCATION : /put_test/file_should_exist_after
+INDEX : 1
+0 correct_location : server_files/www/put
+1 correct_location : server_files/www/put/file_should_exist_after
+2 correct_location : server_files/www/put/file_should_exist_after
+[35m
+------------- RESPONSE -------------
+HTTP/1.1 204 No Content
+Content-Length: 0
+Content-Type: folder
+Last-Modified: Mon, 17 May 2021 17:42:49 GMT
+Date: Mon, 17 May 2021 17:42:49 GMT
+Server: webserv/1.1
+Connection: close
+
+[0m
