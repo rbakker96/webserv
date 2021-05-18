@@ -143,7 +143,7 @@ void        header_handler::invalid_argument(const std::string &str) {parse_inva
 
 
 //-------------------------------------- HANDLE functions --------------------------------------
-int        header_handler::handle_request(std::string cgi_file_types, header_handler::location_vector location_blocks, std::string error_page, int max_file_size) {
+int        header_handler::handle_request(std::string cgi_file_types, header_handler::location_vector location_blocks, std::string error_page) {
 	struct  stat stats;
 	int		fd = unused_;
 
@@ -154,7 +154,7 @@ int        header_handler::handle_request(std::string cgi_file_types, header_han
         if (_method == "PUT")
             fd = put_request();
         else if (_method == "POST" && !_body.empty())
-            fd = post_request(max_file_size);
+            fd = post_request(_max_file_size);
 		else if (stat(_file_location.c_str(), &stats) == -1)
 			_status = not_found_; // update the status code after the version is stable
 		else if (!(stats.st_mode & S_IRUSR)) // don't think this works? (because it is an else if statement)
@@ -280,6 +280,7 @@ std::string	header_handler::generate_error_page_location(std::string error_page)
 void        header_handler::verify_file_location(header_handler::location_vector location_blocks, std::string error_page)
 {
 	std::string result = match_location_block(location_blocks, _uri_location);
+
 	if (result.compare("not found") == 0)
 		_file_location = generate_error_page_location(error_page);
 	else
@@ -359,6 +360,7 @@ int         header_handler::post_request(int max_file_size) {
     int fd = unused_;
     std::string put_file = "server_files/www/downloads/POST_file";
 
+    std::cout << CYAN << "MAX FILE SIZE = " << max_file_size << RESET << std::endl;
     if (max_file_size && max_file_size < _content_length) {
         _status = payload_too_large_;
         std::cout << "Status in post request = " << _status << std::endl;
