@@ -51,9 +51,9 @@ public:
 
 	typedef		void (header_handler::*parse)(const std::string &str);
 
-	enum		location_values{requested_host_ = 0, user_agent_ = 1, language_ = 2, authorization_ = 3,
+	enum		location_values{requested_host_ = 0, user_agent_ = 1, accept_language_ = 2, authorization_ = 3,
 								referer_ = 4, content_length_ = 5, content_type_ = 6,
-								content_language_ = 7, content_location_ = 8, unknown_ = 9,
+								content_language_ = 7, content_location_ = 8, accept_charset_ = 9, unknown_ = 10,
 								error_code_ = 400, folder_ = -1, unused_ = -1};
 	enum		status_values{	okay_ = 200, created_ = 201, no_content_ = 204,
 								bad_request_ = 400, unauthorized_ = 401, forbidden_ = 403,
@@ -68,6 +68,7 @@ protected:
 	map				_status_phrases;
 
 	//Headers
+    int             _max_file_size;
 	int				_content_length;
 	std::string		_content_type;
 	std::string		_content_language;
@@ -80,6 +81,7 @@ protected:
 	std::string		_protocol;
 	std::string		_requested_host;
 	std::string		_user_agent;
+	std::string     _accept_charset;
 	std::string		_accept_language;
 	std::string		_authorization;
 	std::string		_referer;
@@ -98,7 +100,8 @@ public:
     void            parse_first_line(const std::string &str);
     void            parse_requested_host(const std::string &str);
     void            parse_user_agent(const std::string &str);
-    void            parse_language(const std::string &str);
+    void            parse_accept_charset(const std::string &str);
+    void            parse_accept_language(const std::string &str);
     void            parse_authorization(const std::string &str);
     void            parse_referer(const std::string &str);
     void            parse_body(const std::string &str);
@@ -135,6 +138,7 @@ public:
     void            reset_handler();
 
     //GET functions
+    int             get_max_file_size();
 	int				get_index();
 	int             get_status();
     int             get_content_length();
@@ -151,6 +155,7 @@ public:
     std::string     get_requested_host();
     std::string     get_user_agent();
     std::string     get_accept_language();
+    std::string     get_accept_charset();
     std::string     get_authorization();
     std::string     get_referer();
     std::string     get_body();

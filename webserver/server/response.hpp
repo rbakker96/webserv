@@ -28,7 +28,8 @@ public:
     void			generate_last_modified(int file_fd);
     void			generate_date();
     void			generate_server_name(std::string server_name);
-    void			generate_allowe(vector allowed_methods);
+    void			generate_allow(vector allowed_methods);
+    void            generate_location(int status, std::string file_location);
     void 			generate_connection_close();
     void            close_header_section();
 

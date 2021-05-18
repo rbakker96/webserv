@@ -13,17 +13,18 @@
 #include "location_context.hpp"
 #include "../helper/helper.hpp"
 
-location_context::location_context() : _location_context(), _root(), _index(), _allowed_method(0), _autoindex(false) {}
+location_context::location_context() : _location_context(), _root(), _index(), _allowed_method(0), _max_file_size(0), _autoindex(false) {}
 location_context::~location_context(){}
 
 
 //-------------------------------------- CONFIG functions --------------------------------------
 void location_context::configure_location_block(vector_iterator it, vector_iterator end) {
-    configure configure_array[6] = { &location_context::configure_root,
+    configure configure_array[7] = { &location_context::configure_root,
                                      &location_context::configure_allowed_method,
                                      &location_context::configure_autoindex,
                                      &location_context::configure_index,
 									 &location_context::configure_redirect,
+                                     &location_context::configure_max_file_size,
                                      &location_context::invalid_element };
 
     clean_location_instance();
@@ -39,6 +40,7 @@ void    location_context::clean_location_instance() {
     _root.clear();
     _allowed_method.clear();
     _index.clear();
+    _max_file_size = 0;
     _autoindex = false;
 	_redirect = false;
 }
@@ -54,6 +56,8 @@ int     location_context::identify_location_value(const std::string &str){
         return index_;
 	else if (str.find("redirect") != std::string::npos)
 		return redirect_;
+    else if (str.find("max_file_size") != std::string::npos)
+        return max_file_size_;
     return unknown_;
 }
 
@@ -68,6 +72,7 @@ void    location_context::configure_root(const std::string &str){_root = parse_s
 void    location_context::configure_allowed_method(const std::string &str){_allowed_method = parse_vector(str);}
 void    location_context::configure_index(const std::string &str){_index = parse_string(str);}
 void    location_context::invalid_element(const std::string &str) {parse_invalid(str);}
+void    location_context::configure_max_file_size(const std::string &str) {_max_file_size = parse_number(str);}
 
 void    location_context::configure_autoindex(const std::string &str){
 	if (parse_string(str) == "on")
@@ -85,5 +90,6 @@ std::string                 location_context::get_location_context() {return _lo
 std::string                 location_context::get_root() {return _root;}
 std::string                 location_context::get_index() {return _index;}
 std::vector<std::string>    location_context::get_method() {return _allowed_method;}
+int                         location_context::get_max_file_size() {return _max_file_size;}
 bool                        location_context::get_autoindex() {return _autoindex;}
 bool						location_context::get_redirect() {return _redirect;}
