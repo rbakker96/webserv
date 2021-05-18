@@ -6,7 +6,7 @@
 /*   By: roybakker <roybakker@student.codam.nl>       +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2021/03/30 16:30:47 by roybakker     #+#    #+#                 */
-/*   Updated: 2021/05/17 15:41:49 by gbouwen       ########   odam.nl         */
+/*   Updated: 2021/05/18 14:17:52 by gbouwen       ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,7 +23,7 @@ webserver::~webserver(){}
 void    webserver::load_configuration(char *config_file) {
     std::vector<std::string>    server_block;
     server                      server;
-    char                        *line;
+    char                        *line = NULL;
     int                         ret;
     int                         fd = open(config_file, O_RDONLY);
 
@@ -39,12 +39,13 @@ void    webserver::load_configuration(char *config_file) {
             server_block.clear();
         }
     }
-	free(line);
     close(fd);
+	if (line)
+		free(line);
 	if (ret == -1)
 		throw std::runtime_error("Error while reading config file");
-	if (!server_block.empty()) // WHY
-		throw std::invalid_argument("Error: missing '{' or '}' in config file");
+	if (!server_block.empty())
+		throw std::runtime_error("Error: missing '{' or '}' in config file");
     print_struct();
 }
 
@@ -73,6 +74,8 @@ void    webserver::run() {
             if (server->_activeFD == ready_for_use_ && fd.rdy_for_reading(server->get_tcp_socket())) //accept request
 			{
 				server->_activeFD = accept(server->get_tcp_socket(), (struct sockaddr *) &server->_addr, (socklen_t *) &server->_addr_len);
+				if (server->_activeFD == -1)
+					throw (std::runtime_error("Accept failed"));
 				fd.set_time_out(server->_activeFD);
 				fcntl(server->_activeFD, F_SETFL, O_NONBLOCK);
 				fd.accepted_request_update(server->_activeFD);
