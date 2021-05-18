@@ -6,7 +6,7 @@
 /*   By: gbouwen <marvin@codam.nl>                    +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2019/10/28 13:03:13 by gbouwen       #+#    #+#                 */
-/*   Updated: 2019/11/18 13:15:37 by gbouwen       ########   odam.nl         */
+/*   Updated: 2021/05/18 14:47:41 by gbouwen       ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,7 +20,7 @@ std::vector<std::string>	parse_vector(const std::string& str) {
 	std::string					tmp = str.substr(pos + 1);
 	std::string					value;
 
-	while ((pos =tmp.find_first_of(' ')) != std::string::npos) {
+	while ((pos = tmp.find_first_of(' ')) != std::string::npos) {
 		value = tmp.substr(0, pos);
 		vector.push_back(value);
 		tmp = tmp.substr(pos + 1);
@@ -58,7 +58,7 @@ vector    str_to_vector(std::string request) {
     while ((int)(pos = request.find_first_of('\r')) != -1) {
         value = request.substr(0, pos);
         request_elements.push_back(value);
-        request = request. substr(pos + 2);
+        request = request.substr(pos + 2);
     }
     request_elements.push_back(request);
     return request_elements;

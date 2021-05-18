@@ -6,13 +6,13 @@
 /*   By: roybakker <roybakker@student.codam.nl>       +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2021/03/16 16:23:09 by roybakker     #+#    #+#                 */
-/*   Updated: 2021/05/18 11:50:56 by gbouwen       ########   odam.nl         */
+/*   Updated: 2021/05/18 14:12:45 by gbouwen       ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "server/webserver.hpp"
 
-int     main(int argc, char**argv) {
+int     main(int argc, char **argv) {
     webserver   webserver;
 
     if (argc != 2)
@@ -29,4 +29,5 @@ int     main(int argc, char**argv) {
     catch (std::exception &e) {
         std::cout << e.what() << std::endl;
     }
+	return (0);
 }
