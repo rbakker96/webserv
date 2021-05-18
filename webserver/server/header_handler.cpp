@@ -6,7 +6,7 @@
 /*   By: gbouwen <marvin@codam.nl>                    +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2021/05/03 12:34:40 by gbouwen       #+#    #+#                 */
-/*   Updated: 2021/05/18 14:56:18 by gbouwen       ########   odam.nl         */
+/*   Updated: 2021/05/18 15:10:50 by gbouwen       ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -162,8 +162,11 @@ int        header_handler::handle_request(std::string cgi_file_types, header_han
 			throw std::runtime_error("Open failed");
     }
 
-    if (_status >= error_code_){
-        _file_location = error_page.append(ft_itoa(_status));
+    if (_status >= error_code_) {
+		char *status_str = ft_itoa(_status);
+
+        _file_location = error_page.append(status_str);
+		free(status_str);
         _file_location.append(".html");
         if ((fd = open(&_file_location[0], O_RDONLY)) == -1)
             throw std::runtime_error("Open failed");
