@@ -6,7 +6,7 @@
 /*   By: gbouwen <marvin@codam.nl>                    +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2021/05/03 12:34:40 by gbouwen       #+#    #+#                 */
-/*   Updated: 2021/05/17 17:58:05 by gbouwen       ########   odam.nl         */
+/*   Updated: 2021/05/18 17:12:38 by gbouwen       ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -115,7 +115,7 @@ void        header_handler::parse_body(const std::string &str) {
             std::string chunked_body = str.substr(header_size);
             int pos = header_size;
             long int chunk_size;
-            while(true) {
+            while (true) {
                 int size = (int)str.find("\r\n", pos);
                 std::string hex_size = str.substr(pos, (size-pos));
                 if ((chunk_size = hex_to_dec(hex_size, 16)) == 0)
@@ -154,7 +154,7 @@ int        header_handler::handle_request(std::string cgi_file_types, header_han
             fd = post_request(max_file_size);
 		else if (stat(_file_location.c_str(), &stats) == -1)
 			_status = not_found_; // update the status code after the version is stable
-		else if (!(stats.st_mode & S_IRUSR))
+		else if (!(stats.st_mode & S_IRUSR)) // don't think this works? (because it is an else if statement)
 			_status = forbidden_; // update the status code after the version is stable
         else if (cgi_file_types.find(verify_content_type()) != std::string::npos)
             return cgi_request();
@@ -162,8 +162,11 @@ int        header_handler::handle_request(std::string cgi_file_types, header_han
 			throw std::runtime_error("Open failed");
     }
 
-    if (_status >= error_code_){
-        _file_location = error_page.append(ft_itoa(_status));
+    if (_status >= error_code_) {
+		char *status_str = ft_itoa(_status);
+
+        _file_location = error_page.append(status_str);
+		free(status_str);
         _file_location.append(".html");
         if ((fd = open(&_file_location[0], O_RDONLY)) == -1)
             throw std::runtime_error("Open failed");
@@ -188,83 +191,6 @@ std::string	header_handler::get_referer_part()
 	return (result);
 }
 
-std::string	remove_duplicate_forward_slashes(std::string location)
-{
-	std::string	result;
-	size_t		x = 0;
-
-	while (x < location.length())
-	{
-		result += location[x];
-		if (location[x] == '/')
-		{
-			while (location[x] == '/')
-				x++;
-		}
-		else
-			x++;
-	}
-	return (result);
-}
-
-std::string	get_file(location_context location_block, std::string location)
-{
-	std::string	result;
-	std::string	temp;
-	struct stat	s;
-
-	location = remove_duplicate_forward_slashes(location);
-	result = location;
-	temp = location;
-	if (stat(location.c_str(), &s) == 0)
-	{
-		if (s.st_mode & S_IFREG)
-			return (result);
-		else if (s.st_mode & S_IFDIR)
-		{
-			temp.append(location_block.get_index());
-			if (stat(temp.c_str(), &s) == -1)
-			{
-				if (location_block.get_autoindex())
-					result.append("/index.php");
-				else
-					result = "not found"; // result = "forbidden"; instead?
-			}
-			else
-				result.append(location_block.get_index());
-		}
-	}
-	else
-		result = "not found";
-	return (result);
-}
-
-std::string	skip_first_directory(std::string uri_location)
-{
-	int			start;
-	std::string	result;
-
-	start = uri_location.find_first_of('/', 1);
-	if (start == -1)
-		result = "";
-	else
-		result = uri_location.substr(start, std::string::npos);
-	return (result);
-}
-
-std::string	get_first_directory(std::string uri_location)
-{
-	int			end;
-	std::string	result;
-
-	end = uri_location.find_first_of('/', 1);
-	if (end == -1)
-		result = uri_location;
-	else
-		result = uri_location.substr(0, end);
-	return (result);
-}
-
 std::string	header_handler::location_of_uploaded_file(location_context location_block, std::string root, std::string uri_location)
 {
 	std::vector<std::string>	allowed_methods = location_block.get_method();
@@ -285,9 +211,20 @@ std::string	header_handler::location_of_uploaded_file(location_context location_
 	return (result);
 }
 
+std::string	get_extension(std::string uri_location)
+{
+	int			start = uri_location.find_last_of('.');
+	if (start == -1)
+		return (uri_location);
+	std::string	result = uri_location.substr(start, std::string::npos);
+
+	return (result);
+}
+
 std::string	header_handler::match_location_block(header_handler::location_vector location_blocks, std::string uri_location)
 {
 	std::string	result;
+	std::string	extension = get_extension(uri_location);
 	std::string	referer_location = get_referer_part();
 	referer_location = remove_duplicate_forward_slashes(referer_location);
 	uri_location = remove_duplicate_forward_slashes(uri_location);
@@ -314,14 +251,16 @@ std::string	header_handler::match_location_block(header_handler::location_vector
 		}
 		if (location_blocks[index].get_redirect())
 			result.append(skip_first_directory(uri_location));
-		else if (_method.compare("PUT") == 0) // add post with file upload later
+		else if (_method.compare("PUT") == 0 || (_method.compare("POST") == 0 && (extension != ".php" || extension == ".bla"))) // add post with file upload later?
 			result.append("");
 		else
 			result.append(uri_location);
-		if (_method.compare("PUT") == 0) // add post with file upload later
+		if (_method.compare("PUT") == 0 || (_method.compare("POST") == 0 && (extension != ".php" || extension == ".bla"))) // add post with file upload later?
 			result = location_of_uploaded_file(location_blocks[index], result, uri_location);
 		else
+		{
 			result = get_file(location_blocks[index], result);
+		}
 		if (result.compare("not found") != 0)
 			break ;
 	}
@@ -343,7 +282,6 @@ void        header_handler::verify_file_location(header_handler::location_vector
 	else
 		_file_location = result;
 	_file_location = remove_duplicate_forward_slashes(_file_location);
-	std::cout << "verify_file_location() : _file_location = " << _file_location << std::endl;
 }
 
 void 		header_handler::verify_method()
@@ -395,8 +333,8 @@ int			header_handler::cgi_request()
 
 int     	header_handler::put_request()
 {
-    int fd = unused_;
-	struct  stat stats;
+    int			fd = unused_;
+	struct stat	stats;
     std::string folder = "server_files/www/downloads/";
     std::string file = _file_location.substr(_file_location.find_last_of('/') + 1);
     std::string put_file = folder.append(file);
