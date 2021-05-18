@@ -6,7 +6,7 @@
 /*   By: gbouwen <marvin@codam.nl>                    +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2021/05/03 12:34:40 by gbouwen       #+#    #+#                 */
-/*   Updated: 2021/05/18 17:12:38 by gbouwen       ########   odam.nl         */
+/*   Updated: 2021/05/18 17:20:29 by gbouwen       ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -208,16 +208,6 @@ std::string	header_handler::location_of_uploaded_file(location_context location_
 			break ;
 		}
 	}
-	return (result);
-}
-
-std::string	get_extension(std::string uri_location)
-{
-	int			start = uri_location.find_last_of('.');
-	if (start == -1)
-		return (uri_location);
-	std::string	result = uri_location.substr(start, std::string::npos);
-
 	return (result);
 }
 

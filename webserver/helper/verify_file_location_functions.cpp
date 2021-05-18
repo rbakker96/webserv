@@ -81,3 +81,13 @@ std::string	get_first_directory(std::string uri_location)
 		result = uri_location.substr(0, end);
 	return (result);
 }
+
+std::string	get_extension(std::string uri_location)
+{
+	int			start = uri_location.find_last_of('.');
+	if (start == -1)
+		return (uri_location);
+	std::string	result = uri_location.substr(start, std::string::npos);
+
+	return (result);
+}
