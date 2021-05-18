@@ -6,7 +6,7 @@
 /*   By: roybakker <roybakker@student.codam.nl>       +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2021/03/30 16:30:47 by roybakker     #+#    #+#                 */
-/*   Updated: 2021/04/26 17:10:33 by gbouwen       ########   odam.nl         */
+/*   Updated: 2021/05/18 12:37:08 by gbouwen       ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,8 +17,12 @@
 #include <vector>
 #include <cstring>
 #include <stdexcept>
-#include <cstdlib> // for malloc & free
+#include <cstdlib> // for malloc && free && exit
 #include <unistd.h>
+#include <iostream>
+
+# define RESET			"\033[0m"
+# define CYAN			"\033[36m"
 
 typedef     std::vector<std::string>                vector;
 typedef     std::vector<std::string>::iterator      vector_iterator;
@@ -44,5 +48,7 @@ void 						parse_invalid (const std::string& str);
 vector                      str_to_vector(std::string request);
 std::string                 read_browser_request(int fd);
 
+//signal handler function
+void						signal_handler(int signal);
 
 #endif

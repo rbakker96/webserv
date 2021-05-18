@@ -6,7 +6,7 @@
 /*   By: roybakker <roybakker@student.codam.nl>       +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2021/03/16 16:23:09 by roybakker     #+#    #+#                 */
-/*   Updated: 2021/03/25 11:28:55 by gbouwen       ########   odam.nl         */
+/*   Updated: 2021/05/18 11:50:56 by gbouwen       ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,6 +21,7 @@ int     main(int argc, char**argv) {
         return -1;
 	}
     try {
+		signal(SIGINT, signal_handler);
         webserver.load_configuration(argv[1]);
 		webserver.establish_connection();
 		webserver.run();
