@@ -430,6 +430,8 @@ void header_handler::execute_cgi(int fileFD, std::string server_name, int server
 {
 	pid_t	pid;
 	int 	status = 0;
+	FILE	*tmp_file = tmpfile();
+	int		tmp_fd = fileno(tmp_file);
 
 	pid = fork();
 	if (pid == -1)
@@ -439,12 +441,17 @@ void header_handler::execute_cgi(int fileFD, std::string server_name, int server
 		char	**args = create_cgi_args(); // error management
 		char 	**envp = create_cgi_envp(server_name, server_port); // error management
 
+		write(tmp_fd, _body.c_str(), _body.size());
+		lseek(tmp_fd, 0, SEEK_SET);
+		dup2(tmp_fd, STDIN_FILENO);
 		dup2(fileFD, STDOUT_FILENO);
 		execve(args[0], args, envp);
-		exit(EXIT_FAILURE);
+		exit(EXIT_FAILURE); // handle error
 	}
 	else
 		waitpid(pid, &status, 0);
+	fclose(tmp_file);
+	close(tmp_fd);
 	std::cout << RED << "LEFT CGI\n" << RESET;
 
 }
