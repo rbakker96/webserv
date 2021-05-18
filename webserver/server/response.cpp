@@ -88,7 +88,7 @@ void	response::generate_server_name(std::string server_name) {
     _response.append(server_header);
 }
 
-void	response::generate_allowe(response::vector allowed_methods) {
+void	response::generate_allow(response::vector allowed_methods) {
     std::string allow_header = "Allow: ";
 
     for (vector_iterator it = allowed_methods.begin(); it != allowed_methods.end(); it++){
@@ -99,6 +99,21 @@ void	response::generate_allowe(response::vector allowed_methods) {
     allow_header.append("\r\n");
 
     _response.append(allow_header);
+}
+
+void    response::generate_location(int status, std::string file_location) {
+    std::string location_header = "Location: ";
+
+    if (status == 201) {
+        location_header.append("server_files/www/downloads/");
+        std::string file = file_location.substr(file_location.find_last_of('/') + 1);
+        location_header.append(file);
+    }
+    else
+        location_header.append("server_files/www/downloads/POST_file");
+    location_header.append("\r\n");
+
+    _response.append(location_header);
 }
 
 void	response::generate_connection_close() {

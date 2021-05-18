@@ -13,9 +13,9 @@
 #include "header_handler.hpp"
 #include "../helper/helper.hpp"
 
-header_handler::header_handler(): _index(0), _status(okay_), _status_phrases(), _content_length(0), _content_type("Content-Type: text/"),
+header_handler::header_handler(): _index(0), _status(okay_), _status_phrases(), _max_file_size(0), _content_length(0), _content_type("Content-Type: text/"),
                                   _content_language("en"), _content_location(), _allow(), _method(), _file_location(),
-                                  _uri_location(), _protocol(), _requested_host(), _user_agent(),
+                                  _uri_location(), _protocol(), _requested_host(), _user_agent(), _accept_charset(),
                                   _accept_language(), _authorization(), _referer(), _body(), _response_file()	{
 
 	_status_phrases.insert (pair(200, "OK"));
@@ -39,15 +39,16 @@ header_handler::~header_handler(){
 void        header_handler::parse_request(int fd, header_handler::map request_buffer) {
     map_iterator request                        = request_buffer.find(fd);
     vector request_elements                     = str_to_vector(request->second);
-    parse parse_array[10]                       = { &header_handler::parse_requested_host,
+    parse parse_array[11]                       = { &header_handler::parse_requested_host,
                                                     &header_handler::parse_user_agent,
-                                                    &header_handler::parse_language,
+                                                    &header_handler::parse_accept_language,
                                                     &header_handler::parse_authorization,
                                                     &header_handler::parse_referer,
                                                     &header_handler::parse_content_length,
                                                     &header_handler::parse_content_type,
                                                     &header_handler::parse_content_language,
                                                     &header_handler::parse_content_location,
+                                                    &header_handler::parse_accept_charset,
                                                     &header_handler::invalid_argument};
 
     reset_handler();
@@ -58,7 +59,6 @@ void        header_handler::parse_request(int fd, header_handler::map request_bu
         parse function = parse_array[request_value];
         (this->*function)(*it);
     }
-
     print_request(request->second); //DEBUG
 }
 
@@ -67,8 +67,10 @@ int         header_handler::identify_request_value(const std::string &str) {
         return requested_host_;
     else if (str.find("User-Agent") != std::string::npos)
         return user_agent_;
+    else if (str.find("Accept-Charset") != std::string::npos)
+        return accept_charset_;
     else if (str.find("Accept-Language") != std::string::npos)
-        return language_;
+        return accept_language_;
     else if (str.find("Authorization:") != std::string::npos)
         return authorization_;
     else if (str.find("Referer:") != std::string::npos)
@@ -129,7 +131,8 @@ void        header_handler::parse_body(const std::string &str) {
 
 void        header_handler::parse_requested_host(const std::string &str) {_requested_host = parse_string(str);}
 void        header_handler::parse_user_agent(const std::string &str) {_user_agent = parse_string(str);}
-void        header_handler::parse_language(const std::string &str) {_accept_language = parse_string(str);}
+void        header_handler::parse_accept_charset(const std::string &str) {_accept_charset = parse_string(str);}
+void        header_handler::parse_accept_language(const std::string &str) { _accept_language = parse_string(str);}
 void        header_handler::parse_authorization(const std::string &str) {_authorization = parse_string(str);}
 void        header_handler::parse_referer(const std::string &str) {_referer = parse_string(str);}
 void        header_handler::parse_content_length(const std::string &str) {_content_length = parse_number(str);}
@@ -231,6 +234,7 @@ std::string	header_handler::match_location_block(header_handler::location_vector
 
 	for (size_t index = 0; index < location_blocks.size(); index++)
 	{
+	    _max_file_size = location_blocks[index].get_max_file_size();
 		_allow = location_blocks[index].get_method();
 		_location_block_root = location_blocks[index].get_root();
 		std::string location_context = location_blocks[index].get_location_context();
@@ -238,7 +242,6 @@ std::string	header_handler::match_location_block(header_handler::location_vector
 		if (!_referer.empty())
 		{
 			struct stat	s;
-
 			result.append(referer_location);
 			if (stat(result.c_str(), &s) == 0)
 			{
@@ -356,7 +359,7 @@ int         header_handler::post_request(int max_file_size) {
     int fd = unused_;
     std::string put_file = "server_files/www/downloads/POST_file";
 
-    if (max_file_size < _content_length) {
+    if (max_file_size && max_file_size < _content_length) {
         _status = payload_too_large_;
         std::cout << "Status in post request = " << _status << std::endl;
         return fd;
@@ -513,8 +516,10 @@ void    header_handler::send_response(int activeFD, int fileFD, std::string serv
     response.generate_date();
     response.generate_server_name(server_name);
     if (_status == method_not_allowed_)
-        response.generate_allowe(_allow);
-    response.generate_connection_close();
+        response.generate_allow(_allow);
+    if (_status == 201 || (_method == "POST" && !_body.empty()))
+        response.generate_location(_status, _file_location);
+    response.generate_connection_close(); //maybe different if we keep connections open
     response.close_header_section();
 
     response.write_response_to_browser(activeFD, _response_file, _method);
@@ -528,6 +533,7 @@ void    header_handler::send_response(int activeFD, int fileFD, std::string serv
 void    header_handler::reset_handler() {
     _status = 200;
     _content_length = 0;
+    _max_file_size = 0;
     _method.clear();
     _file_location.clear();
     _protocol.clear();
@@ -545,6 +551,7 @@ void    header_handler::reset_handler() {
 
 
 //-------------------------------------- GET functions --------------------------------------
+int                     header_handler::get_max_file_size() {return _max_file_size;}
 int				        header_handler::get_index() {return _index;}
 int                     header_handler::get_status() {return _status;}
 int                     header_handler::get_content_length() {return _content_length;}
@@ -560,6 +567,7 @@ std::string				header_handler::get_location_block_root() { return _location_bloc
 std::string             header_handler::get_protocol() {return _protocol;}
 std::string             header_handler::get_requested_host() {return _requested_host;}
 std::string             header_handler::get_user_agent() {return _user_agent;}
+std::string             header_handler::get_accept_charset() {return _accept_charset;}
 std::string             header_handler::get_accept_language() {return _accept_language;}
 std::string             header_handler::get_authorization() {return _authorization;}
 std::string             header_handler::get_referer() {return _referer;}
@@ -582,6 +590,7 @@ void header_handler::print_request(std::string request) {
     std::cout << "  Host = " << get_requested_host() << std::endl;
     std::cout << "  User agent = " << get_user_agent() << std::endl;
     std::cout << "  Accept language = " << get_accept_language() << std::endl;
+    std::cout << "  Accept charset = " << get_accept_charset() << std::endl;
     std::cout << "  Authorization = " << get_authorization() << std::endl;
     std::cout << "  Referer = " << get_referer() << std::endl;
     std::cout << "  Body = " << get_body() << std::endl;

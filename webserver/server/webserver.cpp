@@ -53,6 +53,8 @@ void    webserver::validate_configuration() {
     for( std::vector<server>::iterator it = _servers.begin(); it != _servers.end(); it++) {
         bool duplicate = false;
         int port = it->_port;
+        if (port <= 0)
+            throw std::invalid_argument("Error: invalid port in configuration file");
         for(std::vector<server>::iterator compare = _servers.begin(); compare != _servers.end(); compare++) {
             if (port == compare->_port) {
                 if (duplicate == true)
@@ -104,7 +106,7 @@ void    webserver::run() {
 				{
 					server->_handler.parse_request(server->_activeFD, server->_request_buffer);
                     server->remove_handled_request(server->_activeFD);
-                    server->_fileFD = server->_handler.handle_request(server->_cgi_file_types, server->_location_blocks, server->get_error_page(), server->get_file_size());
+                    server->_fileFD = server->_handler.handle_request(server->_cgi_file_types, server->_location_blocks, server->get_error_page(), server->_handler.get_max_file_size());
                     fd.handled_request_update(server->_fileFD, server->_activeFD, server->_handler.verify_content_type(), server->_handler.get_method());
 				}
 			}
@@ -149,7 +151,6 @@ void webserver::print_struct() {
         std::cout << "------------- BEGIN SERVER BLOCK -------------\n";
         std::cout << "Port = " << current.get_port() << std::endl;
         std::cout << "Host = " << current.get_host() << std::endl;
-        std::cout << "File size = " << current.get_file_size() << std::endl;
         std::cout << "Time out = " << current.get_time_out() << std::endl;
         std::cout << "Server name = " << current.get_server_name() << std::endl;
         std::cout << "Error page = " << current.get_error_page() << std::endl;
@@ -174,6 +175,7 @@ void webserver::print_struct() {
             std::cout << "  Index = " << location.get_index() << std::endl;
             std::cout << "  Autoindex = " << location.get_autoindex() << std::endl;
 			std::cout << "  Redirect = " << location.get_redirect() << std::endl;
+			std::cout << "  Max file size = " << location.get_max_file_size() << std::endl;
         }
         std::cout << "------------- END SERVER BLOCK -------------\n\n";
     }

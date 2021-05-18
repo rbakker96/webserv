@@ -21,13 +21,14 @@ class location_context {
 public:
     typedef     std::vector<std::string>::iterator vector_iterator;
     typedef     void (location_context::*configure)(const std::string&);
-    enum        location_values{ root_ = 0, method_ = 1, autoindex_ = 2, index_ = 3, redirect_ = 4, unknown_ = 5 };
+    enum        location_values{ root_ = 0, method_ = 1, autoindex_ = 2, index_ = 3, redirect_ = 4, max_file_size_ = 5, unknown_ = 6 };
 
 private:
     std::string                 _location_context;
     std::string                 _root;
     std::string                 _index;
     std::vector<std::string>    _allowed_method;
+    int                         _max_file_size;
     bool                        _autoindex;
 	bool						_redirect;
 
@@ -45,6 +46,7 @@ public:
     void    configure_index(const std::string &str);
     void    configure_autoindex(const std::string &str);
 	void	configure_redirect(const std::string &str);
+	void    configure_max_file_size(const std::string &str);
     void    invalid_element(const std::string &str);
 
     //GET functions
@@ -52,6 +54,7 @@ public:
     std::string                 get_root();
     std::string                 get_index();
     std::vector<std::string>    get_method();
+    int                         get_max_file_size();
     bool                        get_autoindex();
 	bool						get_redirect();
 
