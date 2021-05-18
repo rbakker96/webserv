@@ -6,7 +6,7 @@
 /*   By: roybakker <roybakker@student.codam.nl>       +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2021/03/30 14:07:20 by roybakker     #+#    #+#                 */
-/*   Updated: 2021/03/30 14:07:20 by roybakker     ########   odam.nl         */
+/*   Updated: 2021/05/17 15:40:28 by gbouwen       ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,10 +19,11 @@ location_context::~location_context(){}
 
 //-------------------------------------- CONFIG functions --------------------------------------
 void location_context::configure_location_block(vector_iterator it, vector_iterator end) {
-    configure configure_array[5] = { &location_context::configure_root,
+    configure configure_array[6] = { &location_context::configure_root,
                                      &location_context::configure_allowed_method,
                                      &location_context::configure_autoindex,
                                      &location_context::configure_index,
+									 &location_context::configure_redirect,
                                      &location_context::invalid_element };
 
     clean_location_instance();
@@ -39,6 +40,7 @@ void    location_context::clean_location_instance() {
     _allowed_method.clear();
     _index.clear();
     _autoindex = false;
+	_redirect = false;
 }
 
 int     location_context::identify_location_value(const std::string &str){
@@ -50,6 +52,8 @@ int     location_context::identify_location_value(const std::string &str){
         return autoindex_;
     else if (str.find("index") != std::string::npos)
         return index_;
+	else if (str.find("redirect") != std::string::npos)
+		return redirect_;
     return unknown_;
 }
 
@@ -71,9 +75,15 @@ void    location_context::configure_autoindex(const std::string &str){
 }
 
 
+void    location_context::configure_redirect(const std::string &str){
+	if (parse_string(str) == "on")
+        _redirect = true;
+}
+
 //-------------------------------------- GET functions --------------------------------------
 std::string                 location_context::get_location_context() {return _location_context;}
 std::string                 location_context::get_root() {return _root;}
 std::string                 location_context::get_index() {return _index;}
 std::vector<std::string>    location_context::get_method() {return _allowed_method;}
 bool                        location_context::get_autoindex() {return _autoindex;}
+bool						location_context::get_redirect() {return _redirect;}

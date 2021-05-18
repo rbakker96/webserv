@@ -6,7 +6,7 @@
 /*   By: roybakker <roybakker@student.codam.nl>       +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2021/04/07 13:23:53 by roybakker     #+#    #+#                 */
-/*   Updated: 2021/05/13 13:50:25 by gbouwen       ########   odam.nl         */
+/*   Updated: 2021/05/17 17:40:45 by gbouwen       ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -109,14 +109,16 @@ public:
     void            invalid_argument(const std::string &str);
 
     //HANDLE functions
-    int             handle_request(std::string cgi_file_types, location_vector location_blocks, std::string error_page);
+    int             handle_request(std::string cgi_file_types, location_vector location_blocks, std::string error_page, int max_file_size);
     int             put_request();
-    void            write_put_file(int file_fd);
+    int             post_request(int max_file_size);
+    void            write_body_to_file(int file_fd);
 	int             cgi_request();
     void            verify_file_location(location_vector location_blocks, std::string error_page);
-	int				match_location_block(header_handler::location_vector location_blocks, std::string file_location);
+	std::string		match_location_block(header_handler::location_vector location_blocks, std::string file_location);
 	std::string		generate_error_page_location(std::string error_page);
 	std::string		get_referer_part();
+	std::string		location_of_uploaded_file(location_context location_block, std::string location, std::string uri_location);
     void 		    verify_method();
     std::string     verify_content_type();
 

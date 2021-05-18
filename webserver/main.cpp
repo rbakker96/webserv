@@ -22,6 +22,7 @@ int     main(int argc, char**argv) {
 	}
     try {
         webserver.load_configuration(argv[1]);
+        webserver.validate_configuration();
 		webserver.establish_connection();
 		webserver.run();
     }

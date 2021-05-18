@@ -6,7 +6,7 @@
 /*   By: roybakker <roybakker@student.codam.nl>       +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2021/03/30 16:30:47 by roybakker     #+#    #+#                 */
-/*   Updated: 2021/05/03 17:19:44 by gbouwen       ########   odam.nl         */
+/*   Updated: 2021/05/17 15:41:49 by gbouwen       ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -41,11 +41,26 @@ void    webserver::load_configuration(char *config_file) {
     }
 	free(line);
     close(fd);
+
 	if (ret == -1)
 		throw std::runtime_error("Error while reading config file");
-	if (!server_block.empty()) // WHY
+	if (!server_block.empty()) // WHY -> on success the server_block gets cleared on failure there is partial (wrong) input
 		throw std::invalid_argument("Error: missing '{' or '}' in config file");
     print_struct();
+}
+
+void    webserver::validate_configuration() {
+    for( std::vector<server>::iterator it = _servers.begin(); it != _servers.end(); it++) {
+        bool duplicate = false;
+        int port = it->_port;
+        for(std::vector<server>::iterator compare = _servers.begin(); compare != _servers.end(); compare++) {
+            if (port == compare->_port) {
+                if (duplicate == true)
+                    throw std::invalid_argument("Error: duplicate port in configuration file");
+                duplicate = true;
+            }
+        }
+    }
 }
 
 void    webserver::establish_connection(){
@@ -88,18 +103,18 @@ void    webserver::run() {
 				{
 					server->_handler.parse_request(server->_activeFD, server->_request_buffer);
                     server->remove_handled_request(server->_activeFD);
-                    server->_fileFD = server->_handler.handle_request(server->_cgi_file_types, server->_location_blocks, server->get_error_page());
+                    server->_fileFD = server->_handler.handle_request(server->_cgi_file_types, server->_location_blocks, server->get_error_page(), server->get_file_size());
                     fd.handled_request_update(server->_fileFD, server->_activeFD, server->_handler.verify_content_type(), server->_handler.get_method());
 				}
 			}
 
             if (fd.rdy_for_reading(server->_fileFD)) //read requested file
 			{
-				if (fd.rdy_for_writing(server->_fileFD)) {
+				if (fd.rdy_for_writing(server->_fileFD) && server->_handler.get_status() < error_) {
                     if (server->_cgi_file_types.find(server->_handler.verify_content_type()) != std::string::npos)
                         server->_handler.execute_cgi(server->_fileFD, server->_server_name, server->_port);
                     else
-						server->_handler.write_put_file(server->_fileFD);
+                        server->_handler.write_body_to_file(server->_fileFD);
 			    }
 			    if (server->_handler.get_status() != 204)
 				    server->_handler.read_requested_file(server->_fileFD);
@@ -157,6 +172,7 @@ void webserver::print_struct() {
 
             std::cout << "  Index = " << location.get_index() << std::endl;
             std::cout << "  Autoindex = " << location.get_autoindex() << std::endl;
+			std::cout << "  Redirect = " << location.get_redirect() << std::endl;
         }
         std::cout << "------------- END SERVER BLOCK -------------\n\n";
     }

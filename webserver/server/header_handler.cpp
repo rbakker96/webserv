@@ -6,7 +6,7 @@
 /*   By: gbouwen <marvin@codam.nl>                    +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2021/05/03 12:34:40 by gbouwen       #+#    #+#                 */
-/*   Updated: 2021/05/13 13:50:24 by gbouwen       ########   odam.nl         */
+/*   Updated: 2021/05/17 17:58:05 by gbouwen       ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -108,12 +108,22 @@ void        header_handler::parse_body(const std::string &str) {
     int header_size;
 
     if ((header_size = (int)str.find("\r\n\r\n")) != -1) {
+        header_size += 4;
         if (str.find("Content-Length:") != std::string::npos) {
-            _body = str.substr(header_size + 4);
+            _body = str.substr(header_size);
         }
         else if (str.find("chunked") != std::string::npos) {
-            std::string body = str.substr(header_size + 4);
-            _body = body.substr(0, body.length() - 4);
+            std::string chunked_body = str.substr(header_size);
+            int pos = header_size;
+            long int chunk_size;
+            while(true) {
+                int size = (int)str.find("\r\n", pos);
+                std::string hex_size = str.substr(pos, (size-pos));
+                if ((chunk_size = hex_to_dec(hex_size, 16)) == 0)
+                    break;
+                _body.append(chunked_body.substr((size-pos)+2, chunk_size));
+                pos = size + chunk_size + 4;
+            }
         }
     }
 }
@@ -131,7 +141,7 @@ void        header_handler::invalid_argument(const std::string &str) {parse_inva
 
 
 //-------------------------------------- HANDLE functions --------------------------------------
-int        header_handler::handle_request(std::string cgi_file_types, header_handler::location_vector location_blocks, std::string error_page) {
+int        header_handler::handle_request(std::string cgi_file_types, header_handler::location_vector location_blocks, std::string error_page, int max_file_size) {
 	struct  stat stats;
 	int		fd = unused_;
 
@@ -141,6 +151,8 @@ int        header_handler::handle_request(std::string cgi_file_types, header_han
     {
         if (_method == "PUT")
             fd = put_request();
+        else if (_method == "POST" && !_body.empty())
+            fd = post_request(max_file_size);
 		else if (stat(_file_location.c_str(), &stats) == -1)
 			_status = not_found_; // update the status code after the version is stable
 		else if (!(stats.st_mode & S_IRUSR))
@@ -177,166 +189,162 @@ std::string	header_handler::get_referer_part()
 	return (result);
 }
 
-int	check_if_file(std::string file_location)
+std::string	remove_duplicate_forward_slashes(std::string location)
 {
-	std::vector<std::string>	extensions;
-    extensions.push_back(".html");
-    extensions.push_back(".php");
-    extensions.push_back(".css");
-    extensions.push_back(".ico");
-    extensions.push_back(".png");
-	extensions.push_back(".bla");
-	extensions.push_back(".bad_extension");
-	extensions.push_back(".pouic");
-	extensions.push_back(".pouac"); // check directory first and then file
+	std::string	result;
+	size_t		x = 0;
 
-	// search for entire len after . and strcmp
-    for (header_handler::vector_iterator it = extensions.begin(); it != extensions.end(); it++) {
-        if (file_location.find(*it) != std::string::npos) {
-			return (1);
+	while (x < location.length())
+	{
+		result += location[x];
+		if (location[x] == '/')
+		{
+			while (location[x] == '/')
+				x++;
 		}
-    }
-    return 0;
-}
-
-int	compare_directory(std::string file_location, std::string location_context)
-{
-	std::string	parent_directory = file_location;
-
-	if (file_location == location_context)
-		return (1);
-	while (1)
-	{
-		int	end = parent_directory.find_last_of('/');
-		if (end == 0)
-			break ;
-		parent_directory = file_location.substr(0, end);
-		if (parent_directory == location_context)
-			return (1);
+		else
+			x++;
 	}
-	return (0);
+	return (result);
 }
 
-int	compare_file(std::string file_location, std::string location_context)
+std::string	get_file(location_context location_block, std::string location)
 {
-	std::string	parent_directory = file_location;
+	std::string	result;
+	std::string	temp;
+	struct stat	s;
 
-	while (1)
+	location = remove_duplicate_forward_slashes(location);
+	result = location;
+	temp = location;
+	if (stat(location.c_str(), &s) == 0)
 	{
-		int	end = parent_directory.find_last_of('/');
-		if (end == 0 && (check_if_file(parent_directory)))
-			return (1);
-		if (end == -1)
-			break ;
-		parent_directory = file_location.substr(0, end);
-		if (parent_directory == location_context)
-			return (1);
+		if (s.st_mode & S_IFREG)
+			return (result);
+		else if (s.st_mode & S_IFDIR)
+		{
+			temp.append(location_block.get_index());
+			if (stat(temp.c_str(), &s) == -1)
+			{
+				if (location_block.get_autoindex())
+					result.append("/index.php");
+				else
+					result = "not found"; // result = "forbidden"; instead?
+			}
+			else
+				result.append(location_block.get_index());
+		}
 	}
-	return (0);
+	else
+		result = "not found";
+	return (result);
 }
 
-int			header_handler::match_location_block(header_handler::location_vector location_blocks, std::string file_location)
+std::string	skip_first_directory(std::string uri_location)
 {
-	std::string	location_context;
+	int			start;
+	std::string	result;
+
+	start = uri_location.find_first_of('/', 1);
+	if (start == -1)
+		result = "";
+	else
+		result = uri_location.substr(start, std::string::npos);
+	return (result);
+}
+
+std::string	get_first_directory(std::string uri_location)
+{
+	int			end;
+	std::string	result;
+
+	end = uri_location.find_first_of('/', 1);
+	if (end == -1)
+		result = uri_location;
+	else
+		result = uri_location.substr(0, end);
+	return (result);
+}
+
+std::string	header_handler::location_of_uploaded_file(location_context location_block, std::string root, std::string uri_location)
+{
+	std::vector<std::string>	allowed_methods = location_block.get_method();
+	std::string					directory = root;
+	struct stat					s;
+	std::string					result = "not found";
+
+	directory.append(get_first_directory(uri_location));
+	for (size_t index = 0; index < allowed_methods.size(); index++)
+	{
+		if (stat(directory.c_str(), &s) == 0 && (s.st_mode & S_IFDIR) && _method.compare(allowed_methods[index]) == 0)
+		{
+			result = root;
+			result.append(uri_location);
+			break ;
+		}
+	}
+	return (result);
+}
+
+std::string	header_handler::match_location_block(header_handler::location_vector location_blocks, std::string uri_location)
+{
+	std::string	result;
 	std::string	referer_location = get_referer_part();
+	referer_location = remove_duplicate_forward_slashes(referer_location);
+	uri_location = remove_duplicate_forward_slashes(uri_location);
 
 	for (size_t index = 0; index < location_blocks.size(); index++)
 	{
-		location_context = location_blocks[index].get_location_context();
-		std::cout << "LOCATION_CONTEXT : " << location_context << std::endl;
-		std::cout << "FILE_LOCATION : " << file_location << std::endl;
-		if (!_referer.empty() && check_if_file(referer_location) == 0 && location_context == referer_location)
-			return (index);
-		else if (_referer.empty() || check_if_file(referer_location) == 1)
+		_allow = location_blocks[index].get_method();
+		_location_block_root = location_blocks[index].get_root();
+		std::string location_context = location_blocks[index].get_location_context();
+		result = _location_block_root;
+		if (!_referer.empty())
 		{
-			if (check_if_file(file_location) == 1 && compare_file(file_location, location_context) == 1)
-				return (index);
-			else if (check_if_file(file_location) == 0 && compare_directory(file_location, location_context) == 1)
-				return (index);
+			struct stat	s;
+
+			result.append(referer_location);
+			if (stat(result.c_str(), &s) == 0)
+			{
+				if (s.st_mode & S_IFREG)
+				{
+					int	end = result.find_last_of('/');
+					result.substr(0, end);
+				}
+			}
 		}
+		if (location_blocks[index].get_redirect())
+			result.append(skip_first_directory(uri_location));
+		else if (_method.compare("PUT") == 0) // add post with file upload later
+			result.append("");
+		else
+			result.append(uri_location);
+		if (_method.compare("PUT") == 0) // add post with file upload later
+			result = location_of_uploaded_file(location_blocks[index], result, uri_location);
+		else
+			result = get_file(location_blocks[index], result);
+		if (result.compare("not found") != 0)
+			break ;
 	}
-	return (-1);
-}
-
-std::string	get_subdirectories(std::string str)
-{
-	int			start_index;
-	int			end_index;
-	std::string	subdir;
-
-	start_index = str.find_first_of('/', 1);
-	if (start_index == -1)
-		return ("");
-	end_index = str.find_last_of('/', std::string::npos);
-	if (start_index == end_index)
-		subdir = str.substr(start_index, std::string::npos);
-	else
-		subdir = str.substr(start_index, end_index - start_index);
-	if (check_if_file(subdir))
-		return ("");
-	return (subdir);
-}
-
-std::string	get_subdirectories_referer(std::string str)
-{
-	if (check_if_file(str))
-		return ("");
-	else
-		return (get_subdirectories(str));
-}
-
-std::string	get_file(location_context location_block, std::string file_location, std::string correct_location)
-{
-	int	start_index;
-
-	if (check_if_file(file_location))
-	{
-		start_index = file_location.find_last_of('/', std::string::npos);
-		return (file_location.substr(start_index, std::string::npos));
-	}
-	else
-	{
-		struct stat	s;
-		std::string	temp = correct_location;
-
-		temp.append(location_block.get_index());
-		if (stat(temp.c_str(), &s) == -1 && location_block.get_autoindex())
-			return ("/index.php");
-		return (location_block.get_index());
-	}
+	return (result);
 }
 
 std::string	header_handler::generate_error_page_location(std::string error_page)
 {
 	int pos = _uri_location.find_last_of('/');
-	std::string temp = _uri_location.substr(pos+1);
+	std::string temp = _uri_location.substr(pos + 1);
 	return (error_page.append(temp));
 }
 
-void        header_handler::verify_file_location(header_handler::location_vector location_blocks, std::string error_page) {
-	int 		index = match_location_block(location_blocks, _uri_location);
-	std::string	correct_location;
-	std::string	referer_part = get_referer_part();
-	struct stat	s;
-
-	std::cout << "INDEX : " << index << std::endl;
-	if (index == -1)
-		correct_location = generate_error_page_location(error_page);
+void        header_handler::verify_file_location(header_handler::location_vector location_blocks, std::string error_page)
+{
+	std::string result = match_location_block(location_blocks, _uri_location);
+	if (result.compare("not found") == 0)
+		_file_location = generate_error_page_location(error_page);
 	else
-	{
-        _allow = location_blocks[index].get_method();
-		_location_block_root = location_blocks[index].get_root();
-		correct_location = _location_block_root;
-		correct_location.append(get_subdirectories_referer(referer_part));
-		std::cout << "0 correct_location : " << correct_location << std::endl;
-		correct_location.append(get_subdirectories(_uri_location));
-		std::cout << "1 correct_location : " << correct_location << std::endl;
-		correct_location.append(get_file(location_blocks[index], _uri_location, correct_location));
-		std::cout << "2 correct_location : " << correct_location << std::endl;
-	}
-	if (stat(correct_location.c_str(), &s) == -1)
-		correct_location = generate_error_page_location(error_page);
-	_file_location = correct_location;
+		_file_location = result;
+	_file_location = remove_duplicate_forward_slashes(_file_location);
+	std::cout << "verify_file_location() : _file_location = " << _file_location << std::endl;
 }
 
 void 		header_handler::verify_method()
@@ -347,8 +355,7 @@ void 		header_handler::verify_method()
 		_status = method_not_allowed_;
 	if (!_allow.empty())
 	{
-		for (vector_iterator it = _allow.begin(); it != _allow.end(); it++)
-		{
+		for (vector_iterator it = _allow.begin(); it != _allow.end(); it++) {
 			if (*it == _method)
 				return;
 		}
@@ -410,7 +417,23 @@ int     	header_handler::put_request()
     return fd;
 }
 
-void        header_handler::write_put_file(int file_fd) {
+int         header_handler::post_request(int max_file_size) {
+    int fd = unused_;
+    std::string put_file = "server_files/www/downloads/POST_file";
+
+    if (max_file_size < _content_length) {
+        _status = payload_too_large_;
+        std::cout << "Status in post request = " << _status << std::endl;
+        return fd;
+    }
+    _status = okay_;
+    fd = open(&put_file[0], O_RDWR | O_TRUNC| O_CREAT, S_IRWXU);
+    if (fd == -1)
+        throw std::runtime_error("Open failed");
+    return fd;
+}
+
+void        header_handler::write_body_to_file(int file_fd) {
     if ((write(file_fd, _body.c_str(), _body.length())) == -1)
         throw std::runtime_error("Write failed");
 }

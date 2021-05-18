@@ -52,3 +52,31 @@ int     validate_request(const std::string& request) {
     return invalid_;
 }
 
+
+static int val(char c)
+{
+    if (c >= '0' && c <= '9')
+        return (int)c - '0';
+    else
+        return (int)c - 'a' + 10;
+}
+
+#include <iostream>
+int hex_to_dec(std::string str, int base)
+{
+    int len = str.length();
+    int power = 1;
+    int num = 0;
+    int i;
+
+    if (str == "0")
+        return 0;
+    for (i = len - 1; i >= 0; i--)
+    {
+        if (val(str[i]) >= base)
+            return -1;
+        num += val(str[i]) * power;
+        power = power * base;
+    }
+    return num;
+}
