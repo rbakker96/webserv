@@ -6,7 +6,7 @@
 /*   By: roybakker <roybakker@student.codam.nl>       +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2021/03/30 14:07:28 by roybakker     #+#    #+#                 */
-/*   Updated: 2021/03/30 14:07:28 by roybakker     ########   odam.nl         */
+/*   Updated: 2021/05/17 15:42:41 by gbouwen       ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,7 +21,7 @@ class location_context {
 public:
     typedef     std::vector<std::string>::iterator vector_iterator;
     typedef     void (location_context::*configure)(const std::string&);
-    enum        location_values{ root_ = 0, method_ = 1, autoindex_ = 2, index_ = 3, unknown_ = 4 };
+    enum        location_values{ root_ = 0, method_ = 1, autoindex_ = 2, index_ = 3, redirect_ = 4, unknown_ = 5 };
 
 private:
     std::string                 _location_context;
@@ -29,6 +29,7 @@ private:
     std::string                 _index;
     std::vector<std::string>    _allowed_method;
     bool                        _autoindex;
+	bool						_redirect;
 
 public:
     location_context();
@@ -43,6 +44,7 @@ public:
     void    configure_allowed_method(const std::string &str);
     void    configure_index(const std::string &str);
     void    configure_autoindex(const std::string &str);
+	void	configure_redirect(const std::string &str);
     void    invalid_element(const std::string &str);
 
     //GET functions
@@ -51,6 +53,7 @@ public:
     std::string                 get_index();
     std::vector<std::string>    get_method();
     bool                        get_autoindex();
+	bool						get_redirect();
 
 };
 

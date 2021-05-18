@@ -6,7 +6,7 @@
 /*   By: roybakker <roybakker@student.codam.nl>       +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2021/03/30 16:30:47 by roybakker     #+#    #+#                 */
-/*   Updated: 2021/05/03 17:19:44 by gbouwen       ########   odam.nl         */
+/*   Updated: 2021/05/17 15:41:49 by gbouwen       ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -156,6 +156,7 @@ void webserver::print_struct() {
 
             std::cout << "  Index = " << location.get_index() << std::endl;
             std::cout << "  Autoindex = " << location.get_autoindex() << std::endl;
+			std::cout << "  Redirect = " << location.get_redirect() << std::endl;
         }
         std::cout << "------------- END SERVER BLOCK -------------\n\n";
     }
