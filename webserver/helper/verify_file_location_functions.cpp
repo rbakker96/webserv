@@ -30,21 +30,26 @@ std::string	get_file(location_context location_block, std::string location)
 	temp = location;
 	if (stat(location.c_str(), &s) == 0)
 	{
-		if (s.st_mode & S_IFREG)
-			return (result);
-		else if (s.st_mode & S_IFDIR)
+		if (s.st_mode & S_IFDIR)
 		{
+			if (location_block.get_index().empty())
+			{
+				result = "not found";
+				return (result);
+			}
 			temp.append(location_block.get_index());
 			if (stat(temp.c_str(), &s) == -1)
 			{
 				if (location_block.get_autoindex())
 					result.append("/index.php");
 				else
-					result = "not found"; // result = "forbidden"; instead?
+					result = "not found"; // forbidden instead?
 			}
 			else
 				result.append(location_block.get_index());
 		}
+		else if (s.st_mode & S_IFREG)
+			return (result);
 	}
 	else
 		result = "not found";

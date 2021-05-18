@@ -6,7 +6,7 @@
 /*   By: gbouwen <marvin@codam.nl>                    +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2021/05/03 12:34:40 by gbouwen       #+#    #+#                 */
-/*   Updated: 2021/05/18 15:10:50 by gbouwen       ########   odam.nl         */
+/*   Updated: 2021/05/18 17:12:38 by gbouwen       ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -154,7 +154,7 @@ int        header_handler::handle_request(std::string cgi_file_types, header_han
             fd = post_request(max_file_size);
 		else if (stat(_file_location.c_str(), &stats) == -1)
 			_status = not_found_; // update the status code after the version is stable
-		else if (!(stats.st_mode & S_IRUSR))
+		else if (!(stats.st_mode & S_IRUSR)) // don't think this works? (because it is an else if statement)
 			_status = forbidden_; // update the status code after the version is stable
         else if (cgi_file_types.find(verify_content_type()) != std::string::npos)
             return cgi_request();
@@ -211,9 +211,20 @@ std::string	header_handler::location_of_uploaded_file(location_context location_
 	return (result);
 }
 
+std::string	get_extension(std::string uri_location)
+{
+	int			start = uri_location.find_last_of('.');
+	if (start == -1)
+		return (uri_location);
+	std::string	result = uri_location.substr(start, std::string::npos);
+
+	return (result);
+}
+
 std::string	header_handler::match_location_block(header_handler::location_vector location_blocks, std::string uri_location)
 {
 	std::string	result;
+	std::string	extension = get_extension(uri_location);
 	std::string	referer_location = get_referer_part();
 	referer_location = remove_duplicate_forward_slashes(referer_location);
 	uri_location = remove_duplicate_forward_slashes(uri_location);
@@ -240,14 +251,16 @@ std::string	header_handler::match_location_block(header_handler::location_vector
 		}
 		if (location_blocks[index].get_redirect())
 			result.append(skip_first_directory(uri_location));
-		else if (_method.compare("PUT") == 0) // add post with file upload later
+		else if (_method.compare("PUT") == 0 || (_method.compare("POST") == 0 && (extension != ".php" || extension == ".bla"))) // add post with file upload later?
 			result.append("");
 		else
 			result.append(uri_location);
-		if (_method.compare("PUT") == 0) // add post with file upload later
+		if (_method.compare("PUT") == 0 || (_method.compare("POST") == 0 && (extension != ".php" || extension == ".bla"))) // add post with file upload later?
 			result = location_of_uploaded_file(location_blocks[index], result, uri_location);
 		else
+		{
 			result = get_file(location_blocks[index], result);
+		}
 		if (result.compare("not found") != 0)
 			break ;
 	}
@@ -320,8 +333,8 @@ int			header_handler::cgi_request()
 
 int     	header_handler::put_request()
 {
-    int fd = unused_;
-	struct  stat stats;
+    int			fd = unused_;
+	struct stat	stats;
     std::string folder = "server_files/www/downloads/";
     std::string file = _file_location.substr(_file_location.find_last_of('/') + 1);
     std::string put_file = folder.append(file);
