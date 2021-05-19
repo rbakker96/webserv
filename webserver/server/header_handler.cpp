@@ -161,7 +161,7 @@ int        header_handler::handle_request(std::string cgi_file_types, header_han
 		else if (!(stats.st_mode & S_IRUSR)) // don't think this works? (because it is an else if statement)
 			_status = forbidden_; // update the status code after the version is stable
         else if (cgi_file_types.find(verify_content_type()) != std::string::npos)
-			return cgi_request();
+			return create_cgi_fd("output");
         else if ((fd = open(&_file_location[0], O_RDONLY)) == -1)
 			throw std::runtime_error("Open failed");
     }
@@ -323,9 +323,11 @@ std::string     header_handler::verify_content_type() {
     return "folder";
 }
 
-int			header_handler::cgi_request()
+int header_handler::create_cgi_fd(std::string type)
 {
-	std::string	str_filename = "server_files/www/temp";
+	std::string str_filename = "server_files/www/cgi_out_";
+	if (type == "input")
+		str_filename = "server_files/www/cgi_in_";
 	char	*index_str = ft_itoa(_index);
 
 	str_filename.append(index_str);
@@ -392,7 +394,7 @@ std::string	get_correct_directory(std::string &file_location)
 }
 
 // error checking if execve fails
-void header_handler::execute_cgi(int fileFD, std::string server_name, int server_port)
+void header_handler::execute_cgi(int inputFD, int outputFD, std::string server_name, int server_port)
 {
 	pid_t	pid;
 	int 	status = 0;
@@ -407,11 +409,11 @@ void header_handler::execute_cgi(int fileFD, std::string server_name, int server
 
 		if (!_body.empty())
 		{
-			write(fileFD, _body.c_str(), _body.size());
-			lseek(fileFD, 0, SEEK_SET);
-			dup2(fileFD, STDIN_FILENO);
+			write(inputFD, _body.c_str(), _body.size());
+			lseek(inputFD, 0, SEEK_SET);
+			dup2(inputFD, STDIN_FILENO);
 		}
-		dup2(fileFD, STDOUT_FILENO);
+		dup2(outputFD, STDOUT_FILENO);
 		execve(args[0], args, envp);
 		exit(EXIT_FAILURE); // handle error
 	}
