@@ -28,31 +28,6 @@ int    location_block_size(vector_iterator it, vector_iterator end) {
     return 0;
 }
 
-int     validate_request(const std::string& request) {
-    int header_size;
-    int pos;
-
-    if ((header_size = (int)request.find("\r\n\r\n")) != -1)
-    {
-        if ((pos = (int)request.find("Content-Length:")) != -1) {
-            int content_length = ft_atoi(request.c_str() + (pos + 16));
-            std::string body = request.substr(header_size + 4);
-            if ((int)body.length() == content_length)
-                return valid_;
-        }
-        else if (request.find("chunked") != std::string::npos) {
-            std::string body = request.substr(header_size + 4);
-            if (body.find("\r\n\r\n") != std::string::npos)
-                return valid_;
-        }
-        else if (request.find("Content-Length:") == std::string::npos &&
-                 request.find("chunked") == std::string::npos)
-            return valid_;
-    }
-    return invalid_;
-}
-
-
 static int val(char c)
 {
     if (c >= '0' && c <= '9')

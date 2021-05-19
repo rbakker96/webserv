@@ -18,6 +18,7 @@
 #include <cstring>
 #include <vector>
 #include <map>
+#include <list>
 #include <iostream>
 #include <unistd.h>
 #include <exception>
@@ -26,6 +27,7 @@
 //custom includes
 #include "location_context.hpp"
 #include "header_handler.hpp"
+#include "request_buf.hpp"
 
 //tcp-connection includes
 #include <netinet/in.h>
@@ -49,7 +51,7 @@ public:
 
 public:
     typedef     std::vector<std::string>::iterator      vector_iterator;
-    typedef     std::map<int, std::string>::iterator    map_iterator;
+    typedef     std::map<int, request_buf>::iterator    map_iterator;
     typedef     void (server::*configure)(const std::string&);
     enum        server_values{ port_ = 0, host_ = 1, server_name_ = 2, error_page_ = 3,
                                 time_out_ = 4, cgi_file_types_ = 5, unknown_ = 6, location_ = 7 };
@@ -74,7 +76,7 @@ private:
     struct	sockaddr_in             _addr;
 
     //Handler
-    std::map<int, std::string>      _request_buffer;
+    std::map<int, request_buf>      _request_buffer;
     header_handler                  _handler;
 
 public:
@@ -104,7 +106,7 @@ public:
     void    remove_handled_request(int used_fd);
 
     //REQUEST functions
-    int     update_request_buffer(int fd, const std::string& request);
+    int     update_request_buffer(int fd, const std::string& request_data);
 
     //GET functions
     int                             get_time_out();

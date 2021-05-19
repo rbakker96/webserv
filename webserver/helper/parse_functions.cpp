@@ -45,7 +45,6 @@ int parse_number (const std::string& str) {
 }
 
 void parse_invalid(const std::string& str) {
-
 	if (str == "0")
 		return;
 }

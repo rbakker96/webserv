@@ -114,17 +114,21 @@ void    server::remove_handled_request(int used_fd){
 
 
 //-------------------------------------- REQUEST functions --------------------------------------
-int     server::update_request_buffer(int fd, const std::string& request) {
-    std::map<int, std::string>::iterator it;
+int     server::update_request_buffer(int fd, const std::string& request_data) {
+    std::map<int, request_buf>::iterator it = _request_buffer.find(fd);
 
-    it = _request_buffer.find(fd);
     if (it == _request_buffer.end()) {
-        _request_buffer.insert(std::pair<int, std::string>(fd, request));
+        request_buf tmp;
+        _request_buffer.insert(std::pair<int, request_buf>(fd, tmp));
         it = _request_buffer.find(fd);
     }
+
+    if (!_request_buffer[fd].headers_received())
+        _request_buffer[fd].add_header_data(request_data);
     else
-        it->second = it->second.append(request);
-    return (validate_request(it->second));
+        _request_buffer[fd].add_body_data(request_data);
+
+    return _request_buffer[fd].validate_request();
 }
 
 

@@ -27,6 +27,7 @@
 #include "response.hpp"
 #include "location_context.hpp"
 #include "../helper/helper.hpp"
+#include "request_buf.hpp"
 
 //custom color for better visibility
 # define RESET			"\033[0m"
@@ -43,8 +44,8 @@ class header_handler {
 public:
 	typedef		std::vector<std::string>				vector;
 	typedef		std::vector<std::string>::iterator		vector_iterator;
-	typedef		std::map<int, std::string>				map;
-	typedef		std::map<int, std::string>::iterator	map_iterator;
+	typedef		std::map<int, request_buf>				map;
+	typedef		std::map<int, request_buf>::iterator	map_iterator;
 	typedef		std::vector<location_context>			location_vector;
 	typedef     std::vector<location_context>::iterator location_iterator;
 	typedef		std::pair<int, std::string>				pair;
@@ -64,8 +65,8 @@ protected:
 	int				_index;
 
 	//status
-	int				_status;
-	map				_status_phrases;
+	int				            _status;
+    std::map<int, std::string>	_status_phrases;
 
 	//Headers
     int             _max_file_size;
@@ -95,7 +96,7 @@ public:
 	~header_handler();
 
     //PARSE functions
-    void            parse_request(int fd, map request_buffer);
+    void            parse_request(request_buf request_buffer);
     int             identify_request_value(const std::string &str);
     void            parse_first_line(const std::string &str);
     void            parse_requested_host(const std::string &str);
@@ -104,7 +105,7 @@ public:
     void            parse_accept_language(const std::string &str);
     void            parse_authorization(const std::string &str);
     void            parse_referer(const std::string &str);
-    void            parse_body(const std::string &str);
+    void            parse_body(request_buf request);
     void            parse_content_length(const std::string &str);
     void            parse_content_type(const std::string &str);
     void            parse_content_language(const std::string &str);
@@ -164,7 +165,7 @@ public:
 	void			set_index(int index);
 
     //DEBUG functions
-    void            print_request(std::string request);
+    void            print_request();
     void            print_response(std::string response);
 };
 

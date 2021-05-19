@@ -21,6 +21,7 @@ SOURCES			=	webserver/main.cpp \
                     webserver/server/server.cpp \
                     webserver/server/webserver.cpp \
                     webserver/server/header_handler.cpp \
+                    webserver/server/request_buf.cpp \
                     webserver/helper/check_functions.cpp \
 					webserver/helper/lib_functions.cpp \
 					webserver/helper/parse_functions.cpp \

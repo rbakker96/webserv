@@ -100,11 +100,22 @@ void    webserver::run() {
             if (fd.rdy_for_reading(server->_activeFD)) //handle requested file
 			{
 				std::string request_headers = read_browser_request(server->_activeFD);
+				std::cout << "incomming request = \n[" << request_headers << "]" << std::endl;
                 if (!request_headers.empty())
                     fd.set_time_out(server->_activeFD);
 				if (server->update_request_buffer(server->_activeFD, request_headers) == valid_)
 				{
-					server->_handler.parse_request(server->_activeFD, server->_request_buffer);
+				    std::cout << GREEN << "SIZE = " << server->_request_buffer.size() << std::endl;
+
+
+                    std::cout << "BUFFER HEADERS = \n" << server->_request_buffer[server->_activeFD].get_headers() << std::endl;
+                    std::cout << "BUFFER BODY = \n" << RESET;
+                    std::list<std::string> list = server->_request_buffer[server->_activeFD].get_body();
+                    for(std::list<std::string>::iterator it2 = list.begin(); it2 != list.end(); it2++)
+                        std::cout << GREEN << *it2 << RESET <<std::endl;
+
+
+					server->_handler.parse_request(server->_request_buffer[server->_activeFD]);
                     server->remove_handled_request(server->_activeFD);
                     server->_fileFD = server->_handler.handle_request(server->_cgi_file_types, server->_location_blocks, server->get_error_page());
                     fd.handled_request_update(server->_fileFD, server->_activeFD, server->_handler.verify_content_type(), server->_handler.get_method());

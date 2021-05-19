@@ -36,9 +36,9 @@ header_handler::~header_handler(){
 
 
 //-------------------------------------- PARSE functions --------------------------------------
-void        header_handler::parse_request(int fd, header_handler::map request_buffer) {
-    map_iterator request                        = request_buffer.find(fd);
-    vector request_elements                     = str_to_vector(request->second);
+void        header_handler::parse_request(request_buf request_buffer) {
+//    map_iterator request                        = request_buffer.find(fd);
+    vector request_elements                     = str_to_vector(request_buffer.get_headers());
     parse parse_array[11]                       = { &header_handler::parse_requested_host,
                                                     &header_handler::parse_user_agent,
                                                     &header_handler::parse_accept_language,
@@ -53,13 +53,13 @@ void        header_handler::parse_request(int fd, header_handler::map request_bu
 
     reset_handler();
     parse_first_line(*request_elements.begin());
-    parse_body(request->second);
+    parse_body(request_buffer);
     for (vector_iterator it = request_elements.begin(); it != request_elements.end(); it++) {
         int request_value = identify_request_value(*it);
         parse function = parse_array[request_value];
         (this->*function)(*it);
     }
-    print_request(request->second); //DEBUG
+    print_request(); //DEBUG
 }
 
 int         header_handler::identify_request_value(const std::string &str) {
@@ -105,26 +105,27 @@ void        header_handler::parse_first_line(const std::string &str) {
     _protocol = str.substr(end + 1);
 }
 
-void        header_handler::parse_body(const std::string &str) {
-    int header_size;
+void        header_handler::parse_body(request_buf request) {
+    std::list<std::string> body = request.get_body();
+    _body.reserve(request.get_body_size());
 
-    if ((header_size = (int)str.find("\r\n\r\n")) != -1) {
-        header_size += 4;
-        if (str.find("Content-Length:") != std::string::npos) {
-            _body = str.substr(header_size);
-        }
-        else if (str.find("chunked") != std::string::npos) {
-            std::string chunked_body = str.substr(header_size);
-            int pos = header_size;
-            long int chunk_size;
-            while (true) {
-                int size = (int)str.find("\r\n", pos);
-                std::string hex_size = str.substr(pos, (size-pos));
-                if ((chunk_size = hex_to_dec(hex_size, 16)) == 0)
-                    break;
-                _body.append(chunked_body.substr((size-pos)+2, chunk_size));
-                pos = size + chunk_size + 4;
-            }
+    if (_content_length)
+        for(std::list<std::string>::iterator it = body.begin(); it != body.end(); it++)
+            _body.append(*it);
+    else {
+        int pos = 0;
+        long int chunk_size;
+        std::string str;
+        str.reserve(request.get_body_size());
+        for (std::list<std::string>::iterator it = body.begin(); it != body.end(); it++)
+            str.append(*it);
+        while (true) {
+            int size = (int)str.find("\r\n", pos);
+            std::string hex_size = str.substr(pos, (size-pos));
+            if ((chunk_size = hex_to_dec(hex_size, 16)) == 0)
+                break;
+            _body.append(str.substr((size-pos)+2, chunk_size));
+            pos = size + chunk_size + 4;
         }
     }
 }
@@ -581,9 +582,7 @@ void			        header_handler::set_index(int index) { _index = index;}
 
 
 // // // // // // // // // // // // //  DEBUG functions // // // // // // // // // // // // //
-void header_handler::print_request(std::string request) {
-    std::cout << "-----------\n" << YELLOW << "REQUEST BUFFER: \n" << request << RESET << std::endl;
-
+void header_handler::print_request() {
     std::cout << YELLOW << "------------- REQUEST -------------\n";
     std::cout << "Request headers\n";
     std::cout << "  Method = " << get_method() << std::endl;
