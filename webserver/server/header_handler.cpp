@@ -6,7 +6,7 @@
 /*   By: gbouwen <marvin@codam.nl>                    +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2021/05/03 12:34:40 by gbouwen       #+#    #+#                 */
-/*   Updated: 2021/05/19 12:59:17 by gbouwen       ########   odam.nl         */
+/*   Updated: 2021/05/19 17:56:43 by gbouwen       ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -360,7 +360,7 @@ int         header_handler::post_request(int max_file_size) {
 
 void        header_handler::write_body_to_file(int file_fd) {
     if ((write(file_fd, _body.c_str(), _body.length())) == -1)
-        throw std::runtime_error("Write failed");
+        throw (std::string("Write body to file failed"));
 }
 
 
@@ -490,7 +490,7 @@ void        header_handler::read_requested_file(int fd) {
             break;
     }
     if (ret == -1)
-        throw std::runtime_error("Read failed");
+        throw (std::string("Read requested file failed"));
 }
 
 void    header_handler::send_response(int activeFD, int fileFD, std::string server_name) {

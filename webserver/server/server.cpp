@@ -6,7 +6,7 @@
 /*   By: roybakker <roybakker@student.codam.nl>       +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2021/03/30 13:54:06 by roybakker     #+#    #+#                 */
-/*   Updated: 2021/05/18 14:12:46 by gbouwen       ########   odam.nl         */
+/*   Updated: 2021/05/19 14:14:32 by gbouwen       ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -66,7 +66,13 @@ int     server::identify_server_value(const std::string& str) {
     return unknown_;
 }
 
-void    server::configure_port(const std::string& str) {_port = parse_number(str);}
+void    server::configure_port(const std::string& str)
+{
+	_port = parse_number(str);
+	if (_port <= 0)
+		throw std::runtime_error("Port can't be <= 0");
+}
+
 void    server::configure_host(const std::string& str) {_host = parse_string(str);}
 void    server::configure_server_name(const std::string& str) {_server_name = parse_string(str);}
 void    server::configure_error_page(const std::string& str) {_error_page = parse_string(str);}
