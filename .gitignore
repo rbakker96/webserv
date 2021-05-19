@@ -9,3 +9,5 @@ CMakeLists.txt
 server_files/www/temp0
 
 server_files/www/downloads/file_should_exist_after
+
+cgi_envp_comparison.txt

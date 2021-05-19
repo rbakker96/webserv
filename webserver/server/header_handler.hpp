@@ -117,17 +117,17 @@ public:
     int             put_request();
     int             post_request(int max_file_size);
     void            write_body_to_file(int file_fd);
-	int             cgi_request();
+	int 			create_cgi_fd(std::string type);
     void            verify_file_location(location_vector location_blocks, std::string error_page);
 	std::string		match_location_block(header_handler::location_vector location_blocks, std::string file_location);
 	std::string		generate_error_page_location(std::string error_page);
 	std::string		get_referer_part();
 	std::string		location_of_uploaded_file(location_context location_block, std::string location, std::string uri_location);
-    void 		    verify_method();
+    void verify_method(std::string cgi_file_types);
     std::string     verify_content_type();
 
 	//CGI functions
-	void			execute_cgi(int fileFD, std::string server_name, int server_port);
+	void 			execute_cgi(int inputFD, int outputFD, std::string server_name, int server_port);
 	char 			**create_cgi_args();
 	char 			**create_cgi_envp(const std::string &server_name, int server_port);
 

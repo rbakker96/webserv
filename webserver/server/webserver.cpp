@@ -100,33 +100,28 @@ void    webserver::run() {
             if (fd.rdy_for_reading(server->_activeFD)) //handle requested file
 			{
 				std::string request_headers = read_browser_request(server->_activeFD);
-				std::cout << "incomming request = \n[" << request_headers << "]" << std::endl;
                 if (!request_headers.empty())
                     fd.set_time_out(server->_activeFD);
 				if (server->update_request_buffer(server->_activeFD, request_headers) == valid_)
 				{
-				    std::cout << GREEN << "SIZE = " << server->_request_buffer.size() << std::endl;
-
-
-                    std::cout << "BUFFER HEADERS = \n" << server->_request_buffer[server->_activeFD].get_headers() << std::endl;
-                    std::cout << "BUFFER BODY = \n" << RESET;
-                    std::list<std::string> list = server->_request_buffer[server->_activeFD].get_body();
-                    for(std::list<std::string>::iterator it2 = list.begin(); it2 != list.end(); it2++)
-                        std::cout << GREEN << *it2 << RESET <<std::endl;
-
-
 					server->_handler.parse_request(server->_request_buffer[server->_activeFD]);
                     server->remove_handled_request(server->_activeFD);
                     server->_fileFD = server->_handler.handle_request(server->_cgi_file_types, server->_location_blocks, server->get_error_page());
                     fd.handled_request_update(server->_fileFD, server->_activeFD, server->_handler.verify_content_type(), server->_handler.get_method());
+					if (server->_cgi_file_types.find(server->_handler.verify_content_type()) != std::string::npos)
+					{
+						server->_cgi_inputFD = server->_handler.create_cgi_fd("input");
+						fd.set_write_buffer(server->_cgi_inputFD);
+						fd.update_max(server->_cgi_inputFD);
+					}
 				}
 			}
 
             if (fd.rdy_for_reading(server->_fileFD)) //read requested file
 			{
 				if (fd.rdy_for_writing(server->_fileFD) && server->_handler.get_status() < error_) {
-                    if (server->_cgi_file_types.find(server->_handler.verify_content_type()) != std::string::npos)
-                        server->_handler.execute_cgi(server->_fileFD, server->_server_name, server->_port);
+                    if (server->_cgi_file_types.find(server->_handler.verify_content_type()) != std::string::npos && fd.rdy_for_writing(server->_cgi_inputFD))
+						server->_handler.execute_cgi(server->_cgi_inputFD, server->_fileFD, server->_server_name, server->_port);
                     else
                         server->_handler.write_body_to_file(server->_fileFD);
 			    }

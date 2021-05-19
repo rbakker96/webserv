@@ -60,6 +60,7 @@ private:
     //Connection
     int                             _activeFD;
 	int								_fileFD;
+	int 							_cgi_inputFD;
 
     //Configurations
     int                             _port;
