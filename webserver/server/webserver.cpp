@@ -100,7 +100,7 @@ void    webserver::run() {
             if (fd.rdy_for_reading(server->_activeFD)) //handle requested file
 			{
 				std::string request_headers = read_browser_request(server->_activeFD);
-//                std::cout << RED << request_headers << RESET << std::endl;
+                std::cout << RED << request_headers << RESET << std::endl;
 				if (!request_headers.empty())
                     fd.set_time_out(server->_activeFD);
 				if (server->update_request_buffer(server->_activeFD, request_headers) == valid_)

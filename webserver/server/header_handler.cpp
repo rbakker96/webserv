@@ -148,21 +148,21 @@ int        header_handler::handle_request(std::string cgi_file_types, header_han
 	struct  stat stats;
 	int		fd = unused_;
 
-    verify_file_location(location_blocks, error_page);
-	verify_method();
+	verify_file_location(location_blocks, error_page);
+	verify_method(cgi_file_types);
 	if (_status < error_code_)
     {
-        if (_method == "PUT")
-            fd = put_request();
-        else if (_method == "POST" && !_body.empty())
-            fd = post_request(_max_file_size);
-		else if (stat(_file_location.c_str(), &stats) == -1)
-			_status = not_found_; // update the status code after the version is stable
-		else if (!(stats.st_mode & S_IRUSR)) // don't think this works? (because it is an else if statement)
-			_status = forbidden_; // update the status code after the version is stable
-        else if (cgi_file_types.find(verify_content_type()) != std::string::npos)
+		if (_method == "PUT")
+			fd = put_request();
+		else if (_method == "POST" && !_body.empty() && cgi_file_types.find(verify_content_type()) == std::string::npos)
+			fd = post_request(_max_file_size);
+		else if (cgi_file_types.find(verify_content_type()) != std::string::npos)
 			return create_cgi_fd("output");
-        else if ((fd = open(&_file_location[0], O_RDONLY)) == -1)
+		else if (stat(_file_location.c_str(), &stats) == -1)
+			_status = not_found_;
+		else if (!(stats.st_mode & S_IRUSR))
+			_status = forbidden_;
+		else if ((fd = open(&_file_location[0], O_RDONLY)) == -1)
 			throw std::runtime_error("Open failed");
     }
 
@@ -289,12 +289,16 @@ void        header_handler::verify_file_location(header_handler::location_vector
 	_file_location = remove_duplicate_forward_slashes(_file_location);
 }
 
-void 		header_handler::verify_method()
+void header_handler::verify_method(std::string cgi_file_types)
 {
-	if (_method == "POST" && verify_content_type() == "bla")
-		return;
-	if (_method == "POST" && get_body().empty())
-		_status = method_not_allowed_;
+
+	if (_method == "POST")
+	{
+		if (_body.empty())
+			_status = method_not_allowed_;
+		if (cgi_file_types.find(verify_content_type()) != std::string::npos)
+			return;
+	}
 	if (!_allow.empty())
 	{
 		for (vector_iterator it = _allow.begin(); it != _allow.end(); it++) {
@@ -470,7 +474,7 @@ char **header_handler::create_cgi_envp(const std::string &server_name, int serve
 	cgi_envps.push_back((std::string)"HTTP_REFERER=");
 	cgi_envps.push_back(((std::string)"PATH_INFO=").append(_uri_location));
 	cgi_envps.push_back(((((std::string)"PATH_TRANSLATED=").append(server_root)).append("/")).append(_location_block_root).append(_uri_location));
-	if (_method != "POST" && _content_type != "bla")
+	if (!_body.empty() && _uri_location.find(".bla") == std::string::npos)
 		cgi_envps.push_back(((std::string)"QUERY_STRING=").append(_body));
 	cgi_envps.push_back(((std::string)"REDIRECT_STATUS=true"));
 	cgi_envps.push_back(((std::string)"REMOTE_IDENT="));
@@ -589,7 +593,7 @@ void			        header_handler::set_index(int index) { _index = index;}
 
 // // // // // // // // // // // // //  DEBUG functions // // // // // // // // // // // // //
 void header_handler::print_request(std::string request) {
-//    std::cout << "-----------\n" << YELLOW << "REQUEST BUFFER: \n" << request << RESET << std::endl;
+    std::cout << "-----------\n" << YELLOW << "REQUEST BUFFER: \n" << request << RESET << std::endl;
 
     std::cout << YELLOW << "------------- REQUEST -------------\n";
     std::cout << "Request headers\n";

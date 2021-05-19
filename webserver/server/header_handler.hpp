@@ -122,7 +122,7 @@ public:
 	std::string		generate_error_page_location(std::string error_page);
 	std::string		get_referer_part();
 	std::string		location_of_uploaded_file(location_context location_block, std::string location, std::string uri_location);
-    void 		    verify_method();
+    void verify_method(std::string cgi_file_types);
     std::string     verify_content_type();
 
 	//CGI functions
