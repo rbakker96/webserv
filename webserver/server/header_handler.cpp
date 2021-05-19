@@ -453,8 +453,6 @@ void header_handler::execute_cgi(int fileFD, std::string server_name, int server
 {
 	pid_t	pid;
 	int 	status = 0;
-	FILE	*tmp_file = tmpfile();
-	int		tmp_fd = fileno(tmp_file);
 
 	pid = fork();
 	if (pid == -1)
@@ -464,18 +462,19 @@ void header_handler::execute_cgi(int fileFD, std::string server_name, int server
 		char	**args = create_cgi_args(); // error management
 		char 	**envp = create_cgi_envp(server_name, server_port); // error management
 
-		write(tmp_fd, _body.c_str(), _body.size());
-		lseek(tmp_fd, 0, SEEK_SET);
-		dup2(tmp_fd, STDIN_FILENO);
+		if (!_body.empty())
+		{
+			write(fileFD, _body.c_str(), _body.size());
+			lseek(fileFD, 0, SEEK_SET);
+			dup2(fileFD, STDIN_FILENO);
+		}
 		dup2(fileFD, STDOUT_FILENO);
 		execve(args[0], args, envp);
 		exit(EXIT_FAILURE); // handle error
 	}
 	else
 		waitpid(pid, &status, 0);
-	fclose(tmp_file);
-	close(tmp_fd);
-	std::cout << RED << "LEFT CGI\n" << RESET;
+//	std::cout << RED << "LEFT CGI\n" << RESET;
 
 }
 
@@ -513,7 +512,7 @@ char **header_handler::create_cgi_envp(const std::string &server_name, int serve
 {
 	// for later
 	// AUTH_TYPE, REMOTE_ADDR, REMOTE_IDENT, REMOTE_USER
-	std::cout << "ENTER ENVP\n" << RESET;
+//	std::cout << "ENTER ENVP\n" << RESET;
 
 	vector	cgi_envps;
 	char 	server_root[PATH_MAX];
@@ -526,7 +525,8 @@ char **header_handler::create_cgi_envp(const std::string &server_name, int serve
 	cgi_envps.push_back((std::string)"HTTP_REFERER=");
 	cgi_envps.push_back(((std::string)"PATH_INFO=").append(_uri_location));
 	cgi_envps.push_back(((((std::string)"PATH_TRANSLATED=").append(server_root)).append("/")).append(_location_block_root).append(_uri_location));
-	cgi_envps.push_back(((std::string)"QUERY_STRING="));
+	if (_method != "POST" && _content_type != "bla")
+		cgi_envps.push_back(((std::string)"QUERY_STRING=").append(_body));
 	cgi_envps.push_back(((std::string)"REDIRECT_STATUS=true"));
 	cgi_envps.push_back(((std::string)"REMOTE_IDENT="));
 	cgi_envps.push_back(((std::string)"REMOTE_USER="));
@@ -544,12 +544,12 @@ char **header_handler::create_cgi_envp(const std::string &server_name, int serve
 
 	for (vector_iterator it = cgi_envps.begin(); it != cgi_envps.end(); it++) {
 		envp[i] = ft_strdup((*it).c_str()); // error check on ft_strdup failure
-		std::cout << CYAN << envp[i] << RESET << std::endl;
+//		std::cout << CYAN << envp[i] << RESET << std::endl;
 		i++;
 	}
-	std::cout << std::endl;
+//	std::cout << std::endl;
 	envp[cgi_envps.size()] = NULL;
-	std::cout << "LEFT ENVP\n" << RESET;
+//	std::cout << "LEFT ENVP\n" << RESET;
 	return envp;
 }
 
@@ -639,25 +639,25 @@ void			        header_handler::set_index(int index) { _index = index;}
 
 // // // // // // // // // // // // //  DEBUG functions // // // // // // // // // // // // //
 void header_handler::print_request(std::string request) {
-    std::cout << "-----------\n" << YELLOW << "REQUEST BUFFER: \n" << request << RESET << std::endl;
+//    std::cout << "-----------\n" << YELLOW << "REQUEST BUFFER: \n" << request << RESET << std::endl;
 
     std::cout << YELLOW << "------------- REQUEST -------------\n";
-    std::cout << "Request headers\n";
-    std::cout << "  Method = " << get_method() << std::endl;
-    std::cout << "  Location = " << get_file_location() << std::endl;
-    std::cout << "  Protocol = " << get_protocol() << std::endl;
-    std::cout << "  Host = " << get_requested_host() << std::endl;
-    std::cout << "  User agent = " << get_user_agent() << std::endl;
-    std::cout << "  Accept language = " << get_accept_language() << std::endl;
-    std::cout << "  Authorization = " << get_authorization() << std::endl;
-    std::cout << "  Referer = " << get_referer() << std::endl;
-    std::cout << "  Body = " << get_body() << std::endl;
-
-    std::cout << "Entity headers\n";
-    std::cout << "  Content length = " << get_content_length() << std::endl;
-    std::cout << "  Content type = " << get_content_type() << std::endl;
-    std::cout << "  Content language = " << get_content_language() << std::endl;
-    std::cout << "  Content location = " << get_content_location() << std::endl;
+//    std::cout << "Request headers\n";
+//    std::cout << "  Method = " << get_method() << std::endl;
+//    std::cout << "  Location = " << get_file_location() << std::endl;
+//    std::cout << "  Protocol = " << get_protocol() << std::endl;
+//    std::cout << "  Host = " << get_requested_host() << std::endl;
+//    std::cout << "  User agent = " << get_user_agent() << std::endl;
+//    std::cout << "  Accept language = " << get_accept_language() << std::endl;
+//    std::cout << "  Authorization = " << get_authorization() << std::endl;
+//    std::cout << "  Referer = " << get_referer() << std::endl;
+//    std::cout << "  Body = " << get_body() << std::endl;
+//
+//    std::cout << "Entity headers\n";
+//    std::cout << "  Content length = " << get_content_length() << std::endl;
+//    std::cout << "  Content type = " << get_content_type() << std::endl;
+//    std::cout << "  Content language = " << get_content_language() << std::endl;
+//    std::cout << "  Content location = " << get_content_location() << std::endl;
     std::cout << "------------- END REQUEST -------------\n\n" << RESET;
 }
 
