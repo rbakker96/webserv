@@ -6,7 +6,7 @@
 /*   By: gbouwen <marvin@codam.nl>                    +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2021/05/03 12:34:40 by gbouwen       #+#    #+#                 */
-/*   Updated: 2021/05/18 17:31:30 by gbouwen       ########   odam.nl         */
+/*   Updated: 2021/05/19 12:59:17 by gbouwen       ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -154,7 +154,7 @@ int        header_handler::handle_request(std::string cgi_file_types, header_han
             fd = post_request(max_file_size);
 		else if (stat(_file_location.c_str(), &stats) == -1)
 			_status = not_found_; // update the status code after the version is stable
-		else if (!(stats.st_mode & S_IRUSR)) // don't think this works? (because it is an else if statement)
+		else if (!(stats.st_mode & S_IRUSR))
 			_status = forbidden_; // update the status code after the version is stable
         else if (cgi_file_types.find(verify_content_type()) != std::string::npos)
             return cgi_request();
@@ -469,7 +469,7 @@ char **header_handler::create_cgi_envp(const std::string &server_name, int serve
 	int		i = 0;
 
 	for (vector_iterator it = cgi_envps.begin(); it != cgi_envps.end(); it++) {
-		envp[i] = ft_strdup((*it).c_str()); // error check on ft_strdup failure
+		envp[i] = ft_strdup((*it).c_str());
 		i++;
 	}
 	envp[cgi_envps.size()] = NULL;
