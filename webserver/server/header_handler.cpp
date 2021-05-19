@@ -10,6 +10,7 @@
 /*                                                                            */
 /* ************************************************************************** */
 
+#include <sstream>
 #include "header_handler.hpp"
 #include "../helper/helper.hpp"
 
@@ -160,7 +161,7 @@ int        header_handler::handle_request(std::string cgi_file_types, header_han
 		else if (!(stats.st_mode & S_IRUSR)) // don't think this works? (because it is an else if statement)
 			_status = forbidden_; // update the status code after the version is stable
         else if (cgi_file_types.find(verify_content_type()) != std::string::npos)
-            return cgi_request();
+			return cgi_request();
         else if ((fd = open(&_file_location[0], O_RDONLY)) == -1)
 			throw std::runtime_error("Open failed");
     }
@@ -290,6 +291,8 @@ void        header_handler::verify_file_location(header_handler::location_vector
 
 void 		header_handler::verify_method()
 {
+	if (_method == "POST" && verify_content_type() == "bla")
+		return;
 	if (_method == "POST" && get_body().empty())
 		_status = method_not_allowed_;
 	if (!_allow.empty())
@@ -392,22 +395,30 @@ std::string	get_correct_directory(std::string &file_location)
 void header_handler::execute_cgi(int fileFD, std::string server_name, int server_port)
 {
 	pid_t	pid;
+	int 	status = 0;
 
 	pid = fork();
 	if (pid == -1)
 		throw std::runtime_error("Fork failed");
 	if (pid == 0)
 	{
-		// error management
-		char	**args = create_cgi_args();
-		char 	**envp = create_cgi_envp(server_name, server_port);
-		chdir(get_correct_directory(_file_location).c_str());
-		close(STDOUT_FILENO);
+		char	**args = create_cgi_args(); // error management
+		char 	**envp = create_cgi_envp(server_name, server_port); // error management
+
+		if (!_body.empty())
+		{
+			write(fileFD, _body.c_str(), _body.size());
+			lseek(fileFD, 0, SEEK_SET);
+			dup2(fileFD, STDIN_FILENO);
+		}
 		dup2(fileFD, STDOUT_FILENO);
 		execve(args[0], args, envp);
+		exit(EXIT_FAILURE); // handle error
 	}
 	else
-		wait(NULL);
+		waitpid(pid, &status, 0);
+//	std::cout << RED << "LEFT CGI\n" << RESET;
+
 }
 
 std::string	get_location_without_root(std::string &file_location)
@@ -421,21 +432,22 @@ std::string	get_location_without_root(std::string &file_location)
 char	**header_handler::create_cgi_args()
 {
 	char	**args = new char *[3];
-	char 	buf[PATH_MAX];
+	char 	server_root[PATH_MAX];
 
-	getcwd(buf, (size_t)PATH_MAX);
+	getcwd(server_root, (size_t)PATH_MAX);
 	if (_file_location.find(".php") != std::string::npos)
 		args[0] = ft_strdup("/usr/bin/php");
 	else if (_file_location.find(".bla") != std::string::npos)
-		args[0] = ft_strjoin(buf, "/tester_executables/cgi_tester");
+		args[0] = ft_strjoin(server_root, "/tester_executables/cgi_tester");
 
-	args[1] = ft_strdup(get_location_without_root(_file_location).c_str());
+	char *tmp = ft_strjoin(server_root, "/");
+	args[1] = ft_strjoin(tmp, _file_location.c_str());
 	args[2] = NULL;
 
-	std::cout << RED << "_content_type: "<< _content_type << std::endl;
-	std::cout << RED << "_file_location: "<< _file_location << std::endl;
 	std::cout << RED << "args[0]: "<< args[0] << std::endl;
 	std::cout << RED << "args[1]: "<< args[1] << RESET << std::endl;
+	std::cout << RED << "_uri_location: " << _uri_location << std::endl << RESET;
+	std::cout << RED << "_file_location: "<< _file_location << std::endl << RESET;
 	return args;
 }
 
@@ -443,51 +455,44 @@ char **header_handler::create_cgi_envp(const std::string &server_name, int serve
 {
 	// for later
 	// AUTH_TYPE, REMOTE_ADDR, REMOTE_IDENT, REMOTE_USER
+//	std::cout << "ENTER ENVP\n" << RESET;
+
 	vector	cgi_envps;
 	char 	server_root[PATH_MAX];
 	getcwd(server_root, (size_t)PATH_MAX); // check error
 
-	if (_content_length)
-	{
-		cgi_envps.push_back(((std::string)"CONTENT_LENGTH=").append(ft_itoa(get_content_length()))); //leaks ??
-		cgi_envps.push_back(((std::string)"CONTENT_TYPE=").append(get_content_type()));
-	}
+	cgi_envps.push_back((std::string)"AUTH_TYPE=");
+	cgi_envps.push_back(((std::string)"CONTENT_LENGTH=").append(ft_itoa(get_content_length()))); //leaks ??
+	cgi_envps.push_back(((std::string)"CONTENT_TYPE=").append(get_content_type()));
 	cgi_envps.push_back((std::string)"GATEWAY_INTERFACE=CGI/1.1");
-	cgi_envps.push_back((std::string)"SERVER_SOFTWARE=webserv/1.1");
-	cgi_envps.push_back(((std::string)"QUERY_STRING=").append(get_body()));
+	cgi_envps.push_back((std::string)"HTTP_REFERER=");
+	cgi_envps.push_back(((std::string)"PATH_INFO=").append(_uri_location));
+	cgi_envps.push_back(((((std::string)"PATH_TRANSLATED=").append(server_root)).append("/")).append(_location_block_root).append(_uri_location));
+	if (_method != "POST" && _content_type != "bla")
+		cgi_envps.push_back(((std::string)"QUERY_STRING=").append(_body));
+	cgi_envps.push_back(((std::string)"REDIRECT_STATUS=true"));
+	cgi_envps.push_back(((std::string)"REMOTE_IDENT="));
+	cgi_envps.push_back(((std::string)"REMOTE_USER="));
 	cgi_envps.push_back(((std::string)"REQUEST_METHOD=").append(get_method()));
-	cgi_envps.push_back(((std::string)"SERVER_PROTOCOL=").append(get_protocol()));
+	cgi_envps.push_back(((std::string)"REQUEST_URI=").append(_uri_location));
+	cgi_envps.push_back(((((std::string)"SCRIPT_FILENAME=").append(server_root)).append("/")).append(_file_location));
+	cgi_envps.push_back(((std::string)"SCRIPT_NAME=").append(get_location_without_root(_uri_location)));
 	cgi_envps.push_back(((std::string)"SERVER_NAME=").append(server_name));
 	cgi_envps.push_back(((std::string)"SERVER_PORT=").append(ft_itoa(server_port)));
-
-	// PATH related
-	// [RFC] PATH_INFO -> need to save the part after '.php'; if not existing, set as NULL
-	// [SLACK] PATH_INFO -> URI (/directory/youpi.bla)
-	cgi_envps.push_back(((std::string)"PATH_INFO=").append(_uri_location));
-
-	// [RFC] SCRIPT_NAME -> file name of the CGI script
-	// [SLACK] SCRIPT_NAME -> URI (/directory/youpi.bla)
-	cgi_envps.push_back(((std::string)"SCRIPT_NAME=").append(_uri_location));
-
-	// [RFC] PATH_TRANSLATED -> /DOCUMENT_ROOT + PATH_INFO ; if PATH_INFO is NULL, set to NULL as well
-	// [SLACK] PATH_TRANSLATED -> <server_root>/YoupiBanane -> server_root + location_root
-	cgi_envps.push_back(((((std::string)"PATH_TRANSLATED=").append(server_root)).append("/"))); // NEED LOCATION ROOT
-
-	// [SLACK] SCRIPT_FILENAME -> <server_root>/YoupiBanane/youpi.bla -> server_root + file_location
-	cgi_envps.push_back(((((std::string)"SCRIPT_FILENAME=").append(server_root)).append("/")).append(_file_location));
-
-	// [ROOT] REQUEST_URI -> /SCRIPT_NAME + ? QUERY_STRING /test.php?foo=bar
-	std::string	request_uri = ((std::string)"REQUEST_URI=").append(_uri_location).append("?");
-	cgi_envps.push_back(request_uri.append(get_body()));
+	cgi_envps.push_back(((std::string)"SERVER_PROTOCOL=").append(get_protocol()));
+	cgi_envps.push_back((std::string)"SERVER_SOFTWARE=HTTP 1.1");
 
 	char 	**envp = new char *[cgi_envps.size() + 1];
 	int		i = 0;
 
 	for (vector_iterator it = cgi_envps.begin(); it != cgi_envps.end(); it++) {
 		envp[i] = ft_strdup((*it).c_str()); // error check on ft_strdup failure
+//		std::cout << CYAN << envp[i] << RESET << std::endl;
 		i++;
 	}
+//	std::cout << std::endl;
 	envp[cgi_envps.size()] = NULL;
+//	std::cout << "LEFT ENVP\n" << RESET;
 	return envp;
 }
 
@@ -582,7 +587,7 @@ void			        header_handler::set_index(int index) { _index = index;}
 
 // // // // // // // // // // // // //  DEBUG functions // // // // // // // // // // // // //
 void header_handler::print_request(std::string request) {
-    std::cout << "-----------\n" << YELLOW << "REQUEST BUFFER: \n" << request << RESET << std::endl;
+//    std::cout << "-----------\n" << YELLOW << "REQUEST BUFFER: \n" << request << RESET << std::endl;
 
     std::cout << YELLOW << "------------- REQUEST -------------\n";
     std::cout << "Request headers\n";
