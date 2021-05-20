@@ -110,22 +110,22 @@ void        header_handler::parse_body(request_buf request) {
     _body.reserve(request.get_body_size());
 
     if (_content_length)
-        for(std::list<std::string>::iterator it = body.begin(); it != body.end(); it++)
+        for(list_iterator it = body.begin(); it != body.end(); it++)
             _body.append(*it);
     else {
         int pos = 0;
         long int chunk_size;
         std::string str;
         str.reserve(request.get_body_size());
-        for (std::list<std::string>::iterator it = body.begin(); it != body.end(); it++)
+        for (list_iterator it = body.begin(); it != body.end(); it++)
             str.append(*it);
         while (true) {
-            int size = (int)str.find("\r\n", pos);
-            std::string hex_size = str.substr(pos, (size-pos));
-            if ((chunk_size = hex_to_dec(hex_size, 16)) == 0)
+            int len_hex_nb = (int)str.find("\r\n", pos) - pos;
+            std::string hex_nb = str.substr(pos, len_hex_nb);
+            if ((chunk_size = hex_to_dec(hex_nb, 16)) == 0)
                 break;
-            _body.append(str.substr((size-pos)+2, chunk_size));
-            pos = size + chunk_size + 4;
+            _body.append(str.substr(len_hex_nb+2, chunk_size));
+            pos = (int)str.find("\r\n", pos) + chunk_size + 4;
         }
     }
 }
@@ -450,10 +450,10 @@ char	**header_handler::create_cgi_args()
 	args[1] = ft_strjoin(tmp, _file_location.c_str());
 	args[2] = NULL;
 
-	std::cout << RED << "args[0]: "<< args[0] << std::endl;
-	std::cout << RED << "args[1]: "<< args[1] << RESET << std::endl;
-	std::cout << RED << "_uri_location: " << _uri_location << std::endl << RESET;
-	std::cout << RED << "_file_location: "<< _file_location << std::endl << RESET;
+	std::cout << GREEN << "args[0]: "<< args[0] << std::endl;
+	std::cout << GREEN << "args[1]: "<< args[1] << RESET << std::endl;
+	std::cout << GREEN << "_uri_location: " << _uri_location << std::endl << RESET;
+	std::cout << GREEN << "_file_location: "<< _file_location << std::endl << RESET;
 	return args;
 }
 
@@ -487,6 +487,7 @@ char **header_handler::create_cgi_envp(const std::string &server_name, int serve
 	cgi_envps.push_back(((std::string)"SERVER_PORT=").append(ft_itoa(server_port)));
 	cgi_envps.push_back(((std::string)"SERVER_PROTOCOL=").append(get_protocol()));
 	cgi_envps.push_back((std::string)"SERVER_SOFTWARE=HTTP 1.1");
+    cgi_envps.push_back((std::string)"HTTP_X_SECRET_HEADER_FOR_TEST=1"); //CHANGE LATER TO NOT HARDCODED
 
 	char 	**envp = new char *[cgi_envps.size() + 1];
 	int		i = 0;

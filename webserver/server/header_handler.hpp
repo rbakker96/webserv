@@ -46,6 +46,8 @@ public:
 	typedef		std::vector<std::string>::iterator		vector_iterator;
 	typedef		std::map<int, request_buf>				map;
 	typedef		std::map<int, request_buf>::iterator	map_iterator;
+    typedef		std::list<std::string>				    list;
+    typedef		std::list<std::string>::iterator	    list_iterator;
 	typedef		std::vector<location_context>			location_vector;
 	typedef     std::vector<location_context>::iterator location_iterator;
 	typedef		std::pair<int, std::string>				pair;

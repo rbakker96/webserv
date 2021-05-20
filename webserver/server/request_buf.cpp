@@ -16,7 +16,7 @@ void    request_buf::add_header_data(const std::string &request_data) {
         if ((pos+4) == _headers.size())
             return;
         add_body_data(_headers.substr(pos+4));
-        _headers = _headers.substr(0, pos);
+        _headers = _headers.substr(0, pos+4);
     }
 }
 
