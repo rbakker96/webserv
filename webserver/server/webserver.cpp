@@ -6,7 +6,7 @@
 /*   By: roybakker <roybakker@student.codam.nl>       +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2021/03/30 16:30:47 by roybakker     #+#    #+#                 */
-/*   Updated: 2021/05/19 18:15:22 by gbouwen       ########   odam.nl         */
+/*   Updated: 2021/05/20 12:46:17 by gbouwen       ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -78,13 +78,11 @@ void    webserver::run() {
     while (true)
     {
 		fd.synchronize(_servers);
-		std::cout << "before" << std::endl;
 		if (select(fd.get_max(), &fd.get_read(), &fd.get_write(), 0, 0) == -1)
 		{
 			std::cout << RED << strerror(errno) << RESET << std::endl;
 			throw std::runtime_error("Select failed");
 		}
-		std::cout << "after" << std::endl;
 		for (size_t index = 0; index < _servers.size(); index++) {
 			server *server = &_servers[index];
 			try {
@@ -140,14 +138,12 @@ void    webserver::run() {
 			catch (std::string &e) {
 				if (e.compare("Read browser request failed") == 0)
 				{
-					std::cout << e << std::endl; //
 					fd.clr_from_read_buffer(server->_activeFD);
 					close(server->_activeFD);
 					server->_activeFD = ready_for_use_;
 				}
 				if (e.compare("Read requested file failed") == 0)
 				{
-					std::cout << e << std::endl; //
 					fd.clr_from_read_buffer(server->_fileFD);
 					close(server->_fileFD);
 					server->_fileFD = unused_;
@@ -156,7 +152,6 @@ void    webserver::run() {
 				}
 				if (e.compare("Write body to file failed") == 0)
 				{
-					std::cout << e << std::endl; //
 					fd.clr_from_write_buffer(server->_fileFD);
 					fd.clr_from_read_buffer(server->_fileFD);
 					close(server->_fileFD);
@@ -166,7 +161,6 @@ void    webserver::run() {
 				}
 				if (e.compare("Write response to browser failed") == 0)
 				{
-					std::cout << e << std::endl; //
 					fd.clr_from_write_buffer(server->_activeFD);
 					close(server->_activeFD);
 					close(server->_fileFD);
