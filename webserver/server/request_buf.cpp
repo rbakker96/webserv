@@ -38,30 +38,28 @@ int     request_buf::validate_request() {
     int zero = 0;
     int pos;
 
-    if (_headers.find("\r\n\r\n") != std::string::npos) {
-        if ((pos = (int) _headers.find("Content-Length:")) != -1) {
-            size_t content_length = ft_atoi(_headers.c_str() + (pos + 16));
-            if (content_length == _body_size)
-                return valid_;
-        }
-        else if (_headers.find("chunked") != std::string::npos) {
-            for(rev_it it = _body.rbegin(); it != _body.rend(); it++) {
-                std::string str = *it;
-                for (int i = (int)str.length() - 1; i >= 0; i--) {
-                    if (str[i] == '\r' || str[i] == '\n')
-                        end_of_line++;
-                    else if (str[i] == '0')
-                        zero++;
-                    else
-                        return invalid_;
-                    if (zero == 1 && end_of_line == 4)
-                        return valid_;
-                }
-            }
-        }
-        else if (_headers.find("Content-Length:") == std::string::npos && _headers.find("chunked") == std::string::npos)
+    if ((pos = (int) _headers.find("Content-Length:")) != -1) {
+        size_t content_length = ft_atoi(_headers.c_str() + (pos + 16));
+        if (content_length == _body_size)
             return valid_;
     }
+    else if (_headers.find("chunked") != std::string::npos) {
+        for(rev_it it = _body.rbegin(); it != _body.rend(); it++) {
+            std::string str = *it;
+            for (int i = (int)str.length() - 1; i >= 0; i--) {
+                if (str[i] == '\r' || str[i] == '\n')
+                    end_of_line++;
+                else if (str[i] == '0')
+                    zero++;
+                else
+                    return invalid_;
+                if (zero == 1 && end_of_line == 4)
+                    return valid_;
+            }
+        }
+    }
+    else if (_headers.find("Content-Length:") == std::string::npos && _headers.find("chunked") == std::string::npos)
+        return valid_;
     return invalid_;
 }
 

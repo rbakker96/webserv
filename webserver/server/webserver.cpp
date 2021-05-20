@@ -125,8 +125,12 @@ void    webserver::run() {
                     else
                         server->_handler.write_body_to_file(server->_fileFD);
 			    }
-			    if (server->_handler.get_status() != 204)
-				    server->_handler.read_requested_file(server->_fileFD);
+				if (server->_handler.get_status() != 204) {
+				    if (server->_handler.verify_content_type() == "bla" && server->_handler.get_method() == "POST")
+                        server->_handler.read_cgi_header_file(server->_fileFD, server->_request_buffer[server->_activeFD].get_body_size());
+				    else
+                        server->_handler.read_requested_file(server->_fileFD);
+				}
 			    fd.read_request_update(server->_fileFD, server->_activeFD);
 			}
 

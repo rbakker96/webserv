@@ -128,7 +128,10 @@ int     server::update_request_buffer(int fd, const std::string& request_data) {
     else
         _request_buffer[fd].add_body_data(request_data);
 
-    return _request_buffer[fd].validate_request();
+    if (!_request_buffer[fd].headers_received())
+        return invalid_;
+    else
+        return _request_buffer[fd].validate_request();
 }
 
 

@@ -90,6 +90,7 @@ protected:
 
 	//Response
 	std::string		_response_file;
+	std::string     _additional_cgi_headers;
 
 public:
 	header_handler();
@@ -123,7 +124,7 @@ public:
 	std::string		generate_error_page_location(std::string error_page);
 	std::string		get_referer_part();
 	std::string		location_of_uploaded_file(location_context location_block, std::string location, std::string uri_location);
-    void verify_method(std::string cgi_file_types);
+    void            verify_method(std::string cgi_file_types);
     std::string     verify_content_type();
 
 	//CGI functions
@@ -133,6 +134,7 @@ public:
 
     //RESPONSE functions
     void            read_requested_file(int fd);
+    void            read_cgi_header_file(int fd, int body_size);
 	void            send_response(int activeFD, int fileFD, std::string server_name);
 
     //RESET functions

@@ -43,6 +43,7 @@ void	response::generate_content_type(std::string type) {
     else if (content_type.compare("png") == 0)
         content_type_header.append("image/");
     content_type_header.append(content_type);
+
     content_type_header.append("\r\n");
 
     _response.append(content_type_header);
@@ -120,6 +121,11 @@ void	response::generate_connection_close() {
     _response.append("Connection: close\r\n");
 }
 
+void    response::append_cgi_headers(std::string cgi_headers) {
+    _response.append(cgi_headers);
+    _response.append("\r\n");
+}
+
 void    response::close_header_section() {
     _response.append("\r\n");
 }
@@ -127,9 +133,17 @@ void    response::close_header_section() {
 
 //-------------------------------------- SEND functions --------------------------------------
 void    response::write_response_to_browser(int browser_socket, std::string response_file, std::string method) {
-    write(browser_socket, _response.c_str(), _response.size());
+    int ret = 0;
+
+    while (ret < (int)_response.size())
+        ret += write(browser_socket, _response.c_str(), _response.size());
+    ret = 0;
 	if (method != "HEAD")
-	    write(browser_socket, response_file.c_str(), response_file.size());
+        while (ret < (int)response_file.size())
+	        ret += write(browser_socket, response_file.c_str(), response_file.size());
+
+    write(1, _response.c_str(), _response.size());
+    write(1, response_file.c_str(), response_file.size());
 }
 
 

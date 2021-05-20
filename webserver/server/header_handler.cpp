@@ -38,7 +38,6 @@ header_handler::~header_handler(){
 
 //-------------------------------------- PARSE functions --------------------------------------
 void        header_handler::parse_request(request_buf request_buffer) {
-//    map_iterator request                        = request_buffer.find(fd);
     vector request_elements                     = str_to_vector(request_buffer.get_headers());
     parse parse_array[11]                       = { &header_handler::parse_requested_host,
                                                     &header_handler::parse_user_agent,
@@ -54,12 +53,12 @@ void        header_handler::parse_request(request_buf request_buffer) {
 
     reset_handler();
     parse_first_line(*request_elements.begin());
-    parse_body(request_buffer);
     for (vector_iterator it = request_elements.begin(); it != request_elements.end(); it++) {
         int request_value = identify_request_value(*it);
         parse function = parse_array[request_value];
         (this->*function)(*it);
     }
+    parse_body(request_buffer);
     print_request(); //DEBUG
 }
 
@@ -295,8 +294,9 @@ void header_handler::verify_method(std::string cgi_file_types)
 
 	if (_method == "POST")
 	{
-		if (_body.empty())
-			_status = method_not_allowed_;
+		if (_body.empty()) {
+		    _status = method_not_allowed_;
+        }
 		if (cgi_file_types.find(verify_content_type()) != std::string::npos)
 			return;
 	}
@@ -370,7 +370,6 @@ int         header_handler::post_request(int max_file_size) {
     int fd = unused_;
     std::string put_file = "server_files/www/downloads/POST_file";
 
-    std::cout << CYAN << "MAX FILE SIZE = " << max_file_size << RESET << std::endl;
     if (max_file_size && max_file_size < _content_length) {
         _status = payload_too_large_;
         std::cout << "Status in post request = " << _status << std::endl;
@@ -520,6 +519,27 @@ void        header_handler::read_requested_file(int fd) {
         throw std::runtime_error("Read failed");
 }
 
+void        header_handler::read_cgi_header_file(int fd, int body_size) {
+    std::string tmp;
+    char        buff[3000];
+    int         ret = 1;
+
+    tmp.reserve(body_size);
+    lseek(fd, 0, SEEK_SET);
+    while (ret > 0) {
+        ret = read(fd, buff, 3000);
+        tmp.append(buff, ret);
+        if (ret < 3000)
+            break;
+    }
+    if (ret == -1)
+        throw std::runtime_error("Read failed");
+
+    int header_size = (int)tmp.find("\r\n\r\n");
+    _additional_cgi_headers = tmp.substr(0, header_size);
+    _response_file = tmp.substr((header_size+4), tmp.length()-(header_size+4));
+}
+
 void    header_handler::send_response(int activeFD, int fileFD, std::string server_name) {
     response response;
 
@@ -534,13 +554,15 @@ void    header_handler::send_response(int activeFD, int fileFD, std::string serv
     if (_status == 201 || (_method == "POST" && !_body.empty()))
         response.generate_location(_status, _file_location);
     response.generate_connection_close(); //maybe different if we keep connections open
+    if (!_additional_cgi_headers.empty())
+        response.append_cgi_headers(_additional_cgi_headers);
     response.close_header_section();
 
     response.write_response_to_browser(activeFD, _response_file, _method);
 
     print_response(response.get_response()); //DEBUG
     reset_handler();
-}
+}//add Content-Language: en-US
 
 
 //-------------------------------------- RESET functions --------------------------------------
@@ -561,6 +583,7 @@ void    header_handler::reset_handler() {
     _content_type.clear();
     _content_language = "en";
     _content_location.clear();
+    _additional_cgi_headers.clear();
 }
 
 
