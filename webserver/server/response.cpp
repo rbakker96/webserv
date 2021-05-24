@@ -141,9 +141,6 @@ void    response::write_response_to_browser(int browser_socket, std::string resp
 	if (method != "HEAD")
         while (ret < (int)response_file.size())
 	        ret += write(browser_socket, response_file.c_str(), response_file.size());
-
-    write(1, _response.c_str(), _response.size());
-    write(1, response_file.c_str(), response_file.size());
 }
 
 

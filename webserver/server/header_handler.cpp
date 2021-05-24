@@ -59,7 +59,7 @@ void        header_handler::parse_request(request_buf request_buffer) {
         (this->*function)(*it);
     }
     parse_body(request_buffer);
-    print_request(); //DEBUG
+//    print_request(); //DEBUG
 }
 
 int         header_handler::identify_request_value(const std::string &str) {
@@ -368,9 +368,9 @@ int         header_handler::post_request(int max_file_size) {
     int fd = unused_;
     std::string put_file = "server_files/www/downloads/POST_file";
 
-    if (max_file_size && max_file_size < _content_length) {
+    std::cout << GREEN << "CONTENT LEN = " << _body.length() << RESET << std::endl;
+    if (max_file_size && max_file_size < (int)_body.length()) {
         _status = payload_too_large_;
-        std::cout << "Status in post request = " << _status << std::endl;
         return fd;
     }
     _status = okay_;
@@ -381,6 +381,9 @@ int         header_handler::post_request(int max_file_size) {
 }
 
 void        header_handler::write_body_to_file(int file_fd) {
+
+    if (_body.empty())
+        return;
     if ((write(file_fd, _body.c_str(), _body.length())) == -1)
         throw std::runtime_error("Write failed");
 }
@@ -421,8 +424,6 @@ void header_handler::execute_cgi(int inputFD, int outputFD, std::string server_n
 	}
 	else
 		waitpid(pid, &status, 0);
-//	std::cout << RED << "LEFT CGI\n" << RESET;
-
 }
 
 std::string	get_location_without_root(std::string &file_location)
@@ -448,10 +449,10 @@ char	**header_handler::create_cgi_args()
 	args[1] = ft_strjoin(tmp, _file_location.c_str());
 	args[2] = NULL;
 
-	std::cout << GREEN << "args[0]: "<< args[0] << std::endl;
-	std::cout << GREEN << "args[1]: "<< args[1] << RESET << std::endl;
-	std::cout << GREEN << "_uri_location: " << _uri_location << std::endl << RESET;
-	std::cout << GREEN << "_file_location: "<< _file_location << std::endl << RESET;
+//	std::cout << GREEN << "args[0]: "<< args[0] << std::endl;
+//	std::cout << GREEN << "args[1]: "<< args[1] << RESET << std::endl;
+//	std::cout << GREEN << "_uri_location: " << _uri_location << std::endl << RESET;
+//	std::cout << GREEN << "_file_location: "<< _file_location << std::endl << RESET;
 	return args;
 }
 
@@ -497,7 +498,6 @@ char **header_handler::create_cgi_envp(const std::string &server_name, int serve
 	}
 //	std::cout << std::endl;
 	envp[cgi_envps.size()] = NULL;
-//	std::cout << "LEFT ENVP\n" << RESET;
 	return envp;
 }
 
@@ -507,6 +507,8 @@ void        header_handler::read_requested_file(int fd) {
     char    buff[3000];
     int     ret = 1;
 
+    if (_body.empty())
+        return;
     lseek(fd, 0, SEEK_SET);
     while (ret > 0) {
         ret = read(fd, buff, 3000);
@@ -523,6 +525,8 @@ void        header_handler::read_cgi_header_file(int fd, int body_size) {
     char        buff[3000];
     int         ret = 1;
 
+    if (_body.empty())
+        return;
     tmp.reserve(body_size);
     lseek(fd, 0, SEEK_SET);
     while (ret > 0) {

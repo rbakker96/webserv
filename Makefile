@@ -29,7 +29,9 @@ SOURCES			=	webserver/main.cpp \
 					webserver/helper/verify_file_location_functions.cpp
 
 TEMP FILES      =   server_files/www/cgi_in_0 \
-                    server_files/www/cgi_out_0
+                    server_files/www/cgi_out_0 \
+                    server_files/www/downloads/file_should_exist_after \
+                    server_files/www/downloads/POST_file
 
 OBJECTS 		=	${SOURCES:%.c=%.o}
 
