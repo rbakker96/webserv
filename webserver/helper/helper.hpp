@@ -6,7 +6,7 @@
 /*   By: roybakker <roybakker@student.codam.nl>       +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2021/03/30 16:30:47 by roybakker     #+#    #+#                 */
-/*   Updated: 2021/05/18 14:56:20 by gbouwen       ########   odam.nl         */
+/*   Updated: 2021/05/18 17:20:28 by gbouwen       ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -58,5 +58,7 @@ std::string					remove_duplicate_forward_slashes(std::string location);
 std::string					get_file(location_context location_block, std::string location);
 std::string					skip_first_directory(std::string uri_location);
 std::string					get_first_directory(std::string uri_location);
+std::string					get_extension(std::string uri_location);
+
 
 #endif

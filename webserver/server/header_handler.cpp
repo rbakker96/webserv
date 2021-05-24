@@ -6,7 +6,7 @@
 /*   By: gbouwen <marvin@codam.nl>                    +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2021/05/03 12:34:40 by gbouwen       #+#    #+#                 */
-/*   Updated: 2021/05/18 17:12:38 by gbouwen       ########   odam.nl         */
+/*   Updated: 2021/05/19 17:56:43 by gbouwen       ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -202,28 +202,15 @@ std::string	header_handler::location_of_uploaded_file(location_context location_
 	struct stat					s;
 	std::string					result = "not found";
 
-
-
     location_from_uri = get_first_directory(uri_location);
     if (uri_location.find("directory") == std::string::npos)
 	    directory.append(get_first_directory(uri_location));
-
     if (stat(directory.c_str(), &s) == 0 && (s.st_mode & S_IFDIR) && location_from_uri.compare(location_block.get_location_context()) == 0) {
         result = root;
         result.append(uri_location);
     }
     if ((s.st_mode & S_IFREG) && (location_from_uri.compare(location_block.get_location_context()) == 0 && (_method == "POST" && extension == ".bla")))
         result = root;
-	return (result);
-}
-
-std::string	get_extension(std::string uri_location)
-{
-	int			start = uri_location.find_last_of('.');
-	if (start == -1)
-		return (uri_location);
-	std::string	result = uri_location.substr(start, std::string::npos);
-
 	return (result);
 }
 
@@ -257,7 +244,7 @@ std::string	header_handler::match_location_block(header_handler::location_vector
 		}
 		if (location_blocks[index].get_redirect())
 			result.append(skip_first_directory(uri_location));
-		else if (_method.compare("PUT") == 0 || (_method.compare("POST") == 0 && (extension != ".php" || extension == ".bla"))) // add post with file upload later?
+		else if (_method.compare("PUT") == 0 || (_method.compare("POST") == 0 && (extension != ".php" || extension == ".bla")))
 			result.append("");
 		else
 			result.append(uri_location);
@@ -294,7 +281,7 @@ void        header_handler::verify_file_location(header_handler::location_vector
 void header_handler::verify_method(std::string cgi_file_types)
 {
 	int i = 0;
-	if (cgi_file_types.find(verify_content_type()) != std::string::npos)
+	if (cgi_file_types.find(verify_content_type()) != std::string::npos) // remove CGI file types
 		i++;
     if (_method == "POST" && verify_content_type() == "bla")
         return;
@@ -385,7 +372,7 @@ void        header_handler::write_body_to_file(int file_fd) {
     if (_body.empty())
         return;
     if ((write(file_fd, _body.c_str(), _body.length())) == -1)
-        throw std::runtime_error("Write failed");
+        throw (std::string("Write body to file failed"));
 }
 
 
@@ -517,7 +504,7 @@ void        header_handler::read_requested_file(int fd) {
             break;
     }
     if (ret == -1)
-        throw std::runtime_error("Read failed");
+        throw (std::string("Read requested file failed"));
 }
 
 void        header_handler::read_cgi_header_file(int fd, int body_size) {
