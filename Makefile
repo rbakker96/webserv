@@ -28,6 +28,9 @@ SOURCES			=	webserver/main.cpp \
 					webserver/helper/signal_handler.cpp \
 					webserver/helper/verify_file_location_functions.cpp
 
+TEMP FILES      =   server_files/www/cgi_in_0 \
+                    server_files/www/cgi_out_0
+
 OBJECTS 		=	${SOURCES:%.c=%.o}
 
 FLAGS 			=	-Wall -Wextra -Werror
@@ -57,7 +60,7 @@ clean:
 	@echo "$(RED)----------------------------------------------------"
 	@echo "$(WHITE)DELETE ./webserv"
 	@echo "$(RED)----------------------------------------------------"
-	@/bin/rm -f $(NAME)
+	@/bin/rm -f $(NAME) $(TEMP FILES)
 
 re: clean all
 

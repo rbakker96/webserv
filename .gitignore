@@ -6,8 +6,10 @@ CMakeLists.txt
 
 /practice_CGI
 
-server_files/www/temp0
-
 server_files/www/downloads/file_should_exist_after
 
 cgi_envp_comparison.txt
+
+server_files/www/cgi_in_0
+
+server_files/www/cgi_out_0
