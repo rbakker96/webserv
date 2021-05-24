@@ -195,24 +195,25 @@ std::string	header_handler::get_referer_part()
 	return (result);
 }
 
-std::string	header_handler::location_of_uploaded_file(location_context location_block, std::string root, std::string uri_location)
+std::string	header_handler::location_of_uploaded_file(location_context location_block, std::string root, std::string uri_location, std::string extension)
 {
-	std::vector<std::string>	allowed_methods = location_block.get_method();
+    std::string                 location_from_uri;
 	std::string					directory = root;
 	struct stat					s;
 	std::string					result = "not found";
 
-	directory.append(get_first_directory(uri_location));
-	for (size_t index = 0; index < allowed_methods.size(); index++)
-	{
-//		if (stat(directory.c_str(), &s) == 0 && (s.st_mode & S_IFDIR) && _method.compare(allowed_methods[index]) == 0)
-		if (stat(directory.c_str(), &s) == 0 && (s.st_mode & S_IFDIR) && _uri_location.compare(location_block.get_location_context()) == 0)
-		{
-			result = root;
-			result.append(uri_location);
-			break ;
-		}
-	}
+
+
+    location_from_uri = get_first_directory(uri_location);
+    if (uri_location.find("directory") == std::string::npos)
+	    directory.append(get_first_directory(uri_location));
+
+    if (stat(directory.c_str(), &s) == 0 && (s.st_mode & S_IFDIR) && location_from_uri.compare(location_block.get_location_context()) == 0) {
+        result = root;
+        result.append(uri_location);
+    }
+    if ((s.st_mode & S_IFREG) && (location_from_uri.compare(location_block.get_location_context()) == 0 && (_method == "POST" && extension == ".bla")))
+        result = root;
 	return (result);
 }
 
@@ -228,7 +229,6 @@ std::string	get_extension(std::string uri_location)
 
 std::string	header_handler::match_location_block(header_handler::location_vector location_blocks, std::string uri_location)
 {
-	std::cout << "URI = " << uri_location << std::endl;
 	std::string	result;
 	std::string	extension = get_extension(uri_location);
 	std::string	referer_location = get_referer_part();
@@ -262,7 +262,7 @@ std::string	header_handler::match_location_block(header_handler::location_vector
 		else
 			result.append(uri_location);
 		if (_method.compare("PUT") == 0 || (_method.compare("POST") == 0 && (extension != ".php" || extension == ".bla"))) // add post with file upload later?
-			result = location_of_uploaded_file(location_blocks[index], result, uri_location);
+			result = location_of_uploaded_file(location_blocks[index], result, uri_location, extension);
 		else
 			result = get_file(location_blocks[index], result);
 		if (result.compare("not found") != 0)
@@ -288,7 +288,7 @@ void        header_handler::verify_file_location(header_handler::location_vector
 		_file_location = result;
 	_file_location = remove_duplicate_forward_slashes(_file_location);
 
-	std::cout << CYAN << "FILE LOC = " << _file_location << RESET << std::endl;
+//	std::cout << CYAN << "FILE LOC = " << _file_location << RESET << std::endl;
 }
 
 void header_handler::verify_method(std::string cgi_file_types)
@@ -296,15 +296,9 @@ void header_handler::verify_method(std::string cgi_file_types)
 	int i = 0;
 	if (cgi_file_types.find(verify_content_type()) != std::string::npos)
 		i++;
-//	if (_method == "POST")
-//	{
-//		if (_body.empty()) {
-//		    _status = method_not_allowed_;
-//        }
-//		if (cgi_file_types.find(verify_content_type()) != std::string::npos)
-//			return;
-//	}
-	if (!_allow.empty())
+    if (_method == "POST" && verify_content_type() == "bla")
+        return;
+	else if (!_allow.empty())
 	{
 		for (vector_iterator it = _allow.begin(); it != _allow.end(); it++) {
 			if (*it == _method)

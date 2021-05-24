@@ -125,7 +125,7 @@ public:
 	std::string		match_location_block(header_handler::location_vector location_blocks, std::string file_location);
 	std::string		generate_error_page_location(std::string error_page);
 	std::string		get_referer_part();
-	std::string		location_of_uploaded_file(location_context location_block, std::string location, std::string uri_location);
+	std::string		location_of_uploaded_file(location_context location_block, std::string location, std::string uri_location, std::string extension);
     void            verify_method(std::string cgi_file_types);
     std::string     verify_content_type();
 
