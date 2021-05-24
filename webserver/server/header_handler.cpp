@@ -12,7 +12,6 @@
 
 #include <sstream>
 #include "header_handler.hpp"
-#include "../helper/helper.hpp"
 
 header_handler::header_handler(): _index(0), _status(okay_), _status_phrases(), _max_file_size(0), _content_length(0), _content_type("Content-Type: text/"),
                                   _content_language("en"), _content_location(), _allow(), _method(), _file_location(),
@@ -38,18 +37,19 @@ header_handler::~header_handler(){
 
 //-------------------------------------- PARSE functions --------------------------------------
 void        header_handler::parse_request(request_buf request_buffer) {
-    vector request_elements                     = str_to_vector(request_buffer.get_headers());
-    parse parse_array[11]                       = { &header_handler::parse_requested_host,
-                                                    &header_handler::parse_user_agent,
-                                                    &header_handler::parse_accept_language,
-                                                    &header_handler::parse_authorization,
-                                                    &header_handler::parse_referer,
-                                                    &header_handler::parse_content_length,
-                                                    &header_handler::parse_content_type,
-                                                    &header_handler::parse_content_language,
-                                                    &header_handler::parse_content_location,
-                                                    &header_handler::parse_accept_charset,
-                                                    &header_handler::invalid_argument};
+	vector request_elements                     = str_to_vector(request_buffer.get_headers());
+	parse parse_array[12]                       = { &header_handler::parse_requested_host,
+													&header_handler::parse_user_agent,
+													&header_handler::parse_accept_charset,
+													&header_handler::parse_accept_language,
+													&header_handler::parse_authorization,
+													&header_handler::parse_referer,
+													&header_handler::parse_content_length,
+													&header_handler::parse_content_type,
+													&header_handler::parse_content_language,
+													&header_handler::parse_content_location,
+													&header_handler::parse_special_x_header,
+													&header_handler::invalid_argument};
 
     reset_handler();
     parse_first_line(*request_elements.begin());
@@ -59,7 +59,7 @@ void        header_handler::parse_request(request_buf request_buffer) {
         (this->*function)(*it);
     }
     parse_body(request_buffer);
-    print_request(); //DEBUG
+//    print_request(); //DEBUG
 }
 
 int         header_handler::identify_request_value(const std::string &str) {
@@ -67,8 +67,8 @@ int         header_handler::identify_request_value(const std::string &str) {
         return requested_host_;
     else if (str.find("User-Agent") != std::string::npos)
         return user_agent_;
-    else if (str.find("Accept-Charset") != std::string::npos)
-        return accept_charset_;
+	else if (str.find("Accept-Charset") != std::string::npos)
+		return accept_charset_;
     else if (str.find("Accept-Language") != std::string::npos)
         return accept_language_;
     else if (str.find("Authorization:") != std::string::npos)
@@ -83,6 +83,8 @@ int         header_handler::identify_request_value(const std::string &str) {
         return content_language_;
     else if (str.find("Content-Location:") != std::string::npos)
         return content_location_;
+	else if (str.find("X-") != std::string::npos)
+		return special_x_header_;
     return unknown_;
 }
 
@@ -140,6 +142,7 @@ void        header_handler::parse_content_length(const std::string &str) {_conte
 void        header_handler::parse_content_type(const std::string &str) {_content_type = parse_string(str);}
 void        header_handler::parse_content_language(const std::string &str) {_content_language = parse_string(str);}
 void        header_handler::parse_content_location(const std::string &str) {_content_location = parse_string(str);}
+void        header_handler::parse_special_x_header(const std::string &str) {_special_x_header.push_back(str);}
 void        header_handler::invalid_argument(const std::string &str) {parse_invalid(str);}
 
 
@@ -387,13 +390,6 @@ void        header_handler::write_body_to_file(int file_fd) {
 
 
 //-------------------------------------- CGI functions --------------------------------------
-std::string	get_correct_directory(std::string &file_location)
-{
-	int			last_index = file_location.find_last_of("/", std::string::npos);
-	std::string	result = file_location.substr(0, last_index);
-
-	return (result);
-}
 
 // error checking if execve fails
 void header_handler::execute_cgi(int inputFD, int outputFD, std::string server_name, int server_port)
@@ -421,7 +417,6 @@ void header_handler::execute_cgi(int inputFD, int outputFD, std::string server_n
 	}
 	else
 		waitpid(pid, &status, 0);
-//	std::cout << RED << "LEFT CGI\n" << RESET;
 
 }
 
@@ -431,6 +426,24 @@ std::string	get_location_without_root(std::string &file_location)
 
 	result = file_location.substr(file_location.find_last_of("/") + 1);
 	return (result);
+}
+
+std::string create_special_x_header_envp(std::string &str)
+{
+		std::string special_header = "HTTP_";
+
+		for (size_t i = 0; i < str.size(); i++)
+		{
+			char c = *(str.c_str() + i);
+			if (c == '-')
+				special_header.push_back('_');
+			else if (c == ':')
+				special_header.push_back('=');
+			else if (c != ' ')
+				special_header.push_back(toupper(c));
+		}
+
+		return special_header;
 }
 
 char	**header_handler::create_cgi_args()
@@ -448,10 +461,6 @@ char	**header_handler::create_cgi_args()
 	args[1] = ft_strjoin(tmp, _file_location.c_str());
 	args[2] = NULL;
 
-	std::cout << GREEN << "args[0]: "<< args[0] << std::endl;
-	std::cout << GREEN << "args[1]: "<< args[1] << RESET << std::endl;
-	std::cout << GREEN << "_uri_location: " << _uri_location << std::endl << RESET;
-	std::cout << GREEN << "_file_location: "<< _file_location << std::endl << RESET;
 	return args;
 }
 
@@ -459,7 +468,6 @@ char **header_handler::create_cgi_envp(const std::string &server_name, int serve
 {
 	// for later
 	// AUTH_TYPE, REMOTE_ADDR, REMOTE_IDENT, REMOTE_USER
-//	std::cout << "ENTER ENVP\n" << RESET;
 
 	vector	cgi_envps;
 	char 	server_root[PATH_MAX];
@@ -485,19 +493,21 @@ char **header_handler::create_cgi_envp(const std::string &server_name, int serve
 	cgi_envps.push_back(((std::string)"SERVER_PORT=").append(ft_itoa(server_port)));
 	cgi_envps.push_back(((std::string)"SERVER_PROTOCOL=").append(get_protocol()));
 	cgi_envps.push_back((std::string)"SERVER_SOFTWARE=HTTP 1.1");
-    cgi_envps.push_back((std::string)"HTTP_X_SECRET_HEADER_FOR_TEST=1"); //CHANGE LATER TO NOT HARDCODED
+	for (vector_iterator it = _special_x_header.begin(); it != _special_x_header.end(); it++)
+	{
+		std::string special_header = create_special_x_header_envp(*it);
+		cgi_envps.push_back(special_header);
+		special_header.clear();
+	}
 
 	char 	**envp = new char *[cgi_envps.size() + 1];
 	int		i = 0;
 
 	for (vector_iterator it = cgi_envps.begin(); it != cgi_envps.end(); it++) {
 		envp[i] = ft_strdup((*it).c_str()); // error check on ft_strdup failure
-//		std::cout << CYAN << envp[i] << RESET << std::endl;
 		i++;
 	}
-//	std::cout << std::endl;
 	envp[cgi_envps.size()] = NULL;
-//	std::cout << "LEFT ENVP\n" << RESET;
 	return envp;
 }
 
@@ -555,13 +565,14 @@ void    header_handler::send_response(int activeFD, int fileFD, std::string serv
     response.generate_connection_close(); //maybe different if we keep connections open
     if (!_additional_cgi_headers.empty())
         response.append_cgi_headers(_additional_cgi_headers);
+    response.generate_content_language();
     response.close_header_section();
 
     response.write_response_to_browser(activeFD, _response_file, _method);
 
-    print_response(response.get_response()); //DEBUG
+//    print_response(response.get_response()); //DEBUG
     reset_handler();
-}//add Content-Language: en-US
+}
 
 
 //-------------------------------------- RESET functions --------------------------------------
@@ -584,6 +595,7 @@ void    header_handler::reset_handler() {
     _content_location.clear();
     _additional_cgi_headers.clear();
     _allow.clear();
+    _special_x_header.clear();
 }
 
 

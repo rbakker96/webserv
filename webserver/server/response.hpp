@@ -25,6 +25,7 @@ public:
     void			generate_status_line(std::string protocol, int status, response::map status_phrases);
     void			generate_content_length(std::string requested_file);
     void			generate_content_type(std::string type);
+    void			generate_content_language();
     void			generate_last_modified(int file_fd);
     void			generate_date();
     void			generate_server_name(std::string server_name);

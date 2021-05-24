@@ -56,8 +56,9 @@ public:
 
 	enum		location_values{requested_host_ = 0, user_agent_ = 1, accept_language_ = 2, authorization_ = 3,
 								referer_ = 4, content_length_ = 5, content_type_ = 6,
-								content_language_ = 7, content_location_ = 8, accept_charset_ = 9, unknown_ = 10,
-								error_code_ = 400, folder_ = -1, unused_ = -1};
+								content_language_ = 7, content_location_ = 8, accept_charset_ = 9,
+								special_x_header_ = 10, unknown_ = 11, error_code_ = 400,
+								folder_ = -1, unused_ = -1};
 	enum		status_values{	okay_ = 200, created_ = 201, no_content_ = 204,
 								bad_request_ = 400, unauthorized_ = 401, forbidden_ = 403,
 								not_found_ = 404, method_not_allowed_ = 405,
@@ -89,6 +90,7 @@ protected:
 	std::string		_authorization;
 	std::string		_referer;
 	std::string		_body;
+	std::vector<std::string> _special_x_header;
 
 	//Response
 	std::string		_response_file;
@@ -99,21 +101,22 @@ public:
 	~header_handler();
 
     //PARSE functions
-    void            parse_request(request_buf request_buffer);
-    int             identify_request_value(const std::string &str);
-    void            parse_first_line(const std::string &str);
-    void            parse_requested_host(const std::string &str);
-    void            parse_user_agent(const std::string &str);
-    void            parse_accept_charset(const std::string &str);
-    void            parse_accept_language(const std::string &str);
-    void            parse_authorization(const std::string &str);
-    void            parse_referer(const std::string &str);
-    void            parse_body(request_buf request);
-    void            parse_content_length(const std::string &str);
-    void            parse_content_type(const std::string &str);
-    void            parse_content_language(const std::string &str);
-    void            parse_content_location(const std::string &str);
-    void            invalid_argument(const std::string &str);
+	void			parse_request(request_buf request_buffer);
+	int				identify_request_value(const std::string &str);
+	void			parse_first_line(const std::string &str);
+	void			parse_requested_host(const std::string &str);
+	void			parse_user_agent(const std::string &str);
+	void			parse_accept_charset(const std::string &str);
+	void            parse_accept_language(const std::string &str);
+	void            parse_authorization(const std::string &str);
+	void            parse_referer(const std::string &str);
+	void            parse_body(request_buf request);
+	void            parse_content_length(const std::string &str);
+	void            parse_content_type(const std::string &str);
+	void            parse_content_language(const std::string &str);
+	void            parse_content_location(const std::string &str);
+	void        	parse_special_x_header(const std::string &str);
+	void            invalid_argument(const std::string &str);
 
     //HANDLE functions
     int             handle_request(std::string cgi_file_types, location_vector location_blocks, std::string error_page);
