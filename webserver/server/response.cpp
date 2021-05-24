@@ -49,6 +49,10 @@ void	response::generate_content_type(std::string type) {
     _response.append(content_type_header);
 }
 
+void	response::generate_content_language() {
+	_response.append("Content-Language: en-US\r\n");
+}
+
 void	response::generate_last_modified(int fileFD) {
     std::string	last_modified = "Last-Modified: ";
     struct stat	stat;
