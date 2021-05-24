@@ -202,12 +202,9 @@ std::string	header_handler::location_of_uploaded_file(location_context location_
 	struct stat					s;
 	std::string					result = "not found";
 
-
-
     location_from_uri = get_first_directory(uri_location);
     if (uri_location.find("directory") == std::string::npos)
 	    directory.append(get_first_directory(uri_location));
-
     if (stat(directory.c_str(), &s) == 0 && (s.st_mode & S_IFDIR) && location_from_uri.compare(location_block.get_location_context()) == 0) {
         result = root;
         result.append(uri_location);
@@ -507,17 +504,15 @@ void        header_handler::read_requested_file(int fd) {
     char    buff[3000];
     int     ret = 1;
 
-//    if (_body.empty())
-//        return;
     lseek(fd, 0, SEEK_SET);
     while (ret > 0) {
-        ret = read(fd, buff, 3000);
-        _response_file.append(buff, ret);
+        if ((ret = read(fd, buff, 3000)) != -1)
+            _response_file.append(buff, ret);
         if (ret < 3000)
             break;
     }
-    if (ret == -1)
-        throw std::runtime_error("Read failed");
+//    if (ret == -1)
+//        throw std::runtime_error("Read failed");
 }
 
 void        header_handler::read_cgi_header_file(int fd, int body_size) {
@@ -525,18 +520,16 @@ void        header_handler::read_cgi_header_file(int fd, int body_size) {
     char        buff[3000];
     int         ret = 1;
 
-//    if (_body.empty())
-//        return;
     tmp.reserve(body_size);
     lseek(fd, 0, SEEK_SET);
     while (ret > 0) {
-        ret = read(fd, buff, 3000);
-        tmp.append(buff, ret);
+        if ((ret = read(fd, buff, 3000)) != -1)
+            tmp.append(buff, ret);
         if (ret < 3000)
             break;
     }
-    if (ret == -1)
-        throw std::runtime_error("Read failed");
+//    if (ret == -1)
+//        throw std::runtime_error("Read failed");
 
     int header_size = (int)tmp.find("\r\n\r\n");
     _additional_cgi_headers = tmp.substr(0, header_size);
