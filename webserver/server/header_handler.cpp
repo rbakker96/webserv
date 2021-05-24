@@ -6,7 +6,7 @@
 /*   By: gbouwen <marvin@codam.nl>                    +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2021/05/03 12:34:40 by gbouwen       #+#    #+#                 */
-/*   Updated: 2021/05/19 17:56:43 by gbouwen       ########   odam.nl         */
+/*   Updated: 2021/05/18 17:12:38 by gbouwen       ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -214,6 +214,16 @@ std::string	header_handler::location_of_uploaded_file(location_context location_
 	return (result);
 }
 
+std::string	get_extension(std::string uri_location)
+{
+	int			start = uri_location.find_last_of('.');
+	if (start == -1)
+		return (uri_location);
+	std::string	result = uri_location.substr(start, std::string::npos);
+
+	return (result);
+}
+
 std::string	header_handler::match_location_block(header_handler::location_vector location_blocks, std::string uri_location)
 {
 	std::string	result;
@@ -244,7 +254,7 @@ std::string	header_handler::match_location_block(header_handler::location_vector
 		}
 		if (location_blocks[index].get_redirect())
 			result.append(skip_first_directory(uri_location));
-		else if (_method.compare("PUT") == 0 || (_method.compare("POST") == 0 && (extension != ".php" || extension == ".bla")))
+		else if (_method.compare("PUT") == 0 || (_method.compare("POST") == 0 && (extension != ".php" || extension == ".bla"))) // add post with file upload later?
 			result.append("");
 		else
 			result.append(uri_location);
@@ -281,7 +291,7 @@ void        header_handler::verify_file_location(header_handler::location_vector
 void header_handler::verify_method(std::string cgi_file_types)
 {
 	int i = 0;
-	if (cgi_file_types.find(verify_content_type()) != std::string::npos) // remove CGI file types
+	if (cgi_file_types.find(verify_content_type()) != std::string::npos)
 		i++;
     if (_method == "POST" && verify_content_type() == "bla")
         return;
@@ -372,7 +382,7 @@ void        header_handler::write_body_to_file(int file_fd) {
     if (_body.empty())
         return;
     if ((write(file_fd, _body.c_str(), _body.length())) == -1)
-        throw (std::string("Write body to file failed"));
+        throw std::runtime_error("Write failed");
 }
 
 
@@ -494,17 +504,15 @@ void        header_handler::read_requested_file(int fd) {
     char    buff[3000];
     int     ret = 1;
 
-    if (_body.empty())
-        return;
     lseek(fd, 0, SEEK_SET);
     while (ret > 0) {
-        ret = read(fd, buff, 3000);
-        _response_file.append(buff, ret);
+        if ((ret = read(fd, buff, 3000)) != -1)
+            _response_file.append(buff, ret);
         if (ret < 3000)
             break;
     }
-    if (ret == -1)
-        throw (std::string("Read requested file failed"));
+//    if (ret == -1)
+//        throw std::runtime_error("Read failed");
 }
 
 void        header_handler::read_cgi_header_file(int fd, int body_size) {
@@ -512,18 +520,16 @@ void        header_handler::read_cgi_header_file(int fd, int body_size) {
     char        buff[3000];
     int         ret = 1;
 
-    if (_body.empty())
-        return;
     tmp.reserve(body_size);
     lseek(fd, 0, SEEK_SET);
     while (ret > 0) {
-        ret = read(fd, buff, 3000);
-        tmp.append(buff, ret);
+        if ((ret = read(fd, buff, 3000)) != -1)
+            tmp.append(buff, ret);
         if (ret < 3000)
             break;
     }
-    if (ret == -1)
-        throw std::runtime_error("Read failed");
+//    if (ret == -1)
+//        throw std::runtime_error("Read failed");
 
     int header_size = (int)tmp.find("\r\n\r\n");
     _additional_cgi_headers = tmp.substr(0, header_size);
@@ -550,7 +556,7 @@ void    header_handler::send_response(int activeFD, int fileFD, std::string serv
 
     response.write_response_to_browser(activeFD, _response_file, _method);
 
-    print_response(response.get_response()); //DEBUG
+    print_response(response.get_response(), _body); //DEBUG
     reset_handler();
 }//add Content-Language: en-US
 
@@ -629,7 +635,8 @@ void header_handler::print_request() {
     std::cout << "------------- END REQUEST -------------\n\n" << RESET;
 }
 
-void    header_handler::print_response(std::string response) {
+void    header_handler::print_response(std::string response, std::string body) {
     std::cout << MAGENTA << "\n------------- RESPONSE -------------\n";
-    std::cout << response << RESET << std::endl;
+    std::cout << response << std::endl;
+    std::cout << body << RESET << std::endl;
 }

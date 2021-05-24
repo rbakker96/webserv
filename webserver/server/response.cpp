@@ -14,20 +14,18 @@ void	response::generate_status_line(std::string protocol, int status, response::
 
     status_line.append(" ");
     status_line.append(status_str);
-    free(status_str);
     status_line.append(" ");
     status_line.append(status_phrases[status]);
     status_line.append("\r\n");
+    free(status_str);
 
     _response.append(status_line);
 }
 
 void	response::generate_content_length(std::string requested_file) {
     std::string	content_length = "Content-Length: ";
-	char		*file_length = ft_itoa(requested_file.length());
 
-    content_length.append(file_length);
-	free(file_length);
+    content_length.append(ft_itoa(requested_file.size()));
     content_length.append("\r\n");
 
     _response.append(content_length);
@@ -138,13 +136,11 @@ void    response::write_response_to_browser(int browser_socket, std::string resp
     int ret = 0;
 
     while (ret < (int)_response.size())
-        if ((ret += write(browser_socket, _response.c_str(), _response.size())) == -1)
-            throw (std::string("Write response to browser failed"));
+        ret += write(browser_socket, _response.c_str(), _response.size());
     ret = 0;
 	if (method != "HEAD")
         while (ret < (int)response_file.size())
-	        if ((ret += write(browser_socket, response_file.c_str(), response_file.size())) == -1)
-                throw (std::string("Write response to browser failed"));
+	        ret += write(browser_socket, response_file.c_str(), response_file.size());
 }
 
 

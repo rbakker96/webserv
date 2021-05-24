@@ -6,7 +6,7 @@
 /*   By: roybakker <roybakker@student.codam.nl>       +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2021/03/30 16:30:47 by roybakker     #+#    #+#                 */
-/*   Updated: 2021/05/20 12:46:17 by gbouwen       ########   odam.nl         */
+/*   Updated: 2021/05/18 17:14:29 by gbouwen       ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -79,23 +79,30 @@ void    webserver::run() {
     std::cout << "--- Waiting for activity... ---" << std::endl;
     while (true)
     {
-		fd.synchronize(_servers);
-		if (select(fd.get_max(), &fd.get_read(), &fd.get_write(), 0, 0) == -1)
-			throw std::runtime_error("Select failed");
-		for (size_t index = 0; index < _servers.size(); index++) {
+        fd.synchronize(_servers);
+        if (select(fd.get_max(), &fd.get_read(), &fd.get_write(), 0, 0) == -1)
+		{
+			std::cout << RED << strerror(errno) << RESET << std::endl;
+        	throw std::runtime_error("Select failed");
+		}
+        for (size_t index = 0; index < _servers.size(); index++) {
 			server *server = &_servers[index];
-			try {
-				if (server->_activeFD == ready_for_use_ && fd.rdy_for_reading(server->get_tcp_socket())) //accept request
-				{
-					server->_activeFD = accept(server->get_tcp_socket(), (struct sockaddr *) &server->_addr, (socklen_t *) &server->_addr_len);
-					if (server->_activeFD == -1)
-						throw (std::runtime_error("Accept failed"));
-					fd.set_time_out(server->_activeFD);
-					fcntl(server->_activeFD, F_SETFL, O_NONBLOCK);
-					fd.accepted_request_update(server->_activeFD);
-				}
+            if (server->_activeFD == ready_for_use_ && fd.rdy_for_reading(server->get_tcp_socket())) //accept request
+			{
+				server->_activeFD = accept(server->get_tcp_socket(), (struct sockaddr *) &server->_addr, (socklen_t *) &server->_addr_len);
+				if (server->_activeFD == -1)
+					throw (std::runtime_error("Accept failed"));
+				fd.set_time_out(server->_activeFD);
+				fcntl(server->_activeFD, F_SETFL, O_NONBLOCK);
+				fd.accepted_request_update(server->_activeFD);
+			}
 
-				if (fd.rdy_for_reading(server->_activeFD)) //handle requested file
+            if (fd.rdy_for_reading(server->_activeFD)) //handle requested file
+			{
+				std::string request_headers = read_browser_request(server->_activeFD);
+                if (!request_headers.empty())
+                    fd.set_time_out(server->_activeFD);
+				if (server->update_request_buffer(server->_activeFD, request_headers) == valid_)
 				{
 					server->_handler.parse_request(server->_request_buffer[server->_activeFD]);
                     server->remove_handled_request(server->_activeFD);
@@ -108,6 +115,7 @@ void    webserver::run() {
 						fd.update_max(server->_cgi_inputFD);
 					}
 				}
+			}
 
             if (fd.rdy_for_reading(server->_fileFD)) //read requested file
 			{
@@ -126,54 +134,19 @@ void    webserver::run() {
 			    fd.read_request_update(server->_fileFD, server->_activeFD);
 			}
 
-            if (fd.rdy_for_writing(server->_activeFD)) //send response
-				{
-					server->_handler.send_response(server->_activeFD, server->_fileFD, server->_server_name);
-					fd.clr_from_write_buffer(server->_activeFD);
-					close(server->_activeFD);
-					close(server->_fileFD);
-					server->_activeFD = ready_for_use_;
-					server->_fileFD = unused_;
-				}
-				if (server->_activeFD != ready_for_use_)
-					server->_activeFD = fd.check_time_out(server->_activeFD, server->_time_out);
-
+			if (fd.rdy_for_writing(server->_activeFD)) //send response
+			{
+				server->_handler.send_response(server->_activeFD, server->_fileFD, server->_server_name);
+                fd.clr_from_write_buffer(server->_activeFD);
+				close(server->_activeFD);
+                close(server->_fileFD);
+                server->_activeFD = ready_for_use_;
+                server->_fileFD = unused_;
 			}
-			catch (std::string &e) {
-				if (e.compare("Read browser request failed") == 0)
-				{
-					fd.clr_from_read_buffer(server->_activeFD);
-					close(server->_activeFD);
-					server->_activeFD = ready_for_use_;
-				}
-				if (e.compare("Read requested file failed") == 0)
-				{
-					fd.clr_from_read_buffer(server->_fileFD);
-					close(server->_fileFD);
-					server->_fileFD = unused_;
-					close(server->_activeFD);
-					server->_activeFD = ready_for_use_;
-				}
-				if (e.compare("Write body to file failed") == 0)
-				{
-					fd.clr_from_write_buffer(server->_fileFD);
-					fd.clr_from_read_buffer(server->_fileFD);
-					close(server->_fileFD);
-					server->_fileFD = unused_;
-					close(server->_activeFD);
-					server->_activeFD = ready_for_use_;
-				}
-				if (e.compare("Write response to browser failed") == 0)
-				{
-					fd.clr_from_write_buffer(server->_activeFD);
-					close(server->_activeFD);
-					close(server->_fileFD);
-					server->_activeFD = ready_for_use_;
-					server->_fileFD = unused_;
-				}
-			}
+			if (server->_activeFD != ready_for_use_)
+                server->_activeFD = fd.check_time_out(server->_activeFD, server->_time_out);
 		}
-	}
+    }
 }
 
 

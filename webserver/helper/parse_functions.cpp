@@ -6,7 +6,7 @@
 /*   By: gbouwen <marvin@codam.nl>                    +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2019/10/28 13:03:13 by gbouwen       #+#    #+#                 */
-/*   Updated: 2021/05/19 18:15:30 by gbouwen       ########   odam.nl         */
+/*   Updated: 2021/05/18 14:47:41 by gbouwen       ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -74,7 +74,7 @@ std::string    read_browser_request(int fd) {
             break;
     }
     if (ret == -1)
-        throw (std::string("Read browser request failed"));
+        throw std::runtime_error("Read failed");
     return tmp;
 }
 

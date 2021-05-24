@@ -170,7 +170,7 @@ public:
 
     //DEBUG functions
     void            print_request();
-    void            print_response(std::string response);
+    void            print_response(std::string response, std::string body);
 };
 
 #endif //WEBSERV_HANDLER_HPP
