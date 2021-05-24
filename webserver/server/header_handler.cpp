@@ -507,8 +507,8 @@ void        header_handler::read_requested_file(int fd) {
     char    buff[3000];
     int     ret = 1;
 
-    if (_body.empty())
-        return;
+//    if (_body.empty())
+//        return;
     lseek(fd, 0, SEEK_SET);
     while (ret > 0) {
         ret = read(fd, buff, 3000);
@@ -525,8 +525,8 @@ void        header_handler::read_cgi_header_file(int fd, int body_size) {
     char        buff[3000];
     int         ret = 1;
 
-    if (_body.empty())
-        return;
+//    if (_body.empty())
+//        return;
     tmp.reserve(body_size);
     lseek(fd, 0, SEEK_SET);
     while (ret > 0) {
@@ -563,7 +563,7 @@ void    header_handler::send_response(int activeFD, int fileFD, std::string serv
 
     response.write_response_to_browser(activeFD, _response_file, _method);
 
-    print_response(response.get_response()); //DEBUG
+    print_response(response.get_response(), _body); //DEBUG
     reset_handler();
 }//add Content-Language: en-US
 
@@ -642,7 +642,8 @@ void header_handler::print_request() {
     std::cout << "------------- END REQUEST -------------\n\n" << RESET;
 }
 
-void    header_handler::print_response(std::string response) {
+void    header_handler::print_response(std::string response, std::string body) {
     std::cout << MAGENTA << "\n------------- RESPONSE -------------\n";
-    std::cout << response << RESET << std::endl;
+    std::cout << response << std::endl;
+    std::cout << body << RESET << std::endl;
 }
