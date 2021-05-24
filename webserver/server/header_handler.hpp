@@ -54,9 +54,10 @@ public:
 
 	typedef		void (header_handler::*parse)(const std::string &str);
 
-	enum		location_values{requested_host_ = 0, user_agent_ = 1, accept_language_ = 2, authorization_ = 3,
-								referer_ = 4, content_length_ = 5, content_type_ = 6,
-								content_language_ = 7, content_location_ = 8, accept_charset_ = 9,
+	enum		location_values{requested_host_ = 0, user_agent_ = 1, accept_charset_ = 2,
+								accept_language_ = 3, authorization_ = 4,
+								referer_ = 5, content_length_ = 6, content_type_ = 7,
+								content_language_ = 8, content_location_ = 9,
 								special_x_header_ = 10, unknown_ = 11, error_code_ = 400,
 								folder_ = -1, unused_ = -1};
 	enum		status_values{	okay_ = 200, created_ = 201, no_content_ = 204,
