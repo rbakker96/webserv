@@ -26,7 +26,7 @@ header_handler::header_handler(): _index(0), _status(okay_), _status_phrases(), 
 	_status_phrases.insert (pair(403, "Forbidden"));
 	_status_phrases.insert (pair(404, "Not Found"));
 	_status_phrases.insert (pair(405, "Method Not Allowed"));
-	_status_phrases.insert (pair(413, "Payload Too Large"));
+	_status_phrases.insert (pair(413, "Request Entity Too Large"));
 }
 
 header_handler::~header_handler(){
@@ -364,14 +364,14 @@ int     	header_handler::put_request()
 
 int         header_handler::post_request(int max_file_size) {
     int fd = unused_;
-    std::string put_file = "server_files/www/downloads/POST_file";
+    std::string post_file = "server_files/www/downloads/POST_file";
 
     if (max_file_size && max_file_size < (int)_body.length()) {
         _status = payload_too_large_;
         return fd;
     }
     _status = okay_;
-    fd = open(&put_file[0], O_RDWR | O_TRUNC| O_CREAT, S_IRWXU);
+    fd = open(&post_file[0], O_RDWR | O_TRUNC| O_CREAT, S_IRWXU);
     if (fd == -1)
         throw std::runtime_error("Open failed");
     return fd;

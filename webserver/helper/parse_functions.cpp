@@ -66,10 +66,11 @@ vector    str_to_vector(std::string request) {
 std::string    read_browser_request(int fd) {
     std::string tmp;
     char        buff[3000];
-    int         ret;
+    int         ret = 1;
 
-    while ((ret = read(fd, buff, 3000)) > 0) {
-        tmp.append(buff, ret);
+    while (ret > 0) {
+        if ((ret = read(fd, buff, 3000)) != -1)
+            tmp.append(buff, ret);
         if (ret < 3000)
             break;
     }
