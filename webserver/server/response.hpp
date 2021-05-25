@@ -7,6 +7,9 @@
 #include <vector>
 #include <sys/stat.h>
 #include <unistd.h>
+#include <exception>
+#include <sys/types.h>
+#include <sys/wait.h>
 
 class response {
 public:

@@ -382,7 +382,7 @@ void        header_handler::write_body_to_file(int file_fd) {
     if (_body.empty())
         return;
     if ((write(file_fd, _body.c_str(), _body.length())) == -1)
-        throw std::runtime_error("Write failed");
+        throw (std::string("Write body to file failed"));
 }
 
 
@@ -500,7 +500,7 @@ char **header_handler::create_cgi_envp(const std::string &server_name, int serve
 	int		i = 0;
 
 	for (vector_iterator it = cgi_envps.begin(); it != cgi_envps.end(); it++) {
-		envp[i] = ft_strdup((*it).c_str()); // error check on ft_strdup failure
+		envp[i] = ft_strdup((*it).c_str());
 		i++;
 	}
 	envp[cgi_envps.size()] = NULL;
@@ -520,8 +520,6 @@ void        header_handler::read_requested_file(int fd) {
         if (ret < 3000)
             break;
     }
-//    if (ret == -1)
-//        throw std::runtime_error("Read failed");
 }
 
 void        header_handler::read_cgi_header_file(int fd, int body_size) {
@@ -537,8 +535,6 @@ void        header_handler::read_cgi_header_file(int fd, int body_size) {
         if (ret < 3000)
             break;
     }
-//    if (ret == -1)
-//        throw std::runtime_error("Read failed");
 
     int header_size = (int)tmp.find("\r\n\r\n");
     _additional_cgi_headers = tmp.substr(0, header_size);

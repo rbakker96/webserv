@@ -136,14 +136,23 @@ void    response::close_header_section() {
 
 //-------------------------------------- SEND functions --------------------------------------
 void    response::write_response_to_browser(int browser_socket, std::string response_file, std::string method) {
-    int ret = 0;
-    while (ret < (int)_response.size())
-        ret += write(browser_socket, _response.c_str(), _response.size());
+    int written = 0;
+    int ret;
 
-    ret = 0;
+    while (_response.size() && written < (int)_response.size()) {
+        ret = write(browser_socket, _response.c_str(), _response.size());
+        written += ret;
+    }
+
+    written = 0;
 	if (method != "HEAD")
-        while (ret < (int)response_file.size())
-            ret += write(browser_socket, response_file.c_str(), response_file.size());
+        while (response_file.size() && written < (int)response_file.size()) {
+            ret = write(browser_socket, response_file.c_str()+written, response_file.size()-written);
+            written += ret;
+        }
+
+    if (response_file.size() >= 100)
+        wait(reinterpret_cast<int *>(5));
 }
 
 

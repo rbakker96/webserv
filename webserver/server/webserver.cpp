@@ -53,8 +53,11 @@ void    webserver::validate_configuration() {
     for( std::vector<server>::iterator it = _servers.begin(); it != _servers.end(); it++) {
         bool duplicate = false;
         int port = it->_port;
+        int time_out = it->_time_out;
         if (port <= 0)
             throw std::invalid_argument("Error: invalid port in configuration file");
+        if (time_out <= 0)
+            throw std::invalid_argument("Error: invalid time out in configuration file");
         for(std::vector<server>::iterator compare = _servers.begin(); compare != _servers.end(); compare++) {
             if (port == compare->_port) {
                 if (duplicate == true)
@@ -81,71 +84,111 @@ void    webserver::run() {
     {
         fd.synchronize(_servers);
         if (select(fd.get_max(), &fd.get_read(), &fd.get_write(), 0, 0) == -1)
-		{
-			std::cout << RED << strerror(errno) << RESET << std::endl;
         	throw std::runtime_error("Select failed");
-		}
         for (size_t index = 0; index < _servers.size(); index++) {
-			server *server = &_servers[index];
-            if (server->_activeFD == ready_for_use_ && fd.rdy_for_reading(server->get_tcp_socket())) //accept request
-			{
-				server->_activeFD = accept(server->get_tcp_socket(), (struct sockaddr *) &server->_addr, (socklen_t *) &server->_addr_len);
-				if (server->_activeFD == -1)
-					throw (std::runtime_error("Accept failed"));
-				fd.set_time_out(server->_activeFD);
-				fcntl(server->_activeFD, F_SETFL, O_NONBLOCK);
-				fd.accepted_request_update(server->_activeFD);
-			}
-
-            if (fd.rdy_for_reading(server->_activeFD)) //handle requested file
-			{
-				std::string request_headers = read_browser_request(server->_activeFD);
-                if (!request_headers.empty())
+            server *server = &_servers[index];
+            try {
+                if (server->_activeFD == ready_for_use_ &&
+                    fd.rdy_for_reading(server->get_tcp_socket())) //accept request
+                {
+                    server->_activeFD = accept(server->get_tcp_socket(), (struct sockaddr *) &server->_addr,
+                                               (socklen_t *) &server->_addr_len);
+                    if (server->_activeFD == -1)
+                        throw (std::runtime_error("Accept failed"));
                     fd.set_time_out(server->_activeFD);
-				if (server->update_request_buffer(server->_activeFD, request_headers) == valid_)
-				{
-					server->_handler.parse_request(server->_request_buffer[server->_activeFD]);
-                    server->remove_handled_request(server->_activeFD);
-                    server->_fileFD = server->_handler.handle_request(server->_cgi_file_types, server->_location_blocks, server->get_error_page());
-                    fd.handled_request_update(server->_fileFD, server->_activeFD, server->_handler.verify_content_type(), server->_handler.get_method());
-					if (server->_cgi_file_types.find(server->_handler.verify_content_type()) != std::string::npos)
-					{
-						server->_cgi_inputFD = server->_handler.create_cgi_fd("input");
-						fd.set_write_buffer(server->_cgi_inputFD);
-						fd.update_max(server->_cgi_inputFD);
-					}
-				}
-			}
+                    fcntl(server->_activeFD, F_SETFL, O_NONBLOCK);
+                    fd.accepted_request_update(server->_activeFD);
+                }
 
-            if (fd.rdy_for_reading(server->_fileFD)) //read requested file
-			{
-				if (fd.rdy_for_writing(server->_fileFD) && server->_handler.get_status() < error_) {
-                    if (server->_cgi_file_types.find(server->_handler.verify_content_type()) != std::string::npos && fd.rdy_for_writing(server->_cgi_inputFD))
-						server->_handler.execute_cgi(server->_cgi_inputFD, server->_fileFD, server->_server_name, server->_port);
-                    else
-                        server->_handler.write_body_to_file(server->_fileFD);
-			    }
-				if (server->_handler.get_status() != 204) {
-				    if (server->_handler.verify_content_type() == "bla" && server->_handler.get_method() == "POST")
-                        server->_handler.read_cgi_header_file(server->_fileFD, server->_request_buffer[server->_activeFD].get_body_size());
-				    else
-                        server->_handler.read_requested_file(server->_fileFD);
-				}
-			    fd.read_request_update(server->_fileFD, server->_activeFD);
-			}
+                if (fd.rdy_for_reading(server->_activeFD)) //handle requested file
+                {
+                    std::string request_headers = read_browser_request(server->_activeFD);
+                    if (!request_headers.empty())
+                        fd.set_time_out(server->_activeFD);
+                    if (server->update_request_buffer(server->_activeFD, request_headers) == valid_) {
+                        server->_handler.parse_request(server->_request_buffer[server->_activeFD]);
+                        server->remove_handled_request(server->_activeFD);
+                        server->_fileFD = server->_handler.handle_request(server->_cgi_file_types,
+                                                                          server->_location_blocks,
+                                                                          server->get_error_page());
+                        fd.handled_request_update(server->_fileFD, server->_activeFD,
+                                                  server->_handler.verify_content_type(),
+                                                  server->_handler.get_method());
+                        if (server->_cgi_file_types.find(server->_handler.verify_content_type()) != std::string::npos) {
+                            server->_cgi_inputFD = server->_handler.create_cgi_fd("input");
+                            fd.set_write_buffer(server->_cgi_inputFD);
+                            fd.update_max(server->_cgi_inputFD);
+                        }
+                    }
+                }
 
-			if (fd.rdy_for_writing(server->_activeFD)) //send response
-			{
-				server->_handler.send_response(server->_activeFD, server->_fileFD, server->_server_name);
-                fd.clr_from_write_buffer(server->_activeFD);
-				close(server->_activeFD);
-                close(server->_fileFD);
-                server->_activeFD = ready_for_use_;
-                server->_fileFD = unused_;
-			}
-			if (server->_activeFD != ready_for_use_)
-                server->_activeFD = fd.check_time_out(server->_activeFD, server->_time_out);
-		}
+                if (fd.rdy_for_reading(server->_fileFD)) //read requested file
+                {
+                    if (fd.rdy_for_writing(server->_fileFD) && server->_handler.get_status() < error_) {
+                        if (server->_cgi_file_types.find(server->_handler.verify_content_type()) != std::string::npos &&
+                            fd.rdy_for_writing(server->_cgi_inputFD))
+                            server->_handler.execute_cgi(server->_cgi_inputFD, server->_fileFD, server->_server_name,
+                                                         server->_port);
+                        else
+                            server->_handler.write_body_to_file(server->_fileFD);
+                    }
+                    if (server->_handler.get_status() != 204) {
+                        if (server->_handler.verify_content_type() == "bla" && server->_handler.get_method() == "POST")
+                            server->_handler.read_cgi_header_file(server->_fileFD,
+                                                                  server->_request_buffer[server->_activeFD].get_body_size());
+                        else
+                            server->_handler.read_requested_file(server->_fileFD);
+                    }
+                    fd.read_request_update(server->_fileFD, server->_activeFD);
+                }
+
+                if (fd.rdy_for_writing(server->_activeFD)) //send response
+                {
+                    server->_handler.send_response(server->_activeFD, server->_fileFD, server->_server_name);
+                    fd.clr_from_write_buffer(server->_activeFD);
+                    close(server->_activeFD);
+                    close(server->_fileFD);
+                    server->_activeFD = ready_for_use_;
+                    server->_fileFD = unused_;
+                }
+                if (server->_activeFD != ready_for_use_)
+                    server->_activeFD = fd.check_time_out(server->_activeFD, server->_time_out);
+            }
+            catch (std::string &e) {
+                std::cout << GREEN << "CATCHED = " << e << RESET << std::endl;
+                if (e.compare("Read browser request failed") == 0)
+                {
+                    fd.clr_from_read_buffer(server->_activeFD);
+                    close(server->_activeFD);
+                    server->_activeFD = ready_for_use_;
+                }
+                else if (e.compare("Read requested file failed") == 0)
+                {
+                    fd.clr_from_read_buffer(server->_fileFD);
+                    close(server->_fileFD);
+                    server->_fileFD = unused_;
+                    close(server->_activeFD);
+                    server->_activeFD = ready_for_use_;
+                }
+                else if (e.compare("Write body to file failed") == 0)
+                {
+                    fd.clr_from_write_buffer(server->_fileFD);
+                    fd.clr_from_read_buffer(server->_fileFD);
+                    close(server->_fileFD);
+                    server->_fileFD = unused_;
+                    close(server->_activeFD);
+                    server->_activeFD = ready_for_use_;
+                }
+                else if (e.compare("Write response to browser failed") == 0)
+                {
+                    fd.clr_from_write_buffer(server->_activeFD);
+                    close(server->_activeFD);
+                    close(server->_fileFD);
+                    server->_activeFD = ready_for_use_;
+                    server->_fileFD = unused_;
+                }
+            }
+        }
     }
 }
 

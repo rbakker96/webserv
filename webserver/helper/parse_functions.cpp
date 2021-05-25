@@ -75,7 +75,7 @@ std::string    read_browser_request(int fd) {
             break;
     }
     if (ret == -1)
-        throw std::runtime_error("Read failed");
+        throw (std::string("Read browser request failed"));
     return tmp;
 }
 

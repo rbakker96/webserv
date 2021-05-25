@@ -128,8 +128,8 @@ char	*ft_strjoin(char const *s1, char const *s2)
 	i1 = 0;
 	i2 = 0;
 	dst = (char *)malloc(sizeof(char) * (ft_strlen(s1) + ft_strlen(s2) + 1));
-	if (dst == 0)
-		return (0);
+	if (!dst)
+        throw std::runtime_error("Malloc failed");
 	while (s1[i1] != '\0')
 	{
 		dst[i1] = s1[i1];
