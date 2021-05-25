@@ -155,7 +155,6 @@ void    webserver::run() {
                     server->_activeFD = fd.check_time_out(server->_activeFD, server->_time_out);
             }
             catch (std::string &e) {
-                std::cout << GREEN << "CATCHED = " << e << RESET << std::endl;
                 if (e.compare("Read browser request failed") == 0)
                 {
                     fd.clr_from_read_buffer(server->_activeFD);
@@ -178,14 +177,6 @@ void    webserver::run() {
                     server->_fileFD = unused_;
                     close(server->_activeFD);
                     server->_activeFD = ready_for_use_;
-                }
-                else if (e.compare("Write response to browser failed") == 0)
-                {
-                    fd.clr_from_write_buffer(server->_activeFD);
-                    close(server->_activeFD);
-                    close(server->_fileFD);
-                    server->_activeFD = ready_for_use_;
-                    server->_fileFD = unused_;
                 }
             }
         }
