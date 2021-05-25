@@ -17,6 +17,7 @@
 #include <fcntl.h>
 
 //custom includes
+#include "client.hpp"
 #include "server.hpp"
 #include "file_descriptors.hpp"
 
@@ -35,10 +36,12 @@ class webserver {
 public:
 	typedef     std::vector<std::string>      			vector;
 	typedef     std::vector<std::string>::iterator      vector_iterator;
+    typedef     std::vector<client>::iterator           client_iterator;
     enum        webserver_values{ unused_ = -1, ready_for_use_ = -1, error_ = 400};
 
 private:
     std::vector<server>     _servers;
+    int                     _client_amount;
 
 public:
     webserver();

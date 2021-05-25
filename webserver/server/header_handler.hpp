@@ -66,7 +66,7 @@ public:
 								payload_too_large_ = 413 };
 
 protected:
-	int				_index;
+//	int				_index;
 
 	//status
 	int				            _status;
@@ -120,11 +120,11 @@ public:
 	void            invalid_argument(const std::string &str);
 
     //HANDLE functions
-    int             handle_request(std::string cgi_file_types, location_vector location_blocks, std::string error_page);
+    int             handle_request(std::string cgi_file_types, location_vector location_blocks, std::string error_page, int index);
     int             put_request();
     int             post_request(int max_file_size);
     void            write_body_to_file(int file_fd);
-	int 			create_cgi_fd(std::string type);
+	int 			create_cgi_fd(std::string type, int index);
     void            verify_file_location(location_vector location_blocks, std::string error_page);
 	std::string		match_location_block(header_handler::location_vector location_blocks, std::string file_location);
 	std::string		generate_error_page_location(std::string error_page);
@@ -148,7 +148,6 @@ public:
 
     //GET functions
     int             get_max_file_size();
-	int				get_index();
 	int             get_status();
     int             get_content_length();
     std::string     get_content_type();
@@ -168,9 +167,6 @@ public:
     std::string     get_authorization();
     std::string     get_referer();
     std::string     get_body();
-
-	//SET functions
-	void			set_index(int index);
 
     //DEBUG functions
     void            print_request();

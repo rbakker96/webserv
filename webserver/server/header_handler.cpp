@@ -13,7 +13,7 @@
 #include <sstream>
 #include "header_handler.hpp"
 
-header_handler::header_handler(): _index(0), _status(okay_), _status_phrases(), _max_file_size(0), _content_length(0), _content_type("Content-Type: text/"),
+header_handler::header_handler(): _status(okay_), _status_phrases(), _max_file_size(0), _content_length(0), _content_type("Content-Type: text/"),
                                   _content_language("en"), _content_location(), _allow(), _method(), _file_location(),
                                   _uri_location(), _protocol(), _requested_host(), _user_agent(), _accept_charset(),
                                   _accept_language(), _authorization(), _referer(), _body(), _response_file()	{
@@ -147,7 +147,7 @@ void        header_handler::invalid_argument(const std::string &str) {parse_inva
 
 
 //-------------------------------------- HANDLE functions --------------------------------------
-int        header_handler::handle_request(std::string cgi_file_types, header_handler::location_vector location_blocks, std::string error_page) {
+int        header_handler::handle_request(std::string cgi_file_types, header_handler::location_vector location_blocks, std::string error_page, int index) {
 	struct  stat stats;
 	int		fd = unused_;
 
@@ -160,7 +160,7 @@ int        header_handler::handle_request(std::string cgi_file_types, header_han
 		else if (_method == "POST" && !_body.empty() && cgi_file_types.find(verify_content_type()) == std::string::npos)
 			fd = post_request(_max_file_size);
 		else if (cgi_file_types.find(verify_content_type()) != std::string::npos)
-			return create_cgi_fd("output");
+			return create_cgi_fd("output", index);
 		else if (stat(_file_location.c_str(), &stats) == -1)
 			_status = not_found_;
 		else if (!(stats.st_mode & S_IRUSR))
@@ -324,12 +324,12 @@ std::string     header_handler::verify_content_type() {
     return "folder";
 }
 
-int header_handler::create_cgi_fd(std::string type)
+int header_handler::create_cgi_fd(std::string type, int index)
 {
 	std::string str_filename = "server_files/www/cgi_out_";
 	if (type == "input")
 		str_filename = "server_files/www/cgi_in_";
-	char	*index_str = ft_itoa(_index);
+	char	*index_str = ft_itoa(index);
 
 	str_filename.append(index_str);
 	free(index_str);
@@ -593,7 +593,6 @@ void    header_handler::reset_handler() {
 
 //-------------------------------------- GET functions --------------------------------------
 int                     header_handler::get_max_file_size() {return _max_file_size;}
-int				        header_handler::get_index() {return _index;}
 int                     header_handler::get_status() {return _status;}
 int                     header_handler::get_content_length() {return _content_length;}
 std::string             header_handler::get_content_type() {return _content_type;}
@@ -613,10 +612,6 @@ std::string             header_handler::get_accept_language() {return _accept_la
 std::string             header_handler::get_authorization() {return _authorization;}
 std::string             header_handler::get_referer() {return _referer;}
 std::string             header_handler::get_body() {return _body;}
-
-
-//-------------------------------------- SET functions --------------------------------------
-void			        header_handler::set_index(int index) { _index = index;}
 
 
 // // // // // // // // // // // // //  DEBUG functions // // // // // // // // // // // // //

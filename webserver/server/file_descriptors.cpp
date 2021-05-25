@@ -100,19 +100,22 @@ void    file_descriptors::set_time_out(int fd) {
         it->second = time;
 }
 
-int     file_descriptors::check_time_out(int fd, int time_out) {
+void     file_descriptors::check_time_out(std::vector<client> &clients, int time_out) {
     struct timeval	timeval;
     long long		time;
-    map_iterator    it = _time_out_monitor.find(fd);
 
     gettimeofday(&timeval, NULL);
     time = timeval.tv_sec;
-    if (it->second != 0 && (time - it->second) >= time_out) {
-        clr_from_read_buffer(fd);
-        close(fd);
-        return -1;
+
+    for (client_iterator it = clients.begin(); it != clients.end(); it++) {
+        int client = it->get_clientFD();
+        map_iterator recorded_time = _time_out_monitor.find(client);
+        if (recorded_time->second != 0 && (time - recorded_time->second) >= time_out) {
+            clr_from_read_buffer(client);
+            close(client);
+            clients.erase(it);
+        }
     }
-    return fd;
 }
 
 

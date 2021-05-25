@@ -13,8 +13,8 @@
 #include "server.hpp"
 #include "../helper/helper.hpp"
 
-server::server() : _activeFD(-1), _fileFD(-1), _port(0), _host(), _server_name(), _error_page(), _cgi_file_types(), _location_blocks(), _tcp_socket(0),
-				   _addr_len(0), _addr(), _request_buffer(), _handler() {}
+server::server() : _clients(), _port(0), _host(), _server_name(), _error_page(), _cgi_file_types(), _location_blocks(), _tcp_socket(0),
+				   _addr_len(0), _addr(), _request_buffer(){}
 server::~server(){}
 
 
@@ -110,6 +110,16 @@ void    server::remove_handled_request(int used_fd){
     map_iterator request = _request_buffer.find(used_fd);
 
     _request_buffer.erase(request);
+}
+
+void    server::remove_client(int clientFD) {
+    for (client_iterator it = _clients.begin(); it != _clients.end(); it++) {
+        int client = it->get_clientFD();
+        if (clientFD == client) {
+            close(client);
+            _clients.erase(it);
+        }
+    }
 }
 
 

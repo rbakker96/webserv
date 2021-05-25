@@ -25,6 +25,7 @@
 #include <fcntl.h>
 
 //custom includes
+#include "client.hpp"
 #include "location_context.hpp"
 #include "header_handler.hpp"
 #include "request_buf.hpp"
@@ -52,15 +53,18 @@ public:
 public:
     typedef     std::vector<std::string>::iterator      vector_iterator;
     typedef     std::map<int, request_buf>::iterator    map_iterator;
+    typedef     std::vector<client>::iterator           client_iterator;
     typedef     void (server::*configure)(const std::string&);
     enum        server_values{ port_ = 0, host_ = 1, server_name_ = 2, error_page_ = 3,
                                 time_out_ = 4, cgi_file_types_ = 5, unknown_ = 6, location_ = 7 };
 
 private:
     //Connection
-    int                             _activeFD;
-	int								_fileFD;
-	int 							_cgi_inputFD;
+//    std::vector<int>                _openFDS; //ALL FDS THAT ARE USED BY SERVER
+//    int                             _activeFD;
+//	int								_fileFD;
+//	int 							_cgi_inputFD;
+    std::vector<client>             _clients;
 
     //Configurations
     int                             _port;
@@ -78,7 +82,7 @@ private:
 
     //Handler
     std::map<int, request_buf>      _request_buffer;
-    header_handler                  _handler;
+//    header_handler                  _handler;
 
 public:
     server();
@@ -105,6 +109,7 @@ public:
     //RESET functions
     void    reset_server();
     void    remove_handled_request(int used_fd);
+    void    remove_client(int clientFD);
 
     //REQUEST functions
     int     update_request_buffer(int fd, const std::string& request_data);

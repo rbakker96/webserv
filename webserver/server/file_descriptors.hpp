@@ -9,11 +9,13 @@
 
 //custom includes
 #include "server.hpp"
+#include "client.hpp"
 
 class file_descriptors {
 public:
     typedef     std::vector<server>                   vector;
     typedef     std::map<int, long long>::iterator    map_iterator;
+    typedef     std::vector<client>::iterator         client_iterator;
 
 private:
     fd_set	                    _read;
@@ -52,7 +54,7 @@ public:
 
     //TIME OUT functions
     void        set_time_out(int fd);
-    int         check_time_out(int fd, int time_out);
+    void        check_time_out(std::vector<client> &clients, int time_out);
 
     //Getter
     fd_set&     get_read();
