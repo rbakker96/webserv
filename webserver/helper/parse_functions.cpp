@@ -64,19 +64,18 @@ vector    str_to_vector(std::string request) {
     return request_elements;
 }
 
-std::string    read_browser_request(int fd) {
+std::string    read_browser_request(std::string &request, int fd) {
     std::string tmp;
-    char        buff[3000];
+    char        buff[6000000];
     int         ret = 1;
 
-    while (ret > 0) {
-        if ((ret = read(fd, buff, 3000)) != -1)
-            tmp.append(buff, ret);
-        if (ret < 3000)
-            break;
-    }
+//    while (ret > 0) {
+        ret = read(fd, buff, 6000000);
+        request.append(buff, ret);
+//        if (ret < 300000)
+//            break;
+//    }
     if (ret == -1)
         throw (std::string("Read browser request failed"));
     return tmp;
 }
-

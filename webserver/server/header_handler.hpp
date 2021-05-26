@@ -64,13 +64,14 @@ public:
 								bad_request_ = 400, unauthorized_ = 401, forbidden_ = 403,
 								not_found_ = 404, method_not_allowed_ = 405,
 								payload_too_large_ = 413 };
+    enum		protection_values{ read_write_ = 1, no_read_write_ = 0 };
 
 protected:
-//	int				_index;
-
 	//status
 	int				            _status;
     std::map<int, std::string>	_status_phrases;
+    int                         _bytes_written;
+    int                         _bytes_read;
 
 	//Headers
     int             _max_file_size;
@@ -139,8 +140,8 @@ public:
 	char 			**create_cgi_envp(const std::string &server_name, int server_port);
 
     //RESPONSE functions
-    void            read_requested_file(int fd);
-    void            read_cgi_header_file(int fd, int body_size);
+    int             read_requested_file(int fd);
+    int             read_cgi_header_file(int fd, int body_size);
 	void            send_response(int activeFD, int fileFD, std::string server_name);
 
     //RESET functions
@@ -150,6 +151,8 @@ public:
     int             get_max_file_size();
 	int             get_status();
     int             get_content_length();
+    int             get_bytes_written();
+    int             get_bytes_read();
     std::string     get_content_type();
     std::string     get_content_language();
     std::string     get_content_location();
@@ -167,6 +170,9 @@ public:
     std::string     get_authorization();
     std::string     get_referer();
     std::string     get_body();
+
+    void            set_bytes_written(int bytes);
+    void            set_bytes_read(int bytes);
 
     //DEBUG functions
     void            print_request();

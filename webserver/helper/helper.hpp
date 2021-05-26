@@ -48,7 +48,7 @@ std::string					parse_string(const std::string& str);
 int 						parse_number(const std::string& str);
 void 						parse_invalid(const std::string& str);
 vector                      str_to_vector(std::string request);
-std::string                 read_browser_request(int fd);
+std::string                 read_browser_request(std::string &request, int fd);
 
 //signal handler function
 void						signal_handler(int signal);

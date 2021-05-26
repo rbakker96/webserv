@@ -13,7 +13,7 @@
 #include <sstream>
 #include "header_handler.hpp"
 
-header_handler::header_handler(): _status(okay_), _status_phrases(), _max_file_size(0), _content_length(0), _content_type("Content-Type: text/"),
+header_handler::header_handler(): _status(okay_), _status_phrases(), _bytes_written(0), _bytes_read(0), _max_file_size(0), _content_length(0), _content_type("Content-Type: text/"),
                                   _content_language("en"), _content_location(), _allow(), _method(), _file_location(),
                                   _uri_location(), _protocol(), _requested_host(), _user_agent(), _accept_charset(),
                                   _accept_language(), _authorization(), _referer(), _body(), _response_file()	{
@@ -381,7 +381,7 @@ void        header_handler::write_body_to_file(int file_fd) {
 
     if (_body.empty())
         return;
-    if ((write(file_fd, _body.c_str(), _body.length())) == -1)
+    if ((_bytes_written = write(file_fd, _body.c_str(), _body.length())) == -1)
         throw (std::string("Write body to file failed"));
 }
 
@@ -404,7 +404,7 @@ void header_handler::execute_cgi(int inputFD, int outputFD, std::string server_n
 
 		if (!_body.empty())
 		{
-			write(inputFD, _body.c_str(), _body.size());
+		    write(inputFD, _body.c_str(), _body.size());
 			lseek(inputFD, 0, SEEK_SET);
 			dup2(inputFD, STDIN_FILENO);
 		}
@@ -412,8 +412,10 @@ void header_handler::execute_cgi(int inputFD, int outputFD, std::string server_n
 		execve(args[0], args, envp);
 		exit(EXIT_FAILURE); // handle error
 	}
-	else
-		waitpid(pid, &status, 0);
+	else {
+        waitpid(pid, &status, 0);
+        _bytes_written = _body.size();
+    }
 }
 
 std::string	get_location_without_root(std::string &file_location)
@@ -509,36 +511,73 @@ char **header_handler::create_cgi_envp(const std::string &server_name, int serve
 
 
 //-------------------------------------- RESPONSE functions --------------------------------------
-void        header_handler::read_requested_file(int fd) {
-    char    buff[3000];
-    int     ret = 1;
+int        header_handler::read_requested_file(int fd) {
+    int     ret;
+    char    buff[6000000];
 
-    lseek(fd, 0, SEEK_SET);
-    while (ret > 0) {
-        if ((ret = read(fd, buff, 3000)) != -1)
-            _response_file.append(buff, ret);
-        if (ret < 3000)
-            break;
-    }
+    lseek(fd, _bytes_read, SEEK_SET);
+    if ((ret = read(fd, buff, 6000000)) == -1)
+        throw (std::string("Read requested file failed"));
+    _response_file.append(buff, ret);
+    _bytes_read += ret;
+
+    return ret;
+
+
+//    char    buff[6000000];
+//    int     ret = 1;
+//
+//    lseek(fd, 0, SEEK_SET);
+//    while (ret > 0) {
+//        if ((ret = read(fd, buff, 6000000)) != -1)
+//            _response_file.append(buff, ret);
+//        if (ret < 6000000)
+//            break;
+//    }
+//    if (body_size)
+//        return 0;
+//    return 0;
 }
 
-void        header_handler::read_cgi_header_file(int fd, int body_size) {
-    std::string tmp;
-    char        buff[3000];
-    int         ret = 1;
+int        header_handler::read_cgi_header_file(int fd, int body_size) {
+    int         ret;
+    char        buff[6000000];
+    _response_file.reserve(body_size);
 
-    tmp.reserve(body_size);
-    lseek(fd, 0, SEEK_SET);
-    while (ret > 0) {
-        if ((ret = read(fd, buff, 3000)) != -1)
-            tmp.append(buff, ret);
-        if (ret < 3000)
-            break;
-    }
+    lseek(fd, _bytes_read, SEEK_SET);
+    if ((ret = read(fd, buff, 6000000)) == -1)
+        throw (std::string("Read cgi file failed"));
+    _response_file.append(buff, ret);
+    std::cout << "responsefile size = " << _response_file.size() << std::endl;
+    _bytes_read += ret;
+    if (ret)
+        return ret;
 
-    int header_size = (int)tmp.find("\r\n\r\n");
-    _additional_cgi_headers = tmp.substr(0, header_size);
-    _response_file = tmp.substr((header_size+4), tmp.length()-(header_size+4));
+    int header_size = (int)_response_file.find("\r\n\r\n");
+    _additional_cgi_headers = _response_file.substr(0, header_size);
+    _response_file = _response_file.substr((header_size+4), _response_file.length()-(header_size+4));
+    return ret;
+
+//    std::string tmp;
+//    char        buff[6000000];
+//    int         ret = 1;
+//
+//    tmp.reserve(body_size);
+//    lseek(fd, 0, SEEK_SET);
+//    while (ret > 0) {
+//        read(fd, buff, 6000000);
+//        tmp.append(buff, ret);
+//        if (ret < 6000000)
+//            break;
+//    }
+//
+//    if (ret == -1)
+//        throw (std::string("Read cgi file failed"));
+//
+//    int header_size = (int)tmp.find("\r\n\r\n");
+//    _additional_cgi_headers = tmp.substr(0, header_size);
+//    _response_file = tmp.substr((header_size+4), tmp.length()-(header_size+4));
+//    return 0;
 }
 
 void    header_handler::send_response(int activeFD, int fileFD, std::string server_name) {
@@ -572,6 +611,7 @@ void    header_handler::reset_handler() {
     _status = 200;
     _content_length = 0;
     _max_file_size = 0;
+    _bytes_written = 0;
     _method.clear();
     _file_location.clear();
     _protocol.clear();
@@ -598,6 +638,8 @@ void    header_handler::reset_handler() {
 int                     header_handler::get_max_file_size() {return _max_file_size;}
 int                     header_handler::get_status() {return _status;}
 int                     header_handler::get_content_length() {return _content_length;}
+int                     header_handler::get_bytes_written() {return _bytes_written;}
+int                     header_handler::get_bytes_read() {return _bytes_read;}
 std::string             header_handler::get_content_type() {return _content_type;}
 std::string             header_handler::get_content_language() {return _content_language;}
 std::string             header_handler::get_content_location() {return _content_location;}
@@ -616,6 +658,8 @@ std::string             header_handler::get_authorization() {return _authorizati
 std::string             header_handler::get_referer() {return _referer;}
 std::string             header_handler::get_body() {return _body;}
 
+void                    header_handler::set_bytes_written(int bytes) {_bytes_written = bytes;}
+void                    header_handler::set_bytes_read(int bytes) {_bytes_read = bytes;}
 
 // // // // // // // // // // // // //  DEBUG functions // // // // // // // // // // // // //
 void header_handler::print_request() {
