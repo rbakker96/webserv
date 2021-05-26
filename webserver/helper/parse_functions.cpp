@@ -51,8 +51,9 @@ void parse_invalid(const std::string& str) {
 
 vector    str_to_vector(std::string request) {
     std::vector<std::string> request_elements;
-    size_t      pos;
+    size_t      pos = 0;
     std::string value;
+
 
     while ((int)(pos = request.find_first_of('\r')) != -1) {
         value = request.substr(0, pos);

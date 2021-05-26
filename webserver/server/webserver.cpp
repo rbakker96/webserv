@@ -113,19 +113,14 @@ void    webserver::run() {
                 try {
                     if (fd.rdy_for_reading(client->_clientFD)) //handle requested file
                     {
-                        std::string request_headers = read_browser_request(
-                                client->_clientFD); //IF NOTHING IS READ CLOSE?
+                        std::string request_headers = read_browser_request(client->_clientFD); //IF NOTHING IS READ CLOSE?
                         if (!request_headers.empty())
                             fd.set_time_out(client->_clientFD);
                         if (server->update_request_buffer(client->_clientFD, request_headers) == valid_) {
                             client->_handler.parse_request(server->_request_buffer[client->_clientFD]);
                             server->remove_handled_request(client->_clientFD);
-                            client->_fileFD = client->_handler.handle_request(server->_cgi_file_types,
-                                                                              server->_location_blocks,
-                                                                              server->get_error_page(), client->_index);
-                            fd.handled_request_update(client->_fileFD, client->_clientFD,
-                                                      client->_handler.verify_content_type(),
-                                                      client->_handler.get_method());
+                            client->_fileFD = client->_handler.handle_request(server->_cgi_file_types, server->_location_blocks, server->get_error_page(), client->_index);
+                            fd.handled_request_update(client->_fileFD, client->_clientFD, client->_handler.verify_content_type(), client->_handler.get_method());
                             if (server->_cgi_file_types.find(client->_handler.verify_content_type()) !=
                                 std::string::npos) {
                                 client->_cgi_inputFD = client->_handler.create_cgi_fd("input", client->_index);
@@ -168,6 +163,7 @@ void    webserver::run() {
                         client->_cgi_inputFD = unused_;
                         close(client->_fileFD);
                         client->_fileFD = unused_;
+                        fd.set_read_buffer(client->_clientFD);
                     }
                     fd.check_time_out(server->_clients, server->_time_out);
 

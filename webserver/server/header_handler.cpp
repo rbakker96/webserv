@@ -90,7 +90,7 @@ int         header_handler::identify_request_value(const std::string &str) {
 
 void        header_handler::parse_first_line(const std::string &str) {
 	int		index;
-    size_t	start = 0;
+    size_t	start = (str[0] == '\n') ? 1 : 0;
     size_t	end = str.find_first_of(' ', start);
     _method = str.substr(start, end - start);
 
@@ -229,7 +229,7 @@ std::string	get_extension(std::string uri_location)
 
 std::string	header_handler::match_location_block(header_handler::location_vector location_blocks, std::string uri_location)
 {
-	std::string	result;
+    std::string	result;
 	std::string	extension = get_extension(uri_location);
 	std::string	referer_location = get_referer_part();
 	referer_location = remove_duplicate_forward_slashes(referer_location);
@@ -554,7 +554,7 @@ void    header_handler::send_response(int activeFD, int fileFD, std::string serv
         response.generate_allow(_allow);
     if (_status == 201 || (_method == "POST" && !_body.empty()))
         response.generate_location(_status, _file_location);
-    response.generate_connection_close(); //maybe different if we keep connections open
+//    response.generate_connection_close(); //maybe different if we keep connections open
     if (!_additional_cgi_headers.empty())
         response.append_cgi_headers(_additional_cgi_headers);
     response.generate_content_language();
@@ -588,6 +588,9 @@ void    header_handler::reset_handler() {
     _additional_cgi_headers.clear();
     _allow.clear();
     _special_x_header.clear();
+    _uri_location.clear();
+    _location_block_root.clear();
+    _accept_charset.clear();
 }
 
 
