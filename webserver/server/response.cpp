@@ -147,8 +147,9 @@ void    response::write_response_to_browser(int browser_socket, std::string resp
     written = 0;
 	if (method != "HEAD")
         while (response_file.size() && written < (int)response_file.size()) {
-            ret = write(browser_socket, response_file.c_str()+written, response_file.size());
-            written += ret;
+            ret = write(browser_socket, response_file.c_str()+written, response_file.length()-written);
+            if (ret != -1)
+                written += ret;
             std::cout << "WRITTEN = " << written << std::endl;
         }
 
