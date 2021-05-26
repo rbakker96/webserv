@@ -100,24 +100,27 @@ void    file_descriptors::set_time_out(int fd) {
         it->second = time;
 }
 
-void     file_descriptors::check_time_out(std::vector<client> &clients, int time_out) {
-    struct timeval	timeval;
-    long long		time;
+void     file_descriptors::check_time_out(std::vector<client> &clients, int clientFD, int time_out) {
+	struct timeval	timeval;
+	long long		time;
 
-    gettimeofday(&timeval, NULL);
-    time = timeval.tv_sec;
+	gettimeofday(&timeval, NULL);
+	time = timeval.tv_sec;
 
-    for (client_iterator it = clients.begin(); it != clients.end(); it++) {
-        int client = it->get_clientFD();
-        map_iterator recorded_time = _time_out_monitor.find(client);
-        if (recorded_time->second != 0 && (time - recorded_time->second) >= time_out) {
-            clr_from_read_buffer(client);
-            close(client);
-            clients.erase(it);
-        }
-    }
+	for (client_iterator it = clients.begin(); it != clients.end(); it++) {
+		int	fd = it->get_clientFD();
+		if (fd == clientFD)
+		{
+			map_iterator recorded_time = _time_out_monitor.find(clientFD);
+			if (recorded_time->second != 0 && (time - recorded_time->second) >= time_out) {
+				clr_from_read_buffer(clientFD);
+				close(clientFD);
+				clients.erase(it);
+			}
+			return ;
+		}
+	}
 }
-
 
 //-------------------------------------- GET functions --------------------------------------
 fd_set&  file_descriptors::get_read() {return _read;}
