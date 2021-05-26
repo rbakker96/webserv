@@ -125,6 +125,11 @@ void	response::generate_connection_close() {
     _response.append("Connection: close\r\n");
 }
 
+void	response::generate_www_authorization(std::string auth_basic) {
+	_response.append((std::string)"WWW-Authenticate: Basic realm=").append(auth_basic);
+	_response.append("\r\n");
+}
+
 void    response::append_cgi_headers(std::string cgi_headers) {
     _response.append(cgi_headers);
     _response.append("\r\n");

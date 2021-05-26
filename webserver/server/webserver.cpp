@@ -115,6 +115,7 @@ void    webserver::run() {
                     {
                         std::string request_headers = read_browser_request(
                                 client->_clientFD); //IF NOTHING IS READ CLOSE?
+                        std::cout << YELLOW << request_headers << RESET << std::endl;
                         if (!request_headers.empty())
                             fd.set_time_out(client->_clientFD);
                         if (server->update_request_buffer(client->_clientFD, request_headers) == valid_) {
@@ -122,7 +123,9 @@ void    webserver::run() {
                             server->remove_handled_request(client->_clientFD);
                             client->_fileFD = client->_handler.handle_request(server->_cgi_file_types,
                                                                               server->_location_blocks,
-                                                                              server->get_error_page(), client->_index);
+                                                                              server->get_error_page(),
+                                                                              client->_index,
+                                                                              &client->_authorization_status);
                             fd.handled_request_update(client->_fileFD, client->_clientFD,
                                                       client->_handler.verify_content_type(),
                                                       client->_handler.get_method());
@@ -161,7 +164,7 @@ void    webserver::run() {
 
                     if (fd.rdy_for_writing(client->_clientFD)) //send response
                     {
-                        client->_handler.send_response(client->_clientFD, client->_fileFD, server->_server_name);
+                    	client->_handler.send_response(client->_clientFD, client->_fileFD, server->_server_name);
                         fd.clr_from_write_buffer(client->_clientFD);
                         if (client->_cgi_inputFD != unused_)
                             close(client->_cgi_inputFD);
@@ -241,8 +244,15 @@ void webserver::print_struct() {
             std::cout << "  Autoindex = " << location.get_autoindex() << std::endl;
 			std::cout << "  Redirect = " << location.get_redirect() << std::endl;
 			std::cout << "  Max file size = " << location.get_max_file_size() << std::endl;
+			std::cout << "  Auth basic = " << location.get_auth_basic() << std::endl;
+			std::cout << "  Auth user info = ";
+	        std::vector<std::string> user_info = location.get_auth_user_info();
+
+	        for (std::vector<std::string>::iterator it1 = user_info.begin(); it1 != user_info.end(); it1++) {
+		        std::cout << *it1 << " ";
+	        }
         }
-        std::cout << "------------- END SERVER BLOCK -------------\n\n";
+        std::cout << "\n------------- END SERVER BLOCK -------------\n\n";
     }
 }
 

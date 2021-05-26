@@ -16,7 +16,8 @@
 header_handler::header_handler(): _status(okay_), _status_phrases(), _max_file_size(0), _content_length(0), _content_type("Content-Type: text/"),
                                   _content_language("en"), _content_location(), _allow(), _method(), _file_location(),
                                   _uri_location(), _protocol(), _requested_host(), _user_agent(), _accept_charset(),
-                                  _accept_language(), _authorization(), _referer(), _body(), _response_file()	{
+                                  _accept_language(), _authorization(), _referer(), _body(), _response_file(),
+                                  _special_x_header(), _auth_basic("off"), _location_index(-1), _auth_type("Basic")	{
 
 	_status_phrases.insert (pair(200, "OK"));
 	_status_phrases.insert (pair(201, "Created"));
@@ -147,12 +148,64 @@ void        header_handler::invalid_argument(const std::string &str) {parse_inva
 
 
 //-------------------------------------- HANDLE functions --------------------------------------
-int        header_handler::handle_request(std::string cgi_file_types, header_handler::location_vector location_blocks, std::string error_page, int index) {
+
+bool     validate_user_password(std::vector<std::string> correct_passwd, std::string authorization)
+{
+	int start = authorization.find("Basic");
+	if (start == std::string::npos)
+		return false;
+	std::string auth_passwd = authorization.substr(start + 6, std::string::npos);
+	std::string decoded_auth_passwd = base64_decode(auth_passwd.c_str());
+	int division = decoded_auth_passwd.find(":");
+	if (division == std::string::npos)
+		return false;
+	std::string auth_username = decoded_auth_passwd.substr(0, division);
+	std::string auth_password = decoded_auth_passwd.substr(division + 1, std::string::npos);
+	for (std::vector<std::string>::iterator it = correct_passwd.begin(); it != correct_passwd.end(); it++)
+	{
+		int div = (*it).find(":");
+		if (div == std::string::npos)
+			return false;
+		std::string username = (*it).substr(0, div);
+		std::string password = (*it).substr(div + 1, std::string::npos);
+		if (username == auth_username && base64_decode(password) == auth_password)
+			return true;
+		username.clear();
+		password.clear();
+	}
+	return false;
+}
+
+void header_handler::verify_authorization(location_context location_block, bool *authorization_status)
+{
+	if (location_block.get_auth_basic() != "off" && !*authorization_status)
+	{
+		if (_authorization.empty())	{
+			_status = unauthorized_;
+			_auth_basic = location_block.get_auth_basic();
+		}
+		else {
+			if (validate_user_password(location_block.get_auth_user_info(), _authorization)) {
+				_status = okay_;
+				*authorization_status = true;
+			}
+			else {
+				_status = forbidden_;
+				*authorization_status = false;
+			}
+		}
+	}
+}
+
+int header_handler::handle_request(std::string cgi_file_types, location_vector location_blocks, std::string error_page,
+                                   int index, bool *authorization_status) {
 	struct  stat stats;
 	int		fd = unused_;
 
 	verify_file_location(location_blocks, error_page);
 	verify_method(cgi_file_types);
+	if (_location_index != -1)
+		verify_authorization(location_blocks[_location_index], authorization_status);
 	if (_status < error_code_)
     {
 		if (_method == "PUT")
@@ -169,9 +222,9 @@ int        header_handler::handle_request(std::string cgi_file_types, header_han
 			throw std::runtime_error("Open failed");
     }
 
-    if (_status >= error_code_) {
+    if (_status >= error_code_)
+    {
 		char *status_str = ft_itoa(_status);
-
         _file_location = error_page.append(status_str);
 		free(status_str);
         _file_location.append(".html");
@@ -240,6 +293,7 @@ std::string	header_handler::match_location_block(header_handler::location_vector
 	    _max_file_size = location_blocks[index].get_max_file_size();
 		_allow = location_blocks[index].get_method();
 		_location_block_root = location_blocks[index].get_root();
+		_location_index = index;
 		std::string location_context = location_blocks[index].get_location_context();
 		result = _location_block_root;
 		if (!_referer.empty())
@@ -283,7 +337,10 @@ void        header_handler::verify_file_location(header_handler::location_vector
 	std::string result = match_location_block(location_blocks, _uri_location);
 
 	if (result.compare("not found") == 0)
+	{
 		_file_location = generate_error_page_location(error_page);
+		_location_index = -1;
+	}
 	else
 		_file_location = result;
 	_file_location = remove_duplicate_forward_slashes(_file_location);
@@ -469,7 +526,7 @@ char **header_handler::create_cgi_envp(const std::string &server_name, int serve
 	char 	server_root[PATH_MAX];
 	getcwd(server_root, (size_t)PATH_MAX); // check error
 
-	cgi_envps.push_back((std::string)"AUTH_TYPE=");
+	cgi_envps.push_back(((std::string)"AUTH_TYPE=").append(_auth_type));
 	cgi_envps.push_back(((std::string)"CONTENT_LENGTH=").append(ft_itoa(get_content_length()))); //leaks ??
 	cgi_envps.push_back(((std::string)"CONTENT_TYPE=").append(get_content_type()));
 	cgi_envps.push_back((std::string)"GATEWAY_INTERFACE=CGI/1.1");
@@ -501,6 +558,7 @@ char **header_handler::create_cgi_envp(const std::string &server_name, int serve
 
 	for (vector_iterator it = cgi_envps.begin(); it != cgi_envps.end(); it++) {
 		envp[i] = ft_strdup((*it).c_str());
+		std::cout << GREEN << envp[i] << RESET << std::endl;
 		i++;
 	}
 	envp[cgi_envps.size()] = NULL;
@@ -545,21 +603,23 @@ void    header_handler::send_response(int activeFD, int fileFD, std::string serv
     response response;
 
     response.generate_status_line(_protocol, _status, _status_phrases);
-    response.generate_content_length(_response_file);
-    response.generate_content_type(verify_content_type());
-    response.generate_last_modified(fileFD);
-    response.generate_date();
-    response.generate_server_name(server_name);
-    if (_status == method_not_allowed_)
-        response.generate_allow(_allow);
-    if (_status == 201 || (_method == "POST" && !_body.empty()))
-        response.generate_location(_status, _file_location);
-    response.generate_connection_close(); //maybe different if we keep connections open
-    if (!_additional_cgi_headers.empty())
-        response.append_cgi_headers(_additional_cgi_headers);
-    response.generate_content_language();
-    response.close_header_section();
+	response.generate_server_name(server_name);
+	response.generate_date();
+	if (_status == unauthorized_)
+		response.generate_www_authorization(_auth_basic);
+	response.generate_content_length(_response_file);
+	response.generate_content_type(verify_content_type());
+	response.generate_last_modified(fileFD);
+	if (_status == method_not_allowed_)
+		response.generate_allow(_allow);
+	if (_status == created_ || (_method == "POST" && !_body.empty()))
+		response.generate_location(_status, _file_location);
+	if (!_additional_cgi_headers.empty()) // MAYBE DO NOT ADD
+		response.append_cgi_headers(_additional_cgi_headers);
+	response.generate_content_language();
 
+	response.generate_connection_close(); //maybe different if we keep connections open
+	response.close_header_section();
     response.write_response_to_browser(activeFD, _response_file, _method);
 
     print_response(response.get_response()); //DEBUG
@@ -569,25 +629,27 @@ void    header_handler::send_response(int activeFD, int fileFD, std::string serv
 
 //-------------------------------------- RESET functions --------------------------------------
 void    header_handler::reset_handler() {
-    _status = 200;
-    _content_length = 0;
-    _max_file_size = 0;
-    _method.clear();
-    _file_location.clear();
-    _protocol.clear();
-    _response_file.clear();
-    _requested_host.clear();
-    _user_agent.clear();
-    _accept_language.clear();
-    _authorization.clear();
-    _referer.clear();
-    _body.clear();
-    _content_type.clear();
-    _content_language = "en";
-    _content_location.clear();
-    _additional_cgi_headers.clear();
-    _allow.clear();
-    _special_x_header.clear();
+	_status = 200;
+	_content_length = 0;
+	_max_file_size = 0;
+	_method.clear();
+	_file_location.clear();
+	_protocol.clear();
+	_response_file.clear();
+	_requested_host.clear();
+	_user_agent.clear();
+	_accept_language.clear();
+	_authorization.clear();
+	_referer.clear();
+	_body.clear();
+	_content_type.clear();
+	_content_language = "en";
+	_content_location.clear();
+	_additional_cgi_headers.clear();
+	_allow.clear();
+	_special_x_header.clear();
+	_location_index = -1;
+	_auth_basic.clear();
 }
 
 
