@@ -6,7 +6,7 @@
 /*   By: gbouwen <marvin@codam.nl>                    +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2021/05/03 12:34:40 by gbouwen       #+#    #+#                 */
-/*   Updated: 2021/05/27 11:23:16 by gbouwen       ########   odam.nl         */
+/*   Updated: 2021/05/27 11:25:58 by gbouwen       ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -59,7 +59,7 @@ void        header_handler::parse_request(request_buf request_buffer) {
         (this->*function)(*it);
     }
     parse_body(request_buffer);
-    print_request(); //DEBUG
+//    print_request(); //DEBUG
 }
 
 int         header_handler::identify_request_value(const std::string &str) {
