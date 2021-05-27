@@ -6,7 +6,7 @@
 /*   By: roybakker <roybakker@student.codam.nl>       +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2021/03/30 16:30:47 by roybakker     #+#    #+#                 */
-/*   Updated: 2021/05/18 17:14:29 by gbouwen       ########   odam.nl         */
+/*   Updated: 2021/05/27 13:20:44 by gbouwen       ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -34,7 +34,6 @@ void    webserver::load_configuration(char *config_file) {
         free(line);
         if (check_server_block(server_block)) {
             server.create_new_server(server_block);
-//            server._handler.set_index(_servers.size());
             _servers.push_back(server);
             server_block.clear();
         }
@@ -50,21 +49,24 @@ void    webserver::load_configuration(char *config_file) {
 }
 
 void    webserver::validate_configuration() {
-    for( std::vector<server>::iterator it = _servers.begin(); it != _servers.end(); it++) {
+    for (std::vector<server>::iterator it = _servers.begin(); it != _servers.end(); it++) {
         bool duplicate = false;
         int port = it->_port;
         int time_out = it->_time_out;
         if (port <= 0)
-            throw std::invalid_argument("Error: invalid port in configuration file");
+            throw std::invalid_argument("Error: invalid/missing port in configuration file");
         if (time_out <= 0)
             throw std::invalid_argument("Error: invalid time out in configuration file");
-        for(std::vector<server>::iterator compare = _servers.begin(); compare != _servers.end(); compare++) {
+        for (std::vector<server>::iterator compare = _servers.begin(); compare != _servers.end(); compare++) {
             if (port == compare->_port) {
                 if (duplicate == true)
                     throw std::invalid_argument("Error: duplicate port in configuration file");
                 duplicate = true;
             }
         }
+		std::string error_page_location = it->_error_page;
+		if (error_page_location.empty())
+			throw std::invalid_argument("Error: error page location missing in configuration file");
     }
 }
 
@@ -172,7 +174,7 @@ void    webserver::run() {
                         client->_fileFD = unused_;
                         fd.set_read_buffer(client->_clientFD);
                     }
-                    fd.check_time_out(server->_clients, server->_time_out);
+					fd.check_time_out(server->_clients, client->get_clientFD(), server->_time_out);
 
                 } //TRY BLOCK
 

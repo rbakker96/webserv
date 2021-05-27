@@ -6,7 +6,7 @@
 /*   By: gbouwen <marvin@codam.nl>                    +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2021/05/03 12:34:40 by gbouwen       #+#    #+#                 */
-/*   Updated: 2021/05/18 17:12:38 by gbouwen       ########   odam.nl         */
+/*   Updated: 2021/05/27 13:20:43 by gbouwen       ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -254,10 +254,10 @@ std::string	header_handler::get_referer_part()
 
 std::string	header_handler::location_of_uploaded_file(location_context location_block, std::string root, std::string uri_location, std::string extension)
 {
-    std::string                 location_from_uri;
-	std::string					directory = root;
-	struct stat					s;
-	std::string					result = "not found";
+    std::string	location_from_uri;
+	std::string	directory = root;
+	struct stat	s;
+	std::string	result = "not found";
 
     location_from_uri = get_first_directory(uri_location);
     if (uri_location.find("directory") == std::string::npos)
@@ -273,7 +273,7 @@ std::string	header_handler::location_of_uploaded_file(location_context location_
 
 std::string	get_extension(std::string uri_location)
 {
-	int			start = uri_location.find_last_of('.');
+	int	start = uri_location.find_last_of('.');
 	if (start == -1)
 		return (uri_location);
 	std::string	result = uri_location.substr(start, std::string::npos);
@@ -306,11 +306,11 @@ std::string	header_handler::match_location_block(header_handler::location_vector
 				if (s.st_mode & S_IFREG)
 				{
 					int	end = result.find_last_of('/');
-					result.substr(0, end);
+					result = result.substr(0, end);
 				}
 			}
 		}
-		if (location_blocks[index].get_redirect())
+		if (location_blocks[index].get_redirect() && location_context.compare(get_first_directory(uri_location)) == 0)
 			result.append(skip_first_directory(uri_location));
 		else if (_method.compare("PUT") == 0 || (_method.compare("POST") == 0 && (extension != ".php" || extension == ".bla"))) // add post with file upload later?
 			result.append("");
@@ -321,9 +321,11 @@ std::string	header_handler::match_location_block(header_handler::location_vector
 		else
 			result = get_file(location_blocks[index], result);
 		if (result.compare("not found") != 0)
-			break ;
+			return (result);
 	}
-	return (result);
+	_allow.clear();
+	_allow.push_back("GET");
+	return ("not found");
 }
 
 std::string	header_handler::generate_error_page_location(std::string error_page)
@@ -350,6 +352,7 @@ void        header_handler::verify_file_location(header_handler::location_vector
 void header_handler::verify_method(std::string cgi_file_types)
 {
 	int i = 0;
+
 	if (cgi_file_types.find(verify_content_type()) != std::string::npos)
 		i++;
     if (_method == "POST" && verify_content_type() == "bla")
@@ -383,9 +386,9 @@ std::string     header_handler::verify_content_type() {
 
 int header_handler::create_cgi_fd(std::string type, int index)
 {
-	std::string str_filename = "server_files/www/cgi_out_";
+	std::string str_filename = "server_files/www/temp_files/cgi_out_";
 	if (type == "input")
-		str_filename = "server_files/www/cgi_in_";
+		str_filename = "server_files/www/temp_files/cgi_in_";
 	char	*index_str = ft_itoa(index);
 
 	str_filename.append(index_str);

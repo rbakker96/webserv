@@ -55,7 +55,9 @@ public:
 
     //TIME OUT functions
     void        set_time_out(int fd);
-    void        check_time_out(std::vector<client> &clients, int time_out);
+//    void        check_time_out(std::vector<client> &clients, int time_out);
+	void		check_time_out(std::vector<client> &clients, int clientFD, int time_out);
+
 
     //Getter
     fd_set&     get_read();
