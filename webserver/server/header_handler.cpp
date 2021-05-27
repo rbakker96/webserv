@@ -16,8 +16,9 @@
 header_handler::header_handler(): _status(okay_), _status_phrases(), _max_file_size(0), _content_length(0), _content_type("Content-Type: text/"),
                                   _content_language("en"), _content_location(), _allow(), _method(), _file_location(),
                                   _uri_location(), _protocol(), _requested_host(), _user_agent(), _accept_charset(),
-                                  _accept_language(), _authorization(), _referer(), _body(), _response_file(),
-                                  _special_x_header(), _auth_basic("off"), _location_index(-1), _auth_type("Basic")	{
+                                  _accept_language(), _authorization(), _referer(), _body(), _special_x_header(),
+                                  _location_index(-1), _auth_basic("off"), _auth_type("Basic"),  _response_file(),
+                                  _additional_cgi_headers() {
 
 	_status_phrases.insert (pair(200, "OK"));
 	_status_phrases.insert (pair(201, "Created"));
@@ -152,19 +153,19 @@ void        header_handler::invalid_argument(const std::string &str) {parse_inva
 bool     validate_user_password(std::vector<std::string> correct_passwd, std::string authorization)
 {
 	int start = authorization.find("Basic");
-	if (start == std::string::npos)
+	if (start == (int)std::string::npos)
 		return false;
 	std::string auth_passwd = authorization.substr(start + 6, std::string::npos);
 	std::string decoded_auth_passwd = base64_decode(auth_passwd.c_str());
 	int division = decoded_auth_passwd.find(":");
-	if (division == std::string::npos)
+	if (division == (int)std::string::npos)
 		return false;
 	std::string auth_username = decoded_auth_passwd.substr(0, division);
 	std::string auth_password = decoded_auth_passwd.substr(division + 1, std::string::npos);
 	for (std::vector<std::string>::iterator it = correct_passwd.begin(); it != correct_passwd.end(); it++)
 	{
 		int div = (*it).find(":");
-		if (div == std::string::npos)
+		if (div == (int)std::string::npos)
 			return false;
 		std::string username = (*it).substr(0, div);
 		std::string password = (*it).substr(div + 1, std::string::npos);
@@ -208,12 +209,12 @@ int header_handler::handle_request(std::string cgi_file_types, location_vector l
 		verify_authorization(location_blocks[_location_index], authorization_status);
 	if (_status < error_code_)
     {
-		if (_method == "PUT")
+	    if (_method == "PUT")
 			fd = put_request();
 		else if (_method == "POST" && !_body.empty() && cgi_file_types.find(verify_content_type()) == std::string::npos)
 			fd = post_request(_max_file_size);
 		else if (cgi_file_types.find(verify_content_type()) != std::string::npos)
-			return create_cgi_fd("output", index);
+		    return create_cgi_fd("output", index);
 		else if (stat(_file_location.c_str(), &stats) == -1)
 			_status = not_found_;
 		else if (!(stats.st_mode & S_IRUSR))
@@ -363,7 +364,6 @@ void header_handler::verify_method(std::string cgi_file_types)
 	_status = method_not_allowed_;
 }
 
-// look into the other content type
 std::string     header_handler::verify_content_type() {
     vector extensions;
     extensions.push_back("html");
@@ -445,8 +445,8 @@ void        header_handler::write_body_to_file(int file_fd) {
 
 //-------------------------------------- CGI functions --------------------------------------
 
-// error checking if execve fails
-void header_handler::execute_cgi(int inputFD, int outputFD, std::string server_name, int server_port)
+void header_handler::execute_cgi(int inputFD, int outputFD, std::string server_name, int server_port, bool auth_status,
+                                 std::string auth_info)
 {
 	pid_t	pid;
 	int 	status = 0;
@@ -457,14 +457,11 @@ void header_handler::execute_cgi(int inputFD, int outputFD, std::string server_n
 	if (pid == 0)
 	{
 		char	**args = create_cgi_args(); // error management
-		char 	**envp = create_cgi_envp(server_name, server_port); // error management
+		char 	**envp = create_cgi_envp(server_name, server_port, auth_status, auth_info); // error management
 
-		if (!_body.empty())
-		{
-			write(inputFD, _body.c_str(), _body.size());
-			lseek(inputFD, 0, SEEK_SET);
-			dup2(inputFD, STDIN_FILENO);
-		}
+		write(inputFD, _body.c_str(), _body.size());
+		lseek(inputFD, 0, SEEK_SET);
+		dup2(inputFD, STDIN_FILENO);
 		dup2(outputFD, STDOUT_FILENO);
 		execve(args[0], args, envp);
 		exit(EXIT_FAILURE); // handle error
@@ -517,33 +514,43 @@ char	**header_handler::create_cgi_args()
 	return args;
 }
 
-char **header_handler::create_cgi_envp(const std::string &server_name, int server_port)
+char **header_handler::create_cgi_envp(const std::string &server_name, int server_port, bool auth_status,
+                                       std::string auth_info)
 {
-	// for later
-	// AUTH_TYPE, REMOTE_ADDR, REMOTE_IDENT, REMOTE_USER
-
 	vector	cgi_envps;
 	char 	server_root[PATH_MAX];
 	getcwd(server_root, (size_t)PATH_MAX); // check error
 
-	cgi_envps.push_back(((std::string)"AUTH_TYPE=").append(_auth_type));
-	cgi_envps.push_back(((std::string)"CONTENT_LENGTH=").append(ft_itoa(get_content_length()))); //leaks ??
-	cgi_envps.push_back(((std::string)"CONTENT_TYPE=").append(get_content_type()));
+	char *tmp = ft_itoa(_content_length);
+	cgi_envps.push_back(((std::string)"CONTENT_LENGTH=").append(tmp));
+	free(tmp);
+	cgi_envps.push_back(((std::string)"CONTENT_TYPE=").append(_content_type));
 	cgi_envps.push_back((std::string)"GATEWAY_INTERFACE=CGI/1.1");
 	cgi_envps.push_back((std::string)"HTTP_REFERER=");
 	cgi_envps.push_back(((std::string)"PATH_INFO=").append(_uri_location));
 	cgi_envps.push_back(((((std::string)"PATH_TRANSLATED=").append(server_root)).append("/")).append(_location_block_root).append(_uri_location));
 	if (!_body.empty() && _uri_location.find(".bla") == std::string::npos)
 		cgi_envps.push_back(((std::string)"QUERY_STRING=").append(_body));
-	cgi_envps.push_back(((std::string)"REDIRECT_STATUS=true"));
-	cgi_envps.push_back(((std::string)"REMOTE_IDENT="));
-	cgi_envps.push_back(((std::string)"REMOTE_USER="));
-	cgi_envps.push_back(((std::string)"REQUEST_METHOD=").append(get_method()));
+	if (auth_status)
+	{
+		int start = auth_info.find("Basic");
+		std::string auth_passwd = auth_info.substr(start + 6, std::string::npos);
+		std::string decoded_auth_passwd = base64_decode(auth_passwd.c_str());
+		int div = decoded_auth_passwd.find(":");
+		std::string auth_username = decoded_auth_passwd.substr(0, div);
+		cgi_envps.push_back(((std::string)"AUTH_TYPE=").append(_auth_type));
+		cgi_envps.push_back(((std::string)"REMOTE_ADDR=localhost"));
+		cgi_envps.push_back(((std::string)"REMOTE_IDENT="));
+		cgi_envps.push_back(((std::string)"REMOTE_USER=").append(auth_username));
+	}
+	cgi_envps.push_back(((std::string)"REQUEST_METHOD=").append(_method));
 	cgi_envps.push_back(((std::string)"REQUEST_URI=").append(_uri_location));
 	cgi_envps.push_back(((((std::string)"SCRIPT_FILENAME=").append(server_root)).append("/")).append(_file_location));
 	cgi_envps.push_back(((std::string)"SCRIPT_NAME=").append(get_location_without_root(_uri_location)));
 	cgi_envps.push_back(((std::string)"SERVER_NAME=").append(server_name));
-	cgi_envps.push_back(((std::string)"SERVER_PORT=").append(ft_itoa(server_port)));
+	char *tmp2 = ft_itoa(server_port);
+	cgi_envps.push_back(((std::string)"SERVER_PORT=").append(tmp2));
+	free(tmp2);
 	cgi_envps.push_back(((std::string)"SERVER_PROTOCOL=").append(get_protocol()));
 	cgi_envps.push_back((std::string)"SERVER_SOFTWARE=HTTP 1.1");
 	for (vector_iterator it = _special_x_header.begin(); it != _special_x_header.end(); it++)
@@ -558,7 +565,6 @@ char **header_handler::create_cgi_envp(const std::string &server_name, int serve
 
 	for (vector_iterator it = cgi_envps.begin(); it != cgi_envps.end(); it++) {
 		envp[i] = ft_strdup((*it).c_str());
-		std::cout << GREEN << envp[i] << RESET << std::endl;
 		i++;
 	}
 	envp[cgi_envps.size()] = NULL;
@@ -614,7 +620,7 @@ void    header_handler::send_response(int activeFD, int fileFD, std::string serv
 		response.generate_allow(_allow);
 	if (_status == created_ || (_method == "POST" && !_body.empty()))
 		response.generate_location(_status, _file_location);
-	if (!_additional_cgi_headers.empty()) // MAYBE DO NOT ADD
+	if (!_additional_cgi_headers.empty())
 		response.append_cgi_headers(_additional_cgi_headers);
 	response.generate_content_language();
 

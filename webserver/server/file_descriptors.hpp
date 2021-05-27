@@ -37,7 +37,8 @@ public:
 
     //UPDATE functions
     void        accepted_request_update(int activeFD);
-    void        handled_request_update(int fileFD, int activeFD, std::string content_type, std::string method);
+    void handled_request_update(int fileFD, int activeFD, std::string cgi_file_types, std::string content_type,
+                                std::string method);
     void        read_request_update(int fileFD, int activeFD);
 
     //SET functions

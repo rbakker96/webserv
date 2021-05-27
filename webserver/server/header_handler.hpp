@@ -141,9 +141,10 @@ public:
 
 
 	//CGI functions
-	void 			execute_cgi(int inputFD, int outputFD, std::string server_name, int server_port);
+	void execute_cgi(int inputFD, int outputFD, std::string server_name, int server_port, bool auth_status,
+	                 std::string auth_info);
 	char 			**create_cgi_args();
-	char 			**create_cgi_envp(const std::string &server_name, int server_port);
+	char **create_cgi_envp(const std::string &server_name, int server_port, bool auth_status, std::string auth_info);
 
     //RESPONSE functions
     void            read_requested_file(int fd);

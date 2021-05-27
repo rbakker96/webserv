@@ -115,7 +115,7 @@ void    webserver::run() {
                     {
                         std::string request_headers = read_browser_request(
                                 client->_clientFD); //IF NOTHING IS READ CLOSE?
-                        std::cout << YELLOW << request_headers << RESET << std::endl;
+//                        std::cout << YELLOW << request_headers << RESET << std::endl;
                         if (!request_headers.empty())
                             fd.set_time_out(client->_clientFD);
                         if (server->update_request_buffer(client->_clientFD, request_headers) == valid_) {
@@ -126,9 +126,9 @@ void    webserver::run() {
                                                                               server->get_error_page(),
                                                                               client->_index,
                                                                               &client->_authorization_status);
-                            fd.handled_request_update(client->_fileFD, client->_clientFD,
-                                                      client->_handler.verify_content_type(),
-                                                      client->_handler.get_method());
+	                        fd.handled_request_update(client->_fileFD, client->_clientFD, server->_cgi_file_types,
+	                                                  client->_handler.verify_content_type(),
+	                                                  client->_handler.get_method());
                             if (server->_cgi_file_types.find(client->_handler.verify_content_type()) !=
                                 std::string::npos) {
                                 client->_cgi_inputFD = client->_handler.create_cgi_fd("input", client->_index);
@@ -144,14 +144,15 @@ void    webserver::run() {
                             if (server->_cgi_file_types.find(client->_handler.verify_content_type()) !=
                                 std::string::npos &&
                                 fd.rdy_for_writing(client->_cgi_inputFD))
-                                client->_handler.execute_cgi(client->_cgi_inputFD, client->_fileFD,
-                                                             server->_server_name, server->_port);
+	                            client->_handler.execute_cgi(client->_cgi_inputFD, client->_fileFD,
+	                                                         server->_server_name, server->_port,
+	                                                         client->_authorization_status,
+	                                                         client->_handler.get_authorization());
                             else
                                 client->_handler.write_body_to_file(client->_fileFD);
                         }
                         if (client->_handler.get_status() != 204) {
-                            if (client->_handler.verify_content_type() == "bla" &&
-                                client->_handler.get_method() == "POST")
+                            if (client->_handler.verify_content_type() == "bla")
                                 client->_handler.read_cgi_header_file(client->_fileFD,
                                                                       server->_request_buffer[client->_clientFD].get_body_size());
                             else
