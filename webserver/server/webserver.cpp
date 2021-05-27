@@ -85,52 +85,40 @@ void    webserver::run() {
     while (true)
     {
         fd.synchronize(_servers);
-        if (select(fd.get_max(), &fd.get_read(), &fd.get_write(), 0, 0) == -1) {
-            std::cout << "ERNO = " << strerror(errno) << std::endl;
+        print_fd_sets(fd);
+        if (select(fd.get_max(), &fd.get_read(), &fd.get_write(), 0, 0) == -1)
             throw std::runtime_error("Select failed");
-        }
         for (size_t server_index = 0; server_index < _servers.size(); server_index++) {
             server *server = &_servers[server_index];
-
-            //THIS IF STATEMENT ONLY USE FOR SOCKETS FROM SERVERS FOR NEW INCOMMING CONNECTIONS TO BE ADDED TO OPEN CONNECTION VECTOR
 
             if (fd.rdy_for_reading(server->get_tcp_socket())) //accept request
             {
                 int newFD = accept(server->get_tcp_socket(), (struct sockaddr *) &server->_addr, (socklen_t *) &server->_addr_len);
-                if (newFD == -1) {
-                    std::cout << "ERNO = " << strerror(errno) << std::endl;
+                if (newFD == -1)
                     throw (std::runtime_error("Accept failed"));
-                }
-                fd.set_time_out(newFD); //THIS WOULDN'T WORK ANYMORE
+                fd.set_time_out(newFD);
                 fcntl(newFD, F_SETFL, O_NONBLOCK);
                 fd.accepted_request_update(newFD);
                 server->_clients.push_back(client(newFD, _client_amount));
                 _client_amount++;
             }
 
-            // MAKE FOR LOOP TO LOOP THROUGH ALL OPEN FD -COULD BE VECTOR CONTAINER-
             for(size_t client_index = 0;  client_index < server->_clients.size(); client_index++) {
                 client *client = &server->_clients[client_index];
+                int ret;
 
                 try {
                     if (fd.rdy_for_reading(client->_clientFD)) //handle requested file
                     {
-                        std::string request_headers = read_browser_request(client->_clientFD); //IF NOTHING IS READ CLOSE?
+                        std::string request_headers = read_browser_request(request_headers, client->_clientFD); //READ
                         if (!request_headers.empty())
                             fd.set_time_out(client->_clientFD);
                         if (server->update_request_buffer(client->_clientFD, request_headers) == valid_) {
                             client->_handler.parse_request(server->_request_buffer[client->_clientFD]);
                             server->remove_handled_request(client->_clientFD);
-                            client->_fileFD = client->_handler.handle_request(server->_cgi_file_types,
-                                                                              server->_location_blocks,
-                                                                              server->get_error_page(),
-                                                                              client->_index,
-                                                                              &client->_authorization_status);
-	                        fd.handled_request_update(client->_fileFD, client->_clientFD, server->_cgi_file_types,
-	                                                  client->_handler.verify_content_type(),
-	                                                  client->_handler.get_method());
-                            if (server->_cgi_file_types.find(client->_handler.verify_content_type()) !=
-                                std::string::npos) {
+                            client->_fileFD = client->_handler.handle_request(server->_cgi_file_types, server->_location_blocks, server->get_error_page(), client->_index, &client->_authorization_status);
+	                        fd.handled_request_update(client->_fileFD, client->_clientFD, server->_cgi_file_types, client->_handler.verify_content_type(), client->_handler.get_method());
+                            if (server->_cgi_file_types.find(client->_handler.verify_content_type()) != std::string::npos) {
                                 client->_cgi_inputFD = client->_handler.create_cgi_fd("input", client->_index);
                                 fd.set_write_buffer(client->_cgi_inputFD);
                                 fd.update_max(client->_cgi_inputFD);
@@ -140,23 +128,26 @@ void    webserver::run() {
 
                     if (fd.rdy_for_reading(client->_fileFD)) //read requested file
                     {
-                        if (fd.rdy_for_writing(client->_fileFD) && client->_handler.get_status() < error_) {
-                            if (server->_cgi_file_types.find(client->_handler.verify_content_type()) !=
-                                std::string::npos &&
-                                fd.rdy_for_writing(client->_cgi_inputFD))
-	                            client->_handler.execute_cgi(client->_cgi_inputFD, client->_fileFD,
-	                                                         server->_server_name, server->_port,
-	                                                         client->_authorization_status,
-	                                                         client->_handler.get_authorization());
-                            else
-                                client->_handler.write_body_to_file(client->_fileFD);
+                        if (fd.rdy_for_writing(client->_fileFD) && client->_handler.get_status() < error_ && client->_handler.get_write_to_file() == false) {
+                            if (client->_handler.get_bytes_written() < (int)client->_handler.get_body().size()) {
+                                if (server->_cgi_file_types.find(client->_handler.verify_content_type()) != std::string::npos && fd.rdy_for_writing(client->_cgi_inputFD))
+                                    client->_handler.execute_cgi(client->_cgi_inputFD, client->_fileFD, server->_server_name, server->_port, client->_authorization_status, client->_handler.get_authorization()); //WRITE
+                                else
+                                    client->_handler.write_body_to_file(client->_fileFD); //WRITE
+                                continue;
+                            }
+                            client->_handler.set_bytes_written(0);
+                            client->_handler.set_write_to_file(true);
                         }
-                        if (client->_handler.get_status() != 204) {
-                            if (client->_handler.verify_content_type() == "bla")
-                                client->_handler.read_cgi_header_file(client->_fileFD,
-                                                                      server->_request_buffer[client->_clientFD].get_body_size());
+                        if (client->_handler.get_status() != 204 && client->_handler.get_read_from_file() == false) {
+                            if (client->_handler.verify_content_type() == "bla" && client->_handler.get_method() == "POST")
+                                ret = client->_handler.read_cgi_header_file(client->_fileFD, (int)client->_handler.get_body().size()); //READ LOOP
                             else
-                                client->_handler.read_requested_file(client->_fileFD);
+                                ret = client->_handler.read_requested_file(client->_fileFD); //READ LOOP
+                            if (ret)
+                                continue;
+                            client->_handler.set_bytes_read(0);
+                            client->_handler.set_read_from_file(true);
                         }
                         fd.read_request_update(client->_fileFD, client->_clientFD);
                         if (client->_cgi_inputFD != unused_)
@@ -165,7 +156,12 @@ void    webserver::run() {
 
                     if (fd.rdy_for_writing(client->_clientFD)) //send response
                     {
-                    	client->_handler.send_response(client->_clientFD, client->_fileFD, server->_server_name);
+                        if (!client->_handler.get_bytes_written())
+                            client->_handler.create_response(client->_fileFD, server->_server_name);
+                        client->_handler.send_response(client->_clientFD); //WRITE LOOP
+                        if (client->_handler.get_bytes_written() < (int)client->_handler.get_response_size())
+                            continue;
+                        client->_handler.set_bytes_written(0);
                         fd.clr_from_write_buffer(client->_clientFD);
                         if (client->_cgi_inputFD != unused_)
                             close(client->_cgi_inputFD);
@@ -179,26 +175,31 @@ void    webserver::run() {
                 } //TRY BLOCK
 
                 catch (std::string &e) {
-                    if (e.compare("Read browser request failed") == 0)
-                    {
+                    if(fd.rdy_for_reading(client->_clientFD))
                         fd.clr_from_read_buffer(client->_clientFD);
-                        server->remove_client(client->_clientFD);
-                    }
-                    else if (e.compare("Read requested file failed") == 0)
-                    {
+                    if (fd.rdy_for_writing(client->_clientFD))
+                        fd.clr_from_write_buffer(client->_clientFD);
+
+                    if(fd.rdy_for_reading(client->_fileFD))
                         fd.clr_from_read_buffer(client->_fileFD);
-                        close(client->_fileFD);
-                        client->_fileFD = unused_;
-                        server->remove_client(client->_clientFD);
-                    }
-                    else if (e.compare("Write body to file failed") == 0)
-                    {
+                    if (fd.rdy_for_writing(client->_fileFD))
                         fd.clr_from_write_buffer(client->_fileFD);
-                        fd.clr_from_read_buffer(client->_fileFD);
+                    if (client->_fileFD != unused_)
                         close(client->_fileFD);
-                        client->_fileFD = unused_;
-                        server->remove_client(client->_clientFD);
+
+                    if(fd.rdy_for_reading(client->_cgi_inputFD))
+                        fd.clr_from_read_buffer(client->_cgi_inputFD);
+                    if (fd.rdy_for_writing(client->_cgi_inputFD))
+                        fd.clr_from_write_buffer(client->_cgi_inputFD);
+                    if (client->_cgi_inputFD != unused_)
+                        close(client->_cgi_inputFD);
+
+                    if (server->_clients.size() == 1) {
+                        close(client->_clientFD);
+                        server->_clients.clear();
                     }
+                    else
+                        server->remove_client(client->_clientFD);
                 } //CATCH BLOCK
 
             } //FOR LOOP OPENFDS

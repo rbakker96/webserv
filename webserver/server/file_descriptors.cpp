@@ -50,6 +50,7 @@ void file_descriptors::handled_request_update(int fileFD, int activeFD, std::str
         set_read_buffer(fileFD);
     else
         set_write_buffer(activeFD);
+
     if (cgi_file_types.find(content_type) != std::string::npos || method == "PUT" || method == "POST")
         set_write_buffer(fileFD);
 }

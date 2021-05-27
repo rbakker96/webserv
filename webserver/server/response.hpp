@@ -39,9 +39,6 @@ public:
     void            append_cgi_headers(std::string cgi_headers);
     void            close_header_section();
 
-    //SEND functions
-    void            write_response_to_browser(int browser_socket, std::string response_file, std::string method);
-
     //GET functions
     std::string     get_response();
 };

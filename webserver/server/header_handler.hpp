@@ -65,13 +65,17 @@ public:
 								bad_request_ = 400, unauthorized_ = 401, forbidden_ = 403,
 								not_found_ = 404, method_not_allowed_ = 405,
 								payload_too_large_ = 413 };
+    enum		protection_values{ read_write_ = 1, no_read_write_ = 0 };
 
 protected:
-//	int				_index;
-
 	//status
 	int				            _status;
     std::map<int, std::string>	_status_phrases;
+    bool                        _write_to_file;
+    bool                        _read_from_file;
+    bool                        _write_to_browser;
+    int                         _bytes_written;
+    int                         _bytes_read;
 
 	//Headers
     int             _max_file_size;
@@ -98,6 +102,8 @@ protected:
 	std::string     _auth_type;
 
 	//Response
+	std::string     _response;
+	int             _response_size;
 	std::string		_response_file;
 	std::string     _additional_cgi_headers;
 
@@ -147,9 +153,10 @@ public:
 	char            **create_cgi_envp(const std::string &server_name, int server_port, bool auth_status, std::string auth_info);
 
     //RESPONSE functions
-    void            read_requested_file(int fd);
-    void            read_cgi_header_file(int fd, int body_size);
-	void            send_response(int activeFD, int fileFD, std::string server_name);
+    int             read_requested_file(int fd);
+    int             read_cgi_header_file(int fd, int body_size);
+    void            create_response(int fileFD, std::string server_name);
+    void            send_response(int clientFD);
 
     //RESET functions
     void            reset_handler();
@@ -158,6 +165,12 @@ public:
     int             get_max_file_size();
 	int             get_status();
     int             get_content_length();
+    int             get_bytes_written();
+    int             get_bytes_read();
+    int             get_response_size();
+    bool            get_write_to_file();
+    bool            get_read_from_file();
+    bool            get_write_to_browser();
     std::string     get_content_type();
     std::string     get_content_language();
     std::string     get_content_location();
@@ -179,9 +192,16 @@ public:
     int             get_location_index();
     std::string     get_auth_basic();
 
+    //SET functions
+    void            set_bytes_written(int bytes);
+    void            set_bytes_read(int bytes);
+    void            set_write_to_file(bool status);
+    void            set_read_from_file(bool status);
+    void            set_write_to_browser(bool status);
+
     //DEBUG functions
     void            print_request();
-    void            print_response(std::string response);
+    void            print_response_headers(std::string response);
 };
 
 #endif //WEBSERV_HANDLER_HPP
