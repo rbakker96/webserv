@@ -33,7 +33,8 @@ SOURCES			=	webserver/main.cpp \
 TEMP FILES      =   server_files/www/temp_files/cgi_in_* \
                     server_files/www/temp_files/cgi_out_* \
                     server_files/www/downloads/file_should_exist_after \
-                    server_files/www/downloads/POST_file
+                    server_files/www/downloads/POST_file \
+                    server_files/www/downloads/multiple_same
 
 OBJECTS 		=	${SOURCES:%.c=%.o}
 

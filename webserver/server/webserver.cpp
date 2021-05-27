@@ -85,7 +85,6 @@ void    webserver::run() {
     while (true)
     {
         fd.synchronize(_servers);
-        print_fd_sets(fd);
         if (select(fd.get_max(), &fd.get_read(), &fd.get_write(), 0, 0) == -1)
             throw std::runtime_error("Select failed");
         for (size_t server_index = 0; server_index < _servers.size(); server_index++) {
