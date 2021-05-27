@@ -15,7 +15,7 @@
 #include "webserver.hpp"
 #include "server.hpp"
 
-webserver::webserver() : _servers(), _client_amount(0) {}
+webserver::webserver() : _servers(), _client_amount(0), _time_out_check(false) {}
 webserver::~webserver(){}
 
 
@@ -109,9 +109,13 @@ void    webserver::run() {
                 try {
                     if (fd.rdy_for_reading(client->_clientFD)) //handle requested file
                     {
-                        std::string request_headers = read_browser_request(request_headers, client->_clientFD); //READ
-                        if (!request_headers.empty())
+                        std::string request_headers = read_browser_request(request_headers, client->_clientFD);
+                        if (!request_headers.empty()) {
+                            _time_out_check = false;
                             fd.set_time_out(client->_clientFD);
+                        }
+                        else
+                            _time_out_check = true;
                         if (server->update_request_buffer(client->_clientFD, request_headers) == valid_) {
                             client->_handler.parse_request(server->_request_buffer[client->_clientFD]);
                             server->remove_handled_request(client->_clientFD);
@@ -130,9 +134,9 @@ void    webserver::run() {
                         if (fd.rdy_for_writing(client->_fileFD) && client->_handler.get_status() < error_ && client->_handler.get_write_to_file() == false) {
                             if (client->_handler.get_bytes_written() < (int)client->_handler.get_body().size()) {
                                 if (server->_cgi_file_types.find(client->_handler.verify_content_type()) != std::string::npos && fd.rdy_for_writing(client->_cgi_inputFD))
-                                    client->_handler.execute_cgi(client->_cgi_inputFD, client->_fileFD, server->_server_name, server->_port, client->_authorization_status, client->_handler.get_authorization()); //WRITE
+                                    client->_handler.execute_cgi(client->_cgi_inputFD, client->_fileFD, server->_server_name, server->_port, client->_authorization_status, client->_handler.get_authorization());
                                 else
-                                    client->_handler.write_body_to_file(client->_fileFD); //WRITE
+                                    client->_handler.write_body_to_file(client->_fileFD);
                                 continue;
                             }
                             client->_handler.set_bytes_written(0);
@@ -140,9 +144,9 @@ void    webserver::run() {
                         }
                         if (client->_handler.get_status() != 204 && client->_handler.get_read_from_file() == false) {
                             if (client->_handler.verify_content_type() == "bla" && client->_handler.get_method() == "POST")
-                                ret = client->_handler.read_cgi_header_file(client->_fileFD, (int)client->_handler.get_body().size()); //READ LOOP
+                                ret = client->_handler.read_cgi_header_file(client->_fileFD, (int)client->_handler.get_body().size());
                             else
-                                ret = client->_handler.read_requested_file(client->_fileFD); //READ LOOP
+                                ret = client->_handler.read_requested_file(client->_fileFD);
                             if (ret)
                                 continue;
                             client->_handler.set_bytes_read(0);
@@ -157,7 +161,7 @@ void    webserver::run() {
                     {
                         if (!client->_handler.get_bytes_written())
                             client->_handler.create_response(client->_fileFD, server->_server_name);
-                        client->_handler.send_response(client->_clientFD); //WRITE LOOP
+                        client->_handler.send_response(client->_clientFD);
                         if (client->_handler.get_bytes_written() < (int)client->_handler.get_response_size())
                             continue;
                         client->_handler.set_bytes_written(0);
@@ -169,7 +173,8 @@ void    webserver::run() {
                         client->_fileFD = unused_;
                         fd.set_read_buffer(client->_clientFD);
                     }
-					fd.check_time_out(server->_clients, client->get_clientFD(), server->_time_out);
+                    if (_time_out_check == true)
+					    fd.check_time_out(server->_clients, client->get_clientFD(), server->_time_out);
 
                 } //TRY BLOCK
 

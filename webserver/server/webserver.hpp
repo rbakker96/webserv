@@ -42,6 +42,7 @@ public:
 private:
     std::vector<server>     _servers;
     int                     _client_amount;
+    bool                    _time_out_check;
 
 public:
     webserver();

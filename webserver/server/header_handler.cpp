@@ -526,7 +526,7 @@ char **header_handler::create_cgi_envp(const std::string &server_name, int serve
 {
 	vector	cgi_envps;
 	char 	server_root[PATH_MAX];
-	getcwd(server_root, (size_t)PATH_MAX); // check error
+	getcwd(server_root, (size_t)PATH_MAX);
 
 	char *tmp = ft_itoa(_content_length);
 	cgi_envps.push_back(((std::string)"CONTENT_LENGTH=").append(tmp));
