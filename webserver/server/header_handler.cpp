@@ -6,7 +6,7 @@
 /*   By: gbouwen <marvin@codam.nl>                    +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2021/05/03 12:34:40 by gbouwen       #+#    #+#                 */
-/*   Updated: 2021/05/26 20:21:56 by gbouwen       ########   odam.nl         */
+/*   Updated: 2021/05/27 11:23:16 by gbouwen       ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -59,7 +59,7 @@ void        header_handler::parse_request(request_buf request_buffer) {
         (this->*function)(*it);
     }
     parse_body(request_buffer);
-//    print_request(); //DEBUG
+    print_request(); //DEBUG
 }
 
 int         header_handler::identify_request_value(const std::string &str) {
@@ -251,7 +251,7 @@ std::string	header_handler::match_location_block(header_handler::location_vector
 				if (s.st_mode & S_IFREG)
 				{
 					int	end = result.find_last_of('/');
-					result.substr(0, end);
+					result = result.substr(0, end);
 				}
 			}
 		}
@@ -266,9 +266,11 @@ std::string	header_handler::match_location_block(header_handler::location_vector
 		else
 			result = get_file(location_blocks[index], result);
 		if (result.compare("not found") != 0)
-			break ;
+			return (result);
 	}
-	return (result);
+	_allow.clear();
+	_allow.push_back("GET");
+	return ("not found");
 }
 
 std::string	header_handler::generate_error_page_location(std::string error_page)
