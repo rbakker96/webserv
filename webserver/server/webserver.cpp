@@ -102,6 +102,7 @@ void    webserver::run() {
 
             for(size_t client_index = 0;  client_index < server->_clients.size(); client_index++) {
                 client *client = &server->_clients[client_index];
+                int ret;
 
                 try {
                     if (fd.rdy_for_reading(client->_clientFD)) //handle requested file
@@ -124,31 +125,26 @@ void    webserver::run() {
 
                     if (fd.rdy_for_reading(client->_fileFD)) //read requested file
                     {
-                        if (fd.rdy_for_writing(client->_fileFD) && client->_handler.get_status() < error_) {
+                        if (fd.rdy_for_writing(client->_fileFD) && client->_handler.get_status() < error_ && client->_handler.get_write_to_file() == false) {
                             if (client->_handler.get_bytes_written() < (int)client->_handler.get_body().size()) {
                                 if (server->_cgi_file_types.find(client->_handler.verify_content_type()) != std::string::npos && fd.rdy_for_writing(client->_cgi_inputFD))
                                     client->_handler.execute_cgi(client->_cgi_inputFD, client->_fileFD, server->_server_name, server->_port); //WRITE
                                 else
                                     client->_handler.write_body_to_file(client->_fileFD); //WRITE
-                                std::cout << CYAN << "bytes written = " << client->_handler.get_bytes_written() << RESET << std::endl;
-                                std::cout << CYAN << "body size = " << (int)client->_handler.get_body().size() << RESET << std::endl;
-                                std::cout << CYAN << "written body to file " << RESET << std::endl;
                                 continue;
                             }
-                            else
-                                client->_handler.set_bytes_written(0);
+                            client->_handler.set_bytes_written(0);
+                            client->_handler.set_write_to_file(true);
                         }
-                        if (client->_handler.get_status() != 204) {
-                            int ret;
-                            std::cout << GREEN << "GOT HERE\n" << "SIZE = " << (int)client->_handler.get_body().size() << RESET << std::endl;
+                        if (client->_handler.get_status() != 204 && client->_handler.get_read_from_file() == false) {
                             if (client->_handler.verify_content_type() == "bla" && client->_handler.get_method() == "POST")
                                 ret = client->_handler.read_cgi_header_file(client->_fileFD, (int)client->_handler.get_body().size()); //READ LOOP
                             else
                                 ret = client->_handler.read_requested_file(client->_fileFD); //READ LOOP
                             if (ret)
                                 continue;
-                            else
-                                client->_handler.set_bytes_read(0);
+                            client->_handler.set_bytes_read(0);
+                            client->_handler.set_read_from_file(true);
                         }
                         fd.read_request_update(client->_fileFD, client->_clientFD);
                         if (client->_cgi_inputFD != unused_)
@@ -157,7 +153,12 @@ void    webserver::run() {
 
                     if (fd.rdy_for_writing(client->_clientFD)) //send response
                     {
-                        client->_handler.send_response(client->_clientFD, client->_fileFD, server->_server_name); //WRITE LOOP
+                        if (!client->_handler.get_bytes_written())
+                            client->_handler.create_response(client->_fileFD, server->_server_name); //WRITE LOOP
+                        client->_handler.send_response(client->_clientFD);
+                        if (client->_handler.get_bytes_written() < (int)client->_handler.get_response_size())
+                            continue;
+                        client->_handler.set_bytes_written(0);
                         fd.clr_from_write_buffer(client->_clientFD);
                         if (client->_cgi_inputFD != unused_)
                             close(client->_cgi_inputFD);

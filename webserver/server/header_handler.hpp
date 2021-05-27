@@ -70,6 +70,9 @@ protected:
 	//status
 	int				            _status;
     std::map<int, std::string>	_status_phrases;
+    bool                        _write_to_file;
+    bool                        _read_from_file;
+    bool                        _write_to_browser;
     int                         _bytes_written;
     int                         _bytes_read;
 
@@ -95,6 +98,8 @@ protected:
 	std::vector<std::string> _special_x_header;
 
 	//Response
+	std::string     _response;
+	int             _response_size;
 	std::string		_response_file;
 	std::string     _additional_cgi_headers;
 
@@ -142,7 +147,8 @@ public:
     //RESPONSE functions
     int             read_requested_file(int fd);
     int             read_cgi_header_file(int fd, int body_size);
-	void            send_response(int activeFD, int fileFD, std::string server_name);
+    void            create_response(int fileFD, std::string server_name);
+    void            send_response(int clientFD);
 
     //RESET functions
     void            reset_handler();
@@ -153,6 +159,10 @@ public:
     int             get_content_length();
     int             get_bytes_written();
     int             get_bytes_read();
+    int             get_response_size();
+    bool            get_write_to_file();
+    bool            get_read_from_file();
+    bool            get_write_to_browser();
     std::string     get_content_type();
     std::string     get_content_language();
     std::string     get_content_location();
@@ -171,12 +181,16 @@ public:
     std::string     get_referer();
     std::string     get_body();
 
+    //SET functions
     void            set_bytes_written(int bytes);
     void            set_bytes_read(int bytes);
+    void            set_write_to_file(bool status);
+    void            set_read_from_file(bool status);
+    void            set_write_to_browser(bool status);
 
     //DEBUG functions
     void            print_request();
-    void            print_response(std::string response);
+    void            print_response_headers(std::string response);
 };
 
 #endif //WEBSERV_HANDLER_HPP

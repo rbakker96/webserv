@@ -13,7 +13,7 @@
 #include <sstream>
 #include "header_handler.hpp"
 
-header_handler::header_handler(): _status(okay_), _status_phrases(), _bytes_written(0), _bytes_read(0), _max_file_size(0), _content_length(0), _content_type("Content-Type: text/"),
+header_handler::header_handler(): _status(okay_), _status_phrases(), _write_to_file(false), _read_from_file(false), _write_to_browser(false), _bytes_written(0), _bytes_read(0), _max_file_size(0), _content_length(0), _content_type("Content-Type: text/"),
                                   _content_language("en"), _content_location(), _allow(), _method(), _file_location(),
                                   _uri_location(), _protocol(), _requested_host(), _user_agent(), _accept_charset(),
                                   _accept_language(), _authorization(), _referer(), _body(), _response_file()	{
@@ -52,7 +52,8 @@ void        header_handler::parse_request(request_buf request_buffer) {
 													&header_handler::invalid_argument};
 
     reset_handler();
-    parse_first_line(*request_elements.begin());
+    vector_iterator first_line = (request_elements.begin()->empty()) ? ++request_elements.begin() : request_elements.begin();
+    parse_first_line(*first_line);
     for (vector_iterator it = request_elements.begin(); it != request_elements.end(); it++) {
         int request_value = identify_request_value(*it);
         parse function = parse_array[request_value];
@@ -89,7 +90,9 @@ int         header_handler::identify_request_value(const std::string &str) {
 }
 
 void        header_handler::parse_first_line(const std::string &str) {
-	int		index;
+//    if (str.find("../") != std::string::npos)
+//        throw std::runtime_error("Nice try, but not allowed ;)");
+    int		index;
     size_t	start = (str[0] == '\n') ? 1 : 0;
     size_t	end = str.find_first_of(' ', start);
     _method = str.substr(start, end - start);
@@ -157,7 +160,7 @@ int        header_handler::handle_request(std::string cgi_file_types, header_han
     {
 		if (_method == "PUT")
 			fd = put_request();
-		else if (_method == "POST" && !_body.empty() && cgi_file_types.find(verify_content_type()) == std::string::npos)
+		else if (_method == "POST" && cgi_file_types.find(verify_content_type()) == std::string::npos)
 			fd = post_request(_max_file_size);
 		else if (cgi_file_types.find(verify_content_type()) != std::string::npos)
 			return create_cgi_fd("output", index);
@@ -371,14 +374,13 @@ int         header_handler::post_request(int max_file_size) {
         return fd;
     }
     _status = okay_;
-    fd = open(&post_file[0], O_RDWR | O_TRUNC| O_CREAT, S_IRWXU);
+    fd = open(&post_file[0], O_RDWR | O_TRUNC | O_CREAT, S_IRWXU);
     if (fd == -1)
         throw std::runtime_error("Open failed");
     return fd;
 }
 
 void        header_handler::write_body_to_file(int file_fd) {
-
     if (_body.empty())
         return;
     if ((_bytes_written = write(file_fd, _body.c_str(), _body.length())) == -1)
@@ -522,21 +524,6 @@ int        header_handler::read_requested_file(int fd) {
     _bytes_read += ret;
 
     return ret;
-
-
-//    char    buff[6000000];
-//    int     ret = 1;
-//
-//    lseek(fd, 0, SEEK_SET);
-//    while (ret > 0) {
-//        if ((ret = read(fd, buff, 6000000)) != -1)
-//            _response_file.append(buff, ret);
-//        if (ret < 6000000)
-//            break;
-//    }
-//    if (body_size)
-//        return 0;
-//    return 0;
 }
 
 int        header_handler::read_cgi_header_file(int fd, int body_size) {
@@ -548,39 +535,19 @@ int        header_handler::read_cgi_header_file(int fd, int body_size) {
     if ((ret = read(fd, buff, 6000000)) == -1)
         throw (std::string("Read cgi file failed"));
     _response_file.append(buff, ret);
-    std::cout << "responsefile size = " << _response_file.size() << std::endl;
     _bytes_read += ret;
     if (ret)
         return ret;
 
-    int header_size = (int)_response_file.find("\r\n\r\n");
-    _additional_cgi_headers = _response_file.substr(0, header_size);
-    _response_file = _response_file.substr((header_size+4), _response_file.length()-(header_size+4));
+    if (_bytes_read) {
+        int header_size = (int) _response_file.find("\r\n\r\n");
+        _additional_cgi_headers = _response_file.substr(0, header_size);
+        _response_file = _response_file.substr((header_size + 4), _response_file.length() - (header_size + 4));
+    }
     return ret;
-
-//    std::string tmp;
-//    char        buff[6000000];
-//    int         ret = 1;
-//
-//    tmp.reserve(body_size);
-//    lseek(fd, 0, SEEK_SET);
-//    while (ret > 0) {
-//        read(fd, buff, 6000000);
-//        tmp.append(buff, ret);
-//        if (ret < 6000000)
-//            break;
-//    }
-//
-//    if (ret == -1)
-//        throw (std::string("Read cgi file failed"));
-//
-//    int header_size = (int)tmp.find("\r\n\r\n");
-//    _additional_cgi_headers = tmp.substr(0, header_size);
-//    _response_file = tmp.substr((header_size+4), tmp.length()-(header_size+4));
-//    return 0;
 }
 
-void    header_handler::send_response(int activeFD, int fileFD, std::string server_name) {
+void    header_handler::create_response(int fileFD, std::string server_name) {
     response response;
 
     response.generate_status_line(_protocol, _status, _status_phrases);
@@ -593,16 +560,33 @@ void    header_handler::send_response(int activeFD, int fileFD, std::string serv
         response.generate_allow(_allow);
     if (_status == 201 || (_method == "POST" && !_body.empty()))
         response.generate_location(_status, _file_location);
-//    response.generate_connection_close(); //maybe different if we keep connections open
     if (!_additional_cgi_headers.empty())
         response.append_cgi_headers(_additional_cgi_headers);
     response.generate_content_language();
     response.close_header_section();
 
-    response.write_response_to_browser(activeFD, _response_file, _method);
+    _response.append(response.get_response());
+    if (_method != "HEAD")
+        _response.append(_response_file);
+    _response_size = _response.size();
 
-    print_response(response.get_response()); //DEBUG
-    reset_handler();
+    print_response_headers(response.get_response()); //DEBUG
+
+//    response.write_response_to_browser(activeFD, _response_file, _method);
+//    print_response(response.get_response()); //DEBUG
+//    reset_handler();
+}
+
+void    header_handler::send_response(int clientFD) {
+    int ret;
+
+    if ((ret = write(clientFD, _response.c_str() + _bytes_written, _response.size() - _bytes_written)) == -1)
+        throw (std::string("write to browser failed"));
+    else
+        _bytes_written += ret;
+
+    if (_bytes_written == (int)_response.size())
+        reset_handler();
 }
 
 
@@ -612,9 +596,14 @@ void    header_handler::reset_handler() {
     _content_length = 0;
     _max_file_size = 0;
     _bytes_written = 0;
+    _response_size = 0;
+    _write_to_file = false;
+    _read_from_file = false;
+    _write_to_browser = false;
     _method.clear();
     _file_location.clear();
     _protocol.clear();
+    _response.clear();
     _response_file.clear();
     _requested_host.clear();
     _user_agent.clear();
@@ -640,6 +629,10 @@ int                     header_handler::get_status() {return _status;}
 int                     header_handler::get_content_length() {return _content_length;}
 int                     header_handler::get_bytes_written() {return _bytes_written;}
 int                     header_handler::get_bytes_read() {return _bytes_read;}
+int                     header_handler::get_response_size() {return _response_size;}
+bool                    header_handler::get_write_to_file() {return _write_to_file;}
+bool                    header_handler::get_read_from_file() {return _read_from_file;}
+bool                    header_handler::get_write_to_browser() {return _write_to_browser;}
 std::string             header_handler::get_content_type() {return _content_type;}
 std::string             header_handler::get_content_language() {return _content_language;}
 std::string             header_handler::get_content_location() {return _content_location;}
@@ -658,8 +651,14 @@ std::string             header_handler::get_authorization() {return _authorizati
 std::string             header_handler::get_referer() {return _referer;}
 std::string             header_handler::get_body() {return _body;}
 
+
+//-------------------------------------- SET functions --------------------------------------
 void                    header_handler::set_bytes_written(int bytes) {_bytes_written = bytes;}
 void                    header_handler::set_bytes_read(int bytes) {_bytes_read = bytes;}
+void                    header_handler::set_read_from_file(bool status) {_read_from_file = status;}
+void                    header_handler::set_write_to_file(bool status) {_write_to_file = status;}
+void                    header_handler::set_write_to_browser(bool status) {_write_to_browser = status;}
+
 
 // // // // // // // // // // // // //  DEBUG functions // // // // // // // // // // // // //
 void header_handler::print_request() {
@@ -684,7 +683,7 @@ void header_handler::print_request() {
     std::cout << "------------- END REQUEST -------------\n\n" << RESET;
 }
 
-void    header_handler::print_response(std::string response) {
-    std::cout << MAGENTA << "\n------------- RESPONSE -------------\n";
+void    header_handler::print_response_headers(std::string response) {
+    std::cout << MAGENTA << "\n------------- RESPONSE HEADERS -------------\n";
     std::cout << response <<  RESET << std::endl;
 }
