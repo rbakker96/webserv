@@ -69,12 +69,8 @@ std::string    read_browser_request(std::string &request, int fd) {
     char        buff[6000000];
     int         ret = 1;
 
-//    while (ret > 0) {
-        ret = read(fd, buff, 6000000);
-        request.append(buff, ret);
-//        if (ret < 300000)
-//            break;
-//    }
+    ret = read(fd, buff, 6000000);
+    request.append(buff, ret);
     if (ret == -1)
         throw (std::string("Read browser request failed"));
     return tmp;

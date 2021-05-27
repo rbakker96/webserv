@@ -169,7 +169,7 @@ int        header_handler::handle_request(std::string cgi_file_types, header_han
 		else if (!(stats.st_mode & S_IRUSR))
 			_status = forbidden_;
 		else if ((fd = open(&_file_location[0], O_RDONLY)) == -1)
-			throw std::runtime_error("Open failed");
+            throw (std::string("Open failed"));
     }
 
     if (_status >= error_code_) {
@@ -179,7 +179,7 @@ int        header_handler::handle_request(std::string cgi_file_types, header_han
 		free(status_str);
         _file_location.append(".html");
         if ((fd = open(&_file_location[0], O_RDONLY)) == -1)
-            throw std::runtime_error("Open failed");
+            throw (std::string("Open failed"));
     }
     if (fd != -1)
         fcntl(fd, F_SETFL, O_NONBLOCK);
@@ -339,7 +339,7 @@ int header_handler::create_cgi_fd(std::string type, int index)
 	const char *filename = str_filename.c_str();
 	int	cgiFD = open(filename, O_CREAT | O_RDWR | O_TRUNC, S_IRWXU);
 	if (cgiFD == -1)
-		throw std::runtime_error("Open failed");
+		throw (std::string("Open cgi fd failed"));
 	fcntl(cgiFD, F_SETFL, O_NONBLOCK);
 	return (cgiFD);
 }
@@ -361,7 +361,7 @@ int     	header_handler::put_request()
         fd = open(&put_file[0], O_RDWR | O_CREAT, S_IRWXU);
     }
     if (fd == -1)
-        throw std::runtime_error("Open failed");
+        throw (std::string("Open put request failed"));
     return fd;
 }
 
@@ -376,7 +376,7 @@ int         header_handler::post_request(int max_file_size) {
     _status = okay_;
     fd = open(&post_file[0], O_RDWR | O_TRUNC | O_CREAT, S_IRWXU);
     if (fd == -1)
-        throw std::runtime_error("Open failed");
+        throw (std::string("Open post request failed"));
     return fd;
 }
 
@@ -581,7 +581,7 @@ void    header_handler::send_response(int clientFD) {
     int ret;
 
     if ((ret = write(clientFD, _response.c_str() + _bytes_written, _response.size() - _bytes_written)) == -1)
-        throw (std::string("write to browser failed"));
+        throw (std::string("Write to browser failed"));
     else
         _bytes_written += ret;
 

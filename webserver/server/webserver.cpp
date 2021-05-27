@@ -154,8 +154,8 @@ void    webserver::run() {
                     if (fd.rdy_for_writing(client->_clientFD)) //send response
                     {
                         if (!client->_handler.get_bytes_written())
-                            client->_handler.create_response(client->_fileFD, server->_server_name); //WRITE LOOP
-                        client->_handler.send_response(client->_clientFD);
+                            client->_handler.create_response(client->_fileFD, server->_server_name);
+                        client->_handler.send_response(client->_clientFD); //WRITE LOOP
                         if (client->_handler.get_bytes_written() < (int)client->_handler.get_response_size())
                             continue;
                         client->_handler.set_bytes_written(0);
@@ -172,26 +172,29 @@ void    webserver::run() {
                 } //TRY BLOCK
 
                 catch (std::string &e) {
-                    if (e.compare("Read browser request failed") == 0)
-                    {
+                    if(fd.rdy_for_reading(client->_clientFD))
                         fd.clr_from_read_buffer(client->_clientFD);
-                        server->remove_client(client->_clientFD);
-                    }
-                    else if (e.compare("Read requested file failed") == 0)
-                    {
+                    if (fd.rdy_for_writing(client->_clientFD))
+                        fd.clr_from_write_buffer(client->_clientFD);
+
+                    if(fd.rdy_for_reading(client->_fileFD))
                         fd.clr_from_read_buffer(client->_fileFD);
-                        close(client->_fileFD);
-                        client->_fileFD = unused_;
-                        server->remove_client(client->_clientFD);
-                    }
-                    else if (e.compare("Write body to file failed") == 0)
-                    {
+                    if (fd.rdy_for_writing(client->_fileFD))
                         fd.clr_from_write_buffer(client->_fileFD);
-                        fd.clr_from_read_buffer(client->_fileFD);
+                    if (client->_fileFD != unused_)
                         close(client->_fileFD);
-                        client->_fileFD = unused_;
+
+                    if(fd.rdy_for_reading(client->_cgi_inputFD))
+                        fd.clr_from_read_buffer(client->_cgi_inputFD);
+                    if (fd.rdy_for_writing(client->_cgi_inputFD))
+                        fd.clr_from_write_buffer(client->_cgi_inputFD);
+                    if (client->_cgi_inputFD != unused_)
+                        close(client->_cgi_inputFD);
+
+                    if (server->_clients.size() == 1)
+                        server->_clients.clear();
+                    else
                         server->remove_client(client->_clientFD);
-                    }
                 } //CATCH BLOCK
 
             } //FOR LOOP OPENFDS
