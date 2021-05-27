@@ -60,10 +60,6 @@ public:
 
 private:
     //Connection
-//    std::vector<int>                _openFDS; //ALL FDS THAT ARE USED BY SERVER
-//    int                             _activeFD;
-//	int								_fileFD;
-//	int 							_cgi_inputFD;
     std::vector<client>             _clients;
 
     //Configurations
@@ -82,7 +78,6 @@ private:
 
     //Handler
     std::map<int, request_buf>      _request_buffer;
-//    header_handler                  _handler;
 
 public:
     server();

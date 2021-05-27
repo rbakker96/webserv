@@ -596,8 +596,9 @@ int        header_handler::read_requested_file(int fd) {
 int        header_handler::read_cgi_header_file(int fd, int body_size) {
     int         ret;
     char        buff[6000000];
-    _response_file.reserve(body_size);
 
+    if (_bytes_read == 0)
+        _response_file.reserve(body_size);
     lseek(fd, _bytes_read, SEEK_SET);
     if ((ret = read(fd, buff, 6000000)) == -1)
         throw (std::string("Read cgi file failed"));
