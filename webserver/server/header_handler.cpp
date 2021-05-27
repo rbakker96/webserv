@@ -6,7 +6,7 @@
 /*   By: gbouwen <marvin@codam.nl>                    +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2021/05/03 12:34:40 by gbouwen       #+#    #+#                 */
-/*   Updated: 2021/05/27 11:25:58 by gbouwen       ########   odam.nl         */
+/*   Updated: 2021/05/27 13:20:43 by gbouwen       ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -329,9 +329,9 @@ std::string     header_handler::verify_content_type() {
 
 int header_handler::create_cgi_fd(std::string type, int index)
 {
-	std::string str_filename = "server_files/www/cgi_out_";
+	std::string str_filename = "server_files/www/temp_files/cgi_out_";
 	if (type == "input")
-		str_filename = "server_files/www/cgi_in_";
+		str_filename = "server_files/www/temp_files/cgi_in_";
 	char	*index_str = ft_itoa(index);
 
 	str_filename.append(index_str);

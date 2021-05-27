@@ -6,7 +6,7 @@
 /*   By: roybakker <roybakker@student.codam.nl>       +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2021/03/30 16:30:47 by roybakker     #+#    #+#                 */
-/*   Updated: 2021/05/27 11:25:59 by gbouwen       ########   odam.nl         */
+/*   Updated: 2021/05/27 13:20:44 by gbouwen       ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -49,21 +49,24 @@ void    webserver::load_configuration(char *config_file) {
 }
 
 void    webserver::validate_configuration() {
-    for( std::vector<server>::iterator it = _servers.begin(); it != _servers.end(); it++) {
+    for (std::vector<server>::iterator it = _servers.begin(); it != _servers.end(); it++) {
         bool duplicate = false;
         int port = it->_port;
         int time_out = it->_time_out;
         if (port <= 0)
-            throw std::invalid_argument("Error: invalid port in configuration file");
+            throw std::invalid_argument("Error: invalid/missing port in configuration file");
         if (time_out <= 0)
             throw std::invalid_argument("Error: invalid time out in configuration file");
-        for(std::vector<server>::iterator compare = _servers.begin(); compare != _servers.end(); compare++) {
+        for (std::vector<server>::iterator compare = _servers.begin(); compare != _servers.end(); compare++) {
             if (port == compare->_port) {
                 if (duplicate == true)
                     throw std::invalid_argument("Error: duplicate port in configuration file");
                 duplicate = true;
             }
         }
+		std::string error_page_location = it->_error_page;
+		if (error_page_location.empty())
+			throw std::invalid_argument("Error: error page location missing in configuration file");
     }
 }
 

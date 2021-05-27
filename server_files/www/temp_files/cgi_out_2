@@ -1,0 +1,85 @@
+<html>
+<body>
+<h2>Firstname: </h2></br><h2>Lastname: </h2></br><p>--add phpinfo for debugging--
+</p><p>phpinfo()
+
+Environment
+
+Variable => Value
+AUTH_TYPE =>  
+CONTENT_LENGTH => 20
+CONTENT_TYPE => application/x-www-form-urlencoded
+GATEWAY_INTERFACE => CGI/1.1
+HTTP_REFERER =>  
+PATH_INFO => /adduser.php
+PATH_TRANSLATED => /Users/gbouwen/Desktop/codam/subjects/webserv/server_files/www/adduser.php
+QUERY_STRING => firstname=&lastname=
+REDIRECT_STATUS => true
+REMOTE_IDENT =>  
+REMOTE_USER =>  
+REQUEST_METHOD => POST
+REQUEST_URI => /adduser.php
+SCRIPT_FILENAME => /Users/gbouwen/Desktop/codam/subjects/webserv/server_files/www/adduser.php
+SCRIPT_NAME => adduser.php
+SERVER_NAME => webserv/1.1
+SERVER_PORT => 8080
+SERVER_PROTOCOL => HTTP/1.1
+SERVER_SOFTWARE => HTTP 1.1
+__CF_USER_TEXT_ENCODING => 0xFA27:0x0:0x0
+</p><p>phpinfo()
+
+PHP Variables
+
+Variable => Value
+$_SERVER['AUTH_TYPE'] => 
+$_SERVER['CONTENT_LENGTH'] => 20
+$_SERVER['CONTENT_TYPE'] => application/x-www-form-urlencoded
+$_SERVER['GATEWAY_INTERFACE'] => CGI/1.1
+$_SERVER['HTTP_REFERER'] => 
+$_SERVER['PATH_INFO'] => /adduser.php
+$_SERVER['PATH_TRANSLATED'] => /Users/gbouwen/Desktop/codam/subjects/webserv/server_files/www/adduser.php
+$_SERVER['QUERY_STRING'] => firstname=&lastname=
+$_SERVER['REDIRECT_STATUS'] => true
+$_SERVER['REMOTE_IDENT'] => 
+$_SERVER['REMOTE_USER'] => 
+$_SERVER['REQUEST_METHOD'] => POST
+$_SERVER['REQUEST_URI'] => /adduser.php
+$_SERVER['SCRIPT_FILENAME'] => /Users/gbouwen/Desktop/codam/subjects/webserv/server_files/www/adduser.php
+$_SERVER['SCRIPT_NAME'] => /Users/gbouwen/Desktop/codam/subjects/webserv/server_files/www/adduser.php
+$_SERVER['SERVER_NAME'] => webserv/1.1
+$_SERVER['SERVER_PORT'] => 8080
+$_SERVER['SERVER_PROTOCOL'] => HTTP/1.1
+$_SERVER['SERVER_SOFTWARE'] => HTTP 1.1
+$_SERVER['__CF_USER_TEXT_ENCODING'] => 0xFA27:0x0:0x0
+$_SERVER['PHP_SELF'] => /Users/gbouwen/Desktop/codam/subjects/webserv/server_files/www/adduser.php
+$_SERVER['DOCUMENT_ROOT'] => 
+$_SERVER['REQUEST_TIME_FLOAT'] => 1622114819.7838
+$_SERVER['REQUEST_TIME'] => 1622114819
+$_SERVER['argv'] => Array
+(
+    [0] => /Users/gbouwen/Desktop/codam/subjects/webserv/server_files/www/adduser.php
+)
+
+$_SERVER['argc'] => 1
+$_ENV['AUTH_TYPE'] => 
+$_ENV['CONTENT_LENGTH'] => 20
+$_ENV['CONTENT_TYPE'] => application/x-www-form-urlencoded
+$_ENV['GATEWAY_INTERFACE'] => CGI/1.1
+$_ENV['HTTP_REFERER'] => 
+$_ENV['PATH_INFO'] => /adduser.php
+$_ENV['PATH_TRANSLATED'] => /Users/gbouwen/Desktop/codam/subjects/webserv/server_files/www/adduser.php
+$_ENV['QUERY_STRING'] => firstname=&lastname=
+$_ENV['REDIRECT_STATUS'] => true
+$_ENV['REMOTE_IDENT'] => 
+$_ENV['REMOTE_USER'] => 
+$_ENV['REQUEST_METHOD'] => POST
+$_ENV['REQUEST_URI'] => /adduser.php
+$_ENV['SCRIPT_FILENAME'] => /Users/gbouwen/Desktop/codam/subjects/webserv/server_files/www/adduser.php
+$_ENV['SCRIPT_NAME'] => adduser.php
+$_ENV['SERVER_NAME'] => webserv/1.1
+$_ENV['SERVER_PORT'] => 8080
+$_ENV['SERVER_PROTOCOL'] => HTTP/1.1
+$_ENV['SERVER_SOFTWARE'] => HTTP 1.1
+$_ENV['__CF_USER_TEXT_ENCODING'] => 0xFA27:0x0:0x0
+</p></body>
+</html>
