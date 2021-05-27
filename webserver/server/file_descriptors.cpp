@@ -42,15 +42,15 @@ void     file_descriptors::accepted_request_update(int activeFD) {
     update_max(activeFD);
 }
 
-void     file_descriptors::handled_request_update(int fileFD, int activeFD, std::string content_type, std::string method) {
+void file_descriptors::handled_request_update(int fileFD, int activeFD, std::string cgi_file_types,
+											  std::string content_type, std::string method) {
     clr_from_read_buffer(activeFD);
     update_max(fileFD);
     if (fileFD != -1)
         set_read_buffer(fileFD);
     else
         set_write_buffer(activeFD);
-//    if (content_type == "php" || method == "PUT" || (content_type == "bla" && method == "POST"))
-    if (content_type == "php" || method == "PUT" || method == "POST") //POST only with present body
+    if (cgi_file_types.find(content_type) != std::string::npos || method == "PUT" || method == "POST")
         set_write_buffer(fileFD);
 }
 

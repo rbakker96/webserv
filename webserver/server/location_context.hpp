@@ -16,12 +16,14 @@
 //general includes
 #include <string>
 #include <vector>
+#include <fcntl.h>
+#include "../gnl/get_next_line.hpp"
 
 class location_context {
 public:
     typedef     std::vector<std::string>::iterator vector_iterator;
     typedef     void (location_context::*configure)(const std::string&);
-    enum        location_values{ root_ = 0, method_ = 1, autoindex_ = 2, index_ = 3, redirect_ = 4, max_file_size_ = 5, unknown_ = 6 };
+    enum        location_values{ root_ = 0, method_ = 1, autoindex_ = 2, index_ = 3, redirect_ = 4, max_file_size_ = 5, auth_basic_ = 6, auth_user_info_ = 7, unknown_ = 8 };
 
 private:
     std::string                 _location_context;
@@ -31,6 +33,8 @@ private:
     int                         _max_file_size;
     bool                        _autoindex;
 	bool						_redirect;
+	std::string                 _auth_basic;
+	std::vector<std::string>    _auth_user_info;
 
 public:
     location_context();
@@ -47,6 +51,8 @@ public:
     void    configure_autoindex(const std::string &str);
 	void	configure_redirect(const std::string &str);
 	void    configure_max_file_size(const std::string &str);
+	void    configure_auth_basic(const std::string &str);
+	void    configure_auth_user_info(const std::string &str);
     void    invalid_element(const std::string &str);
 
     //GET functions
@@ -57,6 +63,9 @@ public:
     int                         get_max_file_size();
     bool                        get_autoindex();
 	bool						get_redirect();
+	std::string                 get_auth_basic();
+	std::vector<std::string>    get_auth_user_info();
+
 
 };
 

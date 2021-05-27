@@ -35,6 +35,7 @@ public:
     void			generate_allow(vector allowed_methods);
     void            generate_location(int status, std::string file_location);
     void 			generate_connection_close();
+    void            generate_www_authorization(std::string auth_basic);
     void            append_cgi_headers(std::string cgi_headers);
     void            close_header_section();
 

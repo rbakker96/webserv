@@ -19,12 +19,14 @@ location_context::~location_context(){}
 
 //-------------------------------------- CONFIG functions --------------------------------------
 void location_context::configure_location_block(vector_iterator it, vector_iterator end) {
-    configure configure_array[7] = { &location_context::configure_root,
+    configure configure_array[9] = { &location_context::configure_root,
                                      &location_context::configure_allowed_method,
                                      &location_context::configure_autoindex,
                                      &location_context::configure_index,
 									 &location_context::configure_redirect,
                                      &location_context::configure_max_file_size,
+                                     &location_context::configure_auth_basic,
+                                     &location_context::configure_auth_user_info,
                                      &location_context::invalid_element };
 
     clean_location_instance();
@@ -37,12 +39,16 @@ void location_context::configure_location_block(vector_iterator it, vector_itera
 }
 
 void    location_context::clean_location_instance() {
-    _root.clear();
-    _allowed_method.clear();
-    _index.clear();
-    _max_file_size = 0;
-    _autoindex = false;
+	_location_context.clear(); // DOUBLE CHECK
+	_root.clear();
+	_index.clear();
+	_allowed_method.clear();
+	_max_file_size = 0;
+	_autoindex = false;
 	_redirect = false;
+	_auth_basic.clear();
+	_auth_user_info.clear();
+
 }
 
 int     location_context::identify_location_value(const std::string &str){
@@ -58,6 +64,10 @@ int     location_context::identify_location_value(const std::string &str){
 		return redirect_;
     else if (str.find("max_file_size") != std::string::npos)
         return max_file_size_;
+    else if (str.find("auth_basic ") != std::string::npos)
+	    return auth_basic_;
+    else if (str.find("auth_user_file ") != std::string::npos)
+	    return auth_user_info_;
     return unknown_;
 }
 
@@ -73,6 +83,27 @@ void    location_context::configure_allowed_method(const std::string &str){_allo
 void    location_context::configure_index(const std::string &str){_index = parse_string(str);}
 void    location_context::invalid_element(const std::string &str) {parse_invalid(str);}
 void    location_context::configure_max_file_size(const std::string &str) {_max_file_size = parse_number(str);}
+void    location_context::configure_auth_basic(const std::string &str){_auth_basic = parse_string(str);}
+
+void    location_context::configure_auth_user_info(const std::string &str)
+{
+	std::string auth_file_path = parse_string(str);
+	int fd = open(auth_file_path.c_str(), O_RDONLY);
+	int ret = 0;
+	char *line = NULL;
+
+	if (fd == -1)
+		throw std::invalid_argument("Error opening user authorization file");
+	while ((ret = get_next_line(fd, &line)) == 1) {
+		_auth_user_info.push_back(line);
+		free(line);
+	}
+	close(fd);
+	if (line)
+		free(line);
+	if (ret == -1)
+		throw std::runtime_error("Error while reading user authorization file");
+}
 
 void    location_context::configure_autoindex(const std::string &str){
 	if (parse_string(str) == "on")
@@ -93,3 +124,5 @@ std::vector<std::string>    location_context::get_method() {return _allowed_meth
 int                         location_context::get_max_file_size() {return _max_file_size;}
 bool                        location_context::get_autoindex() {return _autoindex;}
 bool						location_context::get_redirect() {return _redirect;}
+std::string                 location_context::get_auth_basic() {return _auth_basic;}
+std::vector<std::string>    location_context::get_auth_user_info() {return _auth_user_info;}

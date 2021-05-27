@@ -15,3 +15,5 @@ server_files/www/cgi_in_0
 server_files/www/cgi_out_0
 
 server_files/www/downloads/POST_file
+
+auth.txt

@@ -27,7 +27,8 @@ SOURCES			=	webserver/main.cpp \
 					webserver/helper/lib_functions.cpp \
 					webserver/helper/parse_functions.cpp \
 					webserver/helper/signal_handler.cpp \
-					webserver/helper/verify_file_location_functions.cpp
+					webserver/helper/verify_file_location_functions.cpp \
+					webserver/server/Base64.cpp
 
 TEMP FILES      =   server_files/www/cgi_in_0 \
                     server_files/www/cgi_out_0 \

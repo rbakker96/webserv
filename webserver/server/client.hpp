@@ -13,6 +13,7 @@ private:
     int                 _clientFD;
     int                 _fileFD;
     int 	            _cgi_inputFD;
+    bool                _authorization_status;
 
     //Handler
     header_handler      _handler;
@@ -29,11 +30,13 @@ public:
     int         get_clientFD();
     int         get_fileFD();
     int         get_cgi_inputFD();
+    bool        get_authorization_status();
 
     //SET functions
     void        set_clientFD(int fd);
     void        set_fileFD(int fd);
     void        set_cgi_inputFD(int fd);
+    void        set_authorization_status(bool status);
 
 };
 

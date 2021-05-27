@@ -28,6 +28,7 @@
 #include "location_context.hpp"
 #include "../helper/helper.hpp"
 #include "request_buf.hpp"
+#include "Base64.hpp"
 
 //custom color for better visibility
 # define RESET			"\033[0m"
@@ -92,6 +93,9 @@ protected:
 	std::string		_referer;
 	std::string		_body;
 	std::vector<std::string> _special_x_header;
+	int             _location_index;
+	std::string     _auth_basic;
+	std::string     _auth_type;
 
 	//Response
 	std::string		_response_file;
@@ -120,7 +124,8 @@ public:
 	void            invalid_argument(const std::string &str);
 
     //HANDLE functions
-    int             handle_request(std::string cgi_file_types, location_vector location_blocks, std::string error_page, int index);
+    int handle_request(std::string cgi_file_types, location_vector location_blocks, std::string error_page, int index,
+                       bool *authorization_status);
     int             put_request();
     int             post_request(int max_file_size);
     void            write_body_to_file(int file_fd);
@@ -132,11 +137,14 @@ public:
 	std::string		location_of_uploaded_file(location_context location_block, std::string location, std::string uri_location, std::string extension);
     void            verify_method(std::string cgi_file_types);
     std::string     verify_content_type();
+	void verify_authorization(location_context location_block, bool *authorization_status);
+
 
 	//CGI functions
-	void 			execute_cgi(int inputFD, int outputFD, std::string server_name, int server_port);
+	void execute_cgi(int inputFD, int outputFD, std::string server_name, int server_port, bool auth_status,
+	                 std::string auth_info);
 	char 			**create_cgi_args();
-	char 			**create_cgi_envp(const std::string &server_name, int server_port);
+	char **create_cgi_envp(const std::string &server_name, int server_port, bool auth_status, std::string auth_info);
 
     //RESPONSE functions
     void            read_requested_file(int fd);

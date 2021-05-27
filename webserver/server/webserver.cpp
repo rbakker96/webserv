@@ -119,8 +119,14 @@ void    webserver::run() {
                         if (server->update_request_buffer(client->_clientFD, request_headers) == valid_) {
                             client->_handler.parse_request(server->_request_buffer[client->_clientFD]);
                             server->remove_handled_request(client->_clientFD);
-                            client->_fileFD = client->_handler.handle_request(server->_cgi_file_types, server->_location_blocks, server->get_error_page(), client->_index);
-                            fd.handled_request_update(client->_fileFD, client->_clientFD, client->_handler.verify_content_type(), client->_handler.get_method());
+                            client->_fileFD = client->_handler.handle_request(server->_cgi_file_types,
+                                                                              server->_location_blocks,
+                                                                              server->get_error_page(),
+                                                                              client->_index,
+                                                                              &client->_authorization_status);
+	                        fd.handled_request_update(client->_fileFD, client->_clientFD, server->_cgi_file_types,
+	                                                  client->_handler.verify_content_type(),
+	                                                  client->_handler.get_method());
                             if (server->_cgi_file_types.find(client->_handler.verify_content_type()) !=
                                 std::string::npos) {
                                 client->_cgi_inputFD = client->_handler.create_cgi_fd("input", client->_index);
@@ -136,14 +142,15 @@ void    webserver::run() {
                             if (server->_cgi_file_types.find(client->_handler.verify_content_type()) !=
                                 std::string::npos &&
                                 fd.rdy_for_writing(client->_cgi_inputFD))
-                                client->_handler.execute_cgi(client->_cgi_inputFD, client->_fileFD,
-                                                             server->_server_name, server->_port);
+	                            client->_handler.execute_cgi(client->_cgi_inputFD, client->_fileFD,
+	                                                         server->_server_name, server->_port,
+	                                                         client->_authorization_status,
+	                                                         client->_handler.get_authorization());
                             else
                                 client->_handler.write_body_to_file(client->_fileFD);
                         }
                         if (client->_handler.get_status() != 204) {
-                            if (client->_handler.verify_content_type() == "bla" &&
-                                client->_handler.get_method() == "POST")
+                            if (client->_handler.verify_content_type() == "bla")
                                 client->_handler.read_cgi_header_file(client->_fileFD,
                                                                       server->_request_buffer[client->_clientFD].get_body_size());
                             else
@@ -156,7 +163,7 @@ void    webserver::run() {
 
                     if (fd.rdy_for_writing(client->_clientFD)) //send response
                     {
-                        client->_handler.send_response(client->_clientFD, client->_fileFD, server->_server_name);
+                    	client->_handler.send_response(client->_clientFD, client->_fileFD, server->_server_name);
                         fd.clr_from_write_buffer(client->_clientFD);
                         if (client->_cgi_inputFD != unused_)
                             close(client->_cgi_inputFD);
@@ -237,8 +244,15 @@ void webserver::print_struct() {
             std::cout << "  Autoindex = " << location.get_autoindex() << std::endl;
 			std::cout << "  Redirect = " << location.get_redirect() << std::endl;
 			std::cout << "  Max file size = " << location.get_max_file_size() << std::endl;
+			std::cout << "  Auth basic = " << location.get_auth_basic() << std::endl;
+			std::cout << "  Auth user info = ";
+	        std::vector<std::string> user_info = location.get_auth_user_info();
+
+	        for (std::vector<std::string>::iterator it1 = user_info.begin(); it1 != user_info.end(); it1++) {
+		        std::cout << *it1 << " ";
+	        }
         }
-        std::cout << "------------- END SERVER BLOCK -------------\n\n";
+        std::cout << "\n------------- END SERVER BLOCK -------------\n\n";
     }
 }
 
