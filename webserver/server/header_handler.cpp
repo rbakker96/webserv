@@ -681,6 +681,9 @@ std::string             header_handler::get_accept_language() {return _accept_la
 std::string             header_handler::get_authorization() {return _authorization;}
 std::string             header_handler::get_referer() {return _referer;}
 std::string             header_handler::get_body() {return _body;}
+header_handler::vector  header_handler::get_special_x_header() {return _special_x_header;}
+int                     header_handler::get_location_index() {return _location_index;}
+std::string             header_handler::get_auth_basic() {return _auth_basic;}
 
 
 // // // // // // // // // // // // //  DEBUG functions // // // // // // // // // // // // //
