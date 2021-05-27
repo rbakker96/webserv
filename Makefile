@@ -30,8 +30,8 @@ SOURCES			=	webserver/main.cpp \
 					webserver/helper/verify_file_location_functions.cpp \
 					webserver/server/Base64.cpp
 
-TEMP FILES      =   server_files/www/cgi_in_0 \
-                    server_files/www/cgi_out_0 \
+TEMP FILES      =   server_files/www/temp_files/cgi_in_* \
+                    server_files/www/temp_files/cgi_out_* \
                     server_files/www/downloads/file_should_exist_after \
                     server_files/www/downloads/POST_file
 
