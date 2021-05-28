@@ -114,8 +114,6 @@ void    webserver::run() {
                             _time_out_check = false;
                             fd.set_time_out(client->_clientFD);
                         }
-                        else
-                            _time_out_check = true;
                         if (server->update_request_buffer(client->_clientFD, request_headers) == valid_) {
                             client->_handler.parse_request(server->_request_buffer[client->_clientFD]);
                             server->remove_handled_request(client->_clientFD);
@@ -128,6 +126,8 @@ void    webserver::run() {
                             }
                         }
                     }
+                    else
+                        _time_out_check = true;
 
                     if (fd.rdy_for_reading(client->_fileFD)) //read requested file
                     {
