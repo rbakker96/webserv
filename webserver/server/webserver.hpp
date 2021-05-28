@@ -6,7 +6,7 @@
 /*   By: roybakker <roybakker@student.codam.nl>       +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2021/03/30 16:28:34 by roybakker     #+#    #+#                 */
-/*   Updated: 2021/05/18 12:37:08 by gbouwen       ########   odam.nl         */
+/*   Updated: 2021/05/28 11:09:33 by gbouwen       ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -42,7 +42,6 @@ public:
 private:
     std::vector<server>     _servers;
     int                     _client_amount;
-    bool                    _time_out_check;
 
 public:
     webserver();
