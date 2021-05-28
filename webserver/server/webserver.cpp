@@ -6,7 +6,7 @@
 /*   By: roybakker <roybakker@student.codam.nl>       +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2021/03/30 16:30:47 by roybakker     #+#    #+#                 */
-/*   Updated: 2021/05/28 11:09:33 by gbouwen       ########   odam.nl         */
+/*   Updated: 2021/05/28 11:33:52 by gbouwen       ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -85,7 +85,6 @@ void    webserver::run() {
     while (true)
     {
         fd.synchronize(_servers);
-		std::cout << "FD GET MAX = " << fd.get_max() << std::endl;
         if (select(fd.get_max(), &fd.get_read(), &fd.get_write(), 0, 0) == -1)
 		{
 			std::cout << strerror(errno) << std::endl;
@@ -109,9 +108,8 @@ void    webserver::run() {
                 _client_amount++;
             }
 
-            for(size_t client_index = 0;  client_index < server->_clients.size(); client_index++) {
+            for (size_t client_index = 0;  client_index < server->_clients.size(); client_index++) {
                 client *client = &server->_clients[client_index];
-				std::cout << "SERVER CLIENTS SIZE = " << server->_clients.size() << std::endl;
                 int ret;
 
                 try {
@@ -134,8 +132,6 @@ void    webserver::run() {
                             }
                         }
                     }
-					else
-						client->set_time_out_check(true);
 
                     if (fd.rdy_for_reading(client->_fileFD)) //read requested file
                     {
@@ -185,14 +181,9 @@ void    webserver::run() {
                         client->_fileFD = unused_;
                         fd.set_read_buffer(client->_clientFD);
                     }
-					else
-						client->set_time_out_check(true);
 
                     if (client->get_time_out_check())
-					{
-						std::cout << "time out check" << std::endl;
 					    fd.check_time_out(server->_clients, client->get_clientFD(), server->_time_out);
-					}
 
                 } //TRY BLOCK
 
