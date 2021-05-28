@@ -10,22 +10,24 @@ response::~response() {
 //-------------------------------------- GENERATE functions --------------------------------------
 void	response::generate_status_line(std::string protocol, int status, response::map status_phrases) {
     std::string status_line = protocol;
-    char *status_str = ft_itoa(status);
+    char		*status_str = ft_itoa(status);
 
     status_line.append(" ");
     status_line.append(status_str);
+    free(status_str);
     status_line.append(" ");
     status_line.append(status_phrases[status]);
     status_line.append("\r\n");
-    free(status_str);
 
     _response.append(status_line);
 }
 
 void	response::generate_content_length(std::string requested_file) {
     std::string	content_length = "Content-Length: ";
+	char		*content_len_str = ft_itoa(requested_file.size());
 
-    content_length.append(ft_itoa(requested_file.size()));
+    content_length.append(content_len_str);
+	free(content_len_str);
     content_length.append("\r\n");
 
     _response.append(content_length);
