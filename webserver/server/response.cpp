@@ -8,6 +8,11 @@ response::~response() {
 
 
 //-------------------------------------- GENERATE functions --------------------------------------
+void    response::allocate_size(std::string requested_file) {
+    int size = 100 + requested_file.size();
+    _response.reserve(size);
+}
+
 void	response::generate_status_line(std::string protocol, int status, response::map status_phrases) {
     std::string status_line = protocol;
     char *status_str = ft_itoa(status);
@@ -24,10 +29,12 @@ void	response::generate_status_line(std::string protocol, int status, response::
 
 void	response::generate_content_length(std::string requested_file) {
     std::string	content_length = "Content-Length: ";
+    char *tmp = ft_itoa(requested_file.size());
 
-    content_length.append(ft_itoa(requested_file.size()));
+    content_length.append(tmp);
     content_length.append("\r\n");
 
+    free(tmp);
     _response.append(content_length);
 }
 

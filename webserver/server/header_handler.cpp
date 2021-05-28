@@ -618,6 +618,7 @@ int        header_handler::read_cgi_header_file(int fd, int body_size) {
 void    header_handler::create_response(int fileFD, std::string server_name) {
     response response;
 
+    response.allocate_size(_response_file);
     response.generate_status_line(_protocol, _status, _status_phrases);
 	response.generate_server_name(server_name);
 	response.generate_date();

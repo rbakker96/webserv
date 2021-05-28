@@ -71,10 +71,13 @@ void    file_descriptors::sync_maxFD(file_descriptors::vector servers) {
             client *client = &server->_clients[client_index];
             if (maxFD < client->get_clientFD())
                 maxFD = client->get_clientFD();
+            if (maxFD < client->get_fileFD())
+                maxFD = client->get_fileFD();
+            if (maxFD < client->get_cgi_inputFD())
+                maxFD = client->get_cgi_inputFD();
         }
     }
-    std::cout << GREEN << "CURRENT MAX = " << _max << RESET << std::endl;
-    _max = maxFD;
+    _max = maxFD + 1;
 }
 
 

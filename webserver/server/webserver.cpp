@@ -220,7 +220,7 @@ void    webserver::run() {
 
         } // FOR LOOP SERVERS
 
-//        fd.sync_maxFD(_servers);
+        fd.sync_maxFD(_servers);
 
     } //WHILE(TRUE) LOOP
 
