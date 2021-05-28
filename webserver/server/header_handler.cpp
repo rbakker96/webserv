@@ -389,9 +389,9 @@ std::string     header_handler::verify_content_type() {
 
 int header_handler::create_cgi_fd(std::string type, int index)
 {
-	std::string str_filename = "server_files/www/temp_files/cgi_out_";
+	std::string str_filename = "/tmp/cgi_out_";
 	if (type == "input")
-		str_filename = "server_files/www/temp_files/cgi_in_";
+		str_filename = "/tmp/cgi_in_";
 	char	*index_str = ft_itoa(index);
 
 	str_filename.append(index_str);

@@ -222,6 +222,7 @@ void    webserver::run() {
                     }
                     else
                         server->remove_client(client->_clientFD);
+                    std::cout << RED << e << RESET << std::endl; //PRINT ERROR MESSAGE
                 } //CATCH BLOCK
 
             } //FOR LOOP OPENFDS
