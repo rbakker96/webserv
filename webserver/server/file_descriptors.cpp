@@ -1,6 +1,6 @@
 #include "file_descriptors.hpp"
 
-file_descriptors::file_descriptors() : _max(-1) {
+file_descriptors::file_descriptors() : _max(-1), _time_out_monitor() {
     FD_ZERO(&_read);
     FD_ZERO(&_write);
     FD_ZERO(&_read_buffer);
