@@ -6,7 +6,7 @@
 /*   By: gbouwen <marvin@codam.nl>                    +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2021/05/03 12:34:40 by gbouwen       #+#    #+#                 */
-/*   Updated: 2021/05/27 13:20:43 by gbouwen       ########   odam.nl         */
+/*   Updated: 2021/05/28 14:11:04 by gbouwen       ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -62,7 +62,7 @@ void        header_handler::parse_request(request_buf request_buffer) {
         (this->*function)(*it);
     }
     parse_body(request_buffer);
-//    print_request(); //DEBUG
+    print_request(); //DEBUG
 }
 
 int         header_handler::identify_request_value(const std::string &str) {
@@ -465,6 +465,7 @@ void header_handler::execute_cgi(int inputFD, int outputFD, std::string server_n
 		char 	**envp = create_cgi_envp(server_name, server_port, auth_status, auth_info); // error management
 
 		write(inputFD, _body.c_str(), _body.size());
+		std::cout << "WRITTEN THIS = " << _body.size() << " IN INPUT FD = " << inputFD << std::endl;
 		lseek(inputFD, 0, SEEK_SET);
 		dup2(inputFD, STDIN_FILENO);
 		dup2(outputFD, STDOUT_FILENO);
@@ -598,7 +599,7 @@ int        header_handler::read_cgi_header_file(int fd, int body_size) {
     char        buff[6000000];
 
     if (_bytes_read == 0)
-        _response_file.reserve(body_size);
+        _response_file.reserve(body_size + 500);
     lseek(fd, _bytes_read, SEEK_SET);
     if ((ret = read(fd, buff, 6000000)) == -1)
         throw (std::string("Read cgi file failed"));

@@ -6,7 +6,7 @@
 /*   By: roybakker <roybakker@student.codam.nl>       +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2021/03/30 16:30:47 by roybakker     #+#    #+#                 */
-/*   Updated: 2021/05/28 11:33:52 by gbouwen       ########   odam.nl         */
+/*   Updated: 2021/05/28 13:55:59 by gbouwen       ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -219,6 +219,8 @@ void    webserver::run() {
             } //FOR LOOP OPENFDS
 
         } // FOR LOOP SERVERS
+
+		fd.sync_maxFD(_servers);
 
     } //WHILE(TRUE) LOOP
 
