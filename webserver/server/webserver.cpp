@@ -85,7 +85,6 @@ void    webserver::run() {
     while (true)
     {
         fd.synchronize(_servers);
-		std::cout << "FD GET MAX = " << fd.get_max() << std::endl;
         if (select(fd.get_max(), &fd.get_read(), &fd.get_write(), 0, 0) == -1)
 		{
 			std::cout << strerror(errno) << std::endl;
@@ -227,6 +226,8 @@ void    webserver::run() {
             } //FOR LOOP OPENFDS
 
         } // FOR LOOP SERVERS
+
+//        fd.sync_maxFD(_servers);
 
     } //WHILE(TRUE) LOOP
 
