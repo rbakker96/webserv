@@ -21,6 +21,9 @@ private:
     //Index
     int                 _index;
 
+	//Time out check
+	bool				_time_out_check;
+
 public:
     client();
     client(int newFD, int client_amount);
@@ -31,12 +34,14 @@ public:
     int         get_fileFD();
     int         get_cgi_inputFD();
     bool        get_authorization_status();
+	bool		get_time_out_check();
 
     //SET functions
     void        set_clientFD(int fd);
     void        set_fileFD(int fd);
     void        set_cgi_inputFD(int fd);
     void        set_authorization_status(bool status);
+	void		set_time_out_check(bool time_out_check);
 
 };
 

@@ -6,7 +6,7 @@
 /*   By: roybakker <roybakker@student.codam.nl>       +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2021/03/30 16:30:47 by roybakker     #+#    #+#                 */
-/*   Updated: 2021/05/27 13:20:44 by gbouwen       ########   odam.nl         */
+/*   Updated: 2021/05/28 11:09:33 by gbouwen       ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,7 +15,7 @@
 #include "webserver.hpp"
 #include "server.hpp"
 
-webserver::webserver() : _servers(), _client_amount(0), _time_out_check(false) {}
+webserver::webserver() : _servers(), _client_amount(0) {}
 webserver::~webserver(){}
 
 
@@ -85,8 +85,12 @@ void    webserver::run() {
     while (true)
     {
         fd.synchronize(_servers);
+		std::cout << "FD GET MAX = " << fd.get_max() << std::endl;
         if (select(fd.get_max(), &fd.get_read(), &fd.get_write(), 0, 0) == -1)
+		{
+			std::cout << strerror(errno) << std::endl;
             throw std::runtime_error("Select failed");
+		}
         for (size_t server_index = 0; server_index < _servers.size(); server_index++) {
             server *server = &_servers[server_index];
 
@@ -94,7 +98,10 @@ void    webserver::run() {
             {
                 int newFD = accept(server->get_tcp_socket(), (struct sockaddr *) &server->_addr, (socklen_t *) &server->_addr_len);
                 if (newFD == -1)
+				{
+					std::cout << strerror(errno) << std::endl;
                     throw (std::runtime_error("Accept failed"));
+				}
                 fd.set_time_out(newFD);
                 fcntl(newFD, F_SETFL, O_NONBLOCK);
                 fd.accepted_request_update(newFD);
@@ -104,18 +111,17 @@ void    webserver::run() {
 
             for(size_t client_index = 0;  client_index < server->_clients.size(); client_index++) {
                 client *client = &server->_clients[client_index];
+				std::cout << "SERVER CLIENTS SIZE = " << server->_clients.size() << std::endl;
                 int ret;
 
                 try {
                     if (fd.rdy_for_reading(client->_clientFD)) //handle requested file
                     {
+						client->set_time_out_check(false);
                         std::string request_headers = read_browser_request(request_headers, client->_clientFD);
                         if (!request_headers.empty()) {
-                            _time_out_check = false;
                             fd.set_time_out(client->_clientFD);
                         }
-                        else
-                            _time_out_check = true;
                         if (server->update_request_buffer(client->_clientFD, request_headers) == valid_) {
                             client->_handler.parse_request(server->_request_buffer[client->_clientFD]);
                             server->remove_handled_request(client->_clientFD);
@@ -128,9 +134,12 @@ void    webserver::run() {
                             }
                         }
                     }
+					else
+						client->set_time_out_check(true);
 
                     if (fd.rdy_for_reading(client->_fileFD)) //read requested file
                     {
+						client->set_time_out_check(false);
                         if (fd.rdy_for_writing(client->_fileFD) && client->_handler.get_status() < error_ && client->_handler.get_write_to_file() == false) {
                             if (client->_handler.get_bytes_written() < (int)client->_handler.get_body().size()) {
                                 if (server->_cgi_file_types.find(client->_handler.verify_content_type()) != std::string::npos && fd.rdy_for_writing(client->_cgi_inputFD))
@@ -156,9 +165,12 @@ void    webserver::run() {
                         if (client->_cgi_inputFD != unused_)
                             fd.clr_from_write_buffer(client->_cgi_inputFD);
                     }
+					else
+						client->set_time_out_check(true);
 
                     if (fd.rdy_for_writing(client->_clientFD)) //send response
                     {
+						client->set_time_out_check(false);
                         if (!client->_handler.get_bytes_written())
                             client->_handler.create_response(client->_fileFD, server->_server_name);
                         client->_handler.send_response(client->_clientFD);
@@ -173,8 +185,14 @@ void    webserver::run() {
                         client->_fileFD = unused_;
                         fd.set_read_buffer(client->_clientFD);
                     }
-                    if (_time_out_check == true)
+					else
+						client->set_time_out_check(true);
+
+                    if (client->get_time_out_check())
+					{
+						std::cout << "time out check" << std::endl;
 					    fd.check_time_out(server->_clients, client->get_clientFD(), server->_time_out);
+					}
 
                 } //TRY BLOCK
 
