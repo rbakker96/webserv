@@ -4,14 +4,8 @@
 
 CMakeLists.txt
 
-/practice_CGI
-
 server_files/www/downloads/file_should_exist_after
 
-cgi_envp_comparison.txt
-
-server_files/www/temp_files/cgi_in_*
-
-server_files/www/temp_files/cgi_out_*
-
 server_files/www/downloads/POST_file
+
+server_files/www/downloads/multiple_same
