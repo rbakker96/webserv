@@ -149,7 +149,7 @@ void    webserver::run() {
                         }
                         if (client->_handler.get_status() != 204 && client->_handler.get_read_from_file() == false) {
                             if (client->_handler.verify_content_type() == "bla" && client->_handler.get_method() == "POST")
-                                ret = client->_handler.read_cgi_header_file(client->_fileFD, (int)client->_handler.get_body().size());
+                                ret = client->_handler.read_cgi_output_file(client->_fileFD, (int)client->_handler.get_body().size());
                             else
                                 ret = client->_handler.read_requested_file(client->_fileFD);
                             if (ret)

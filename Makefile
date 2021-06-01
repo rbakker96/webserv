@@ -30,10 +30,8 @@ SOURCES			=	webserver/main.cpp \
 					webserver/helper/verify_file_location_functions.cpp \
 					webserver/server/Base64.cpp
 
-TEMP FILES      =   server_files/www/temp_files/cgi_in_* \
-                    server_files/www/temp_files/cgi_out_* \
-                    server_files/www/downloads/file_should_exist_after \
-                    server_files/www/downloads/POST_file \
+TEMP_FILES      =   server_files/www/downloads/file_should_exist_after \
+						server_files/www/downloads/POST_file \
                     server_files/www/downloads/multiple_same
 
 OBJECTS 		=	${SOURCES:%.c=%.o}
@@ -65,7 +63,7 @@ clean:
 	@echo "$(RED)----------------------------------------------------"
 	@echo "$(WHITE)DELETE ./webserv"
 	@echo "$(RED)----------------------------------------------------"
-	@/bin/rm -f $(NAME) $(TEMP FILES)
+	@/bin/rm -f $(NAME) $(TEMP_FILES)
 
 re: clean all
 

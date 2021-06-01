@@ -15,6 +15,7 @@
 
 //general includes
 #include <fcntl.h>
+#include <cerrno>
 
 //custom includes
 #include "client.hpp"

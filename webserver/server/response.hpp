@@ -25,6 +25,7 @@ public:
     ~response();
 
     //GENERATE functions
+    void            allocate_size(std::string requested_file);
     void			generate_status_line(std::string protocol, int status, response::map status_phrases);
     void			generate_content_length(std::string requested_file);
     void			generate_content_type(std::string type);

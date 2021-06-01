@@ -10,7 +10,6 @@
 /*                                                                            */
 /* ************************************************************************** */
 
-#include <sstream>
 #include "header_handler.hpp"
 
 header_handler::header_handler(): _status(okay_), _status_phrases(), _write_to_file(false), _read_from_file(false), _write_to_browser(false), _bytes_written(0), _bytes_read(0), _max_file_size(0), _content_length(0), _content_type("Content-Type: text/"),
@@ -270,7 +269,9 @@ std::string	header_handler::location_of_uploaded_file(location_context location_
         result.append(uri_location);
     }
     if ((s.st_mode & S_IFREG) && (location_from_uri.compare(location_block.get_location_context()) == 0 && (_method == "POST" && extension == ".bla")))
-        result = root;
+	{
+		result = root;
+	}
 	return (result);
 }
 
@@ -514,6 +515,7 @@ char	**header_handler::create_cgi_args()
 		args[0] = ft_strdup("/usr/bin/php");
 	else if (_file_location.find(".bla") != std::string::npos)
 		args[0] = ft_strjoin(server_root, "/tester_executables/cgi_tester");
+//		args[0] = ft_strjoin(server_root, "/tester_executables/ubuntu_cgi_tester");
 
 	char *tmp = ft_strjoin(server_root, "/");
 	args[1] = ft_strjoin(tmp, _file_location.c_str());
@@ -594,7 +596,7 @@ int        header_handler::read_requested_file(int fd) {
     return ret;
 }
 
-int        header_handler::read_cgi_header_file(int fd, int body_size) {
+int        header_handler::read_cgi_output_file(int fd, int body_size) {
     int         ret;
     char        buff[6000000];
 
@@ -619,6 +621,7 @@ int        header_handler::read_cgi_header_file(int fd, int body_size) {
 void    header_handler::create_response(int fileFD, std::string server_name) {
     response response;
 
+    response.allocate_size(_response_file);
     response.generate_status_line(_protocol, _status, _status_phrases);
 	response.generate_server_name(server_name);
 	response.generate_date();

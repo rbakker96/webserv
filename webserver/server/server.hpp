@@ -49,7 +49,7 @@ class server {
 public:
 	friend class handler;
 	friend class webserver;
-	friend class file_descriptors;
+    friend class file_descriptors;
 
 public:
     typedef     std::vector<std::string>::iterator      vector_iterator;
