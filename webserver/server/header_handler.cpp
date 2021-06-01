@@ -513,8 +513,8 @@ char	**header_handler::create_cgi_args()
 	if (_file_location.find(".php") != std::string::npos)
 		args[0] = ft_strdup("/usr/bin/php");
 	else if (_file_location.find(".bla") != std::string::npos)
-//		args[0] = ft_strjoin(server_root, "/tester_executables/cgi_tester");
-		args[0] = ft_strjoin(server_root, "/tester_executables/ubuntu_cgi_tester");
+		args[0] = ft_strjoin(server_root, "/tester_executables/cgi_tester");
+//		args[0] = ft_strjoin(server_root, "/tester_executables/ubuntu_cgi_tester");
 
 	char *tmp = ft_strjoin(server_root, "/");
 	args[1] = ft_strjoin(tmp, _file_location.c_str());
@@ -595,7 +595,7 @@ int        header_handler::read_requested_file(int fd) {
     return ret;
 }
 
-int        header_handler::read_cgi_header_file(int fd, int body_size) {
+int        header_handler::read_cgi_output_file(int fd, int body_size) {
     int         ret;
     char        buff[6000000];
 

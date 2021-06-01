@@ -156,7 +156,7 @@ public:
 
     //RESPONSE functions
     int             read_requested_file(int fd);
-    int             read_cgi_header_file(int fd, int body_size);
+    int             read_cgi_output_file(int fd, int body_size);
     void            create_response(int fileFD, std::string server_name);
     void            send_response(int clientFD);
 

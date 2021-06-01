@@ -130,7 +130,7 @@ int     server::update_request_buffer(int fd, const std::string& request_data) {
     if (it == _request_buffer.end()) {
         request_buf tmp;
         _request_buffer.insert(std::pair<int, request_buf>(fd, tmp));
-        it = _request_buffer.find(fd);
+//        it = _request_buffer.find(fd);
     }
 
     if (!_request_buffer[fd].headers_received())
