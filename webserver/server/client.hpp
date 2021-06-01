@@ -9,6 +9,9 @@ public:
     friend class webserver;
 
 private:
+	//Status
+	bool 				_active;
+
     //File descriptors
     int                 _clientFD;
     int                 _fileFD;

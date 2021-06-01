@@ -125,6 +125,11 @@ void    server::remove_client(int clientFD) {
 
 //-------------------------------------- REQUEST functions --------------------------------------
 int     server::update_request_buffer(int fd, const std::string& request_data) {
+	for (std::map<int, request_buf>::iterator print = _request_buffer.begin(); print != _request_buffer.end(); print++) {
+		if (print->second.get_body_size() != 0)
+			std::cout << "[" << print->first << "] -> [" << print->second.get_body_size() << "]" << std::endl;
+	}
+
     std::map<int, request_buf>::iterator it = _request_buffer.find(fd);
 
     if (it == _request_buffer.end()) {

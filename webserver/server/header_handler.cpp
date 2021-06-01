@@ -640,7 +640,7 @@ void    header_handler::create_response(int fileFD, std::string server_name) {
         _response.append(_response_file);
     _response_size = _response.size();
 
-    print_response_headers(response.get_response()); //DEBUG
+//    print_response_headers(response.get_response()); //DEBUG
 }
 
 void    header_handler::send_response(int clientFD) {

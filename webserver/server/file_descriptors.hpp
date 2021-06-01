@@ -40,6 +40,7 @@ public:
     void handled_request_update(int fileFD, int activeFD, std::string cgi_file_types, std::string content_type,
                                 std::string method);
     void        read_request_update(int fileFD, int activeFD);
+	void        sync_maxFD(file_descriptors::vector servers);
 
     //SET functions
     void        set_read_buffer(int fd);
