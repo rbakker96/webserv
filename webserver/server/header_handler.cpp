@@ -200,6 +200,13 @@ void header_handler::verify_authorization(location_context location_block, bool 
 	}
 }
 
+void	header_handler::remove_file()
+{
+	int	ret = remove(_file_location.c_str());
+	if (ret != 0)
+		_status = not_found_;
+}
+
 int header_handler::handle_request(std::string cgi_file_types, location_vector location_blocks, std::string error_page,
                                    int index, bool *authorization_status) {
 	struct  stat stats;
@@ -215,6 +222,8 @@ int header_handler::handle_request(std::string cgi_file_types, location_vector l
 			fd = put_request();
 		else if (_method == "POST" && cgi_file_types.find(verify_content_type()) == std::string::npos)
 			fd = post_request(_max_file_size);
+		else if (_method == "DELETE")
+			remove_file();
 		else if (cgi_file_types.find(verify_content_type()) != std::string::npos)
 		    return create_cgi_fd("output", index);
 		else if (stat(_file_location.c_str(), &stats) == -1)
@@ -329,6 +338,8 @@ std::string	header_handler::match_location_block(header_handler::location_vector
 	}
 	_allow.clear();
 	_allow.push_back("GET");
+	if (_method.compare("DELETE") == 0)
+		_allow.push_back("DELETE");
 	return ("not found");
 }
 
@@ -447,6 +458,8 @@ void        header_handler::write_body_to_file(int file_fd) {
     if ((_bytes_written = write(file_fd, _body.c_str(), _body.length())) == -1)
         throw (std::string("Write body to file failed"));
 }
+
+
 
 
 //-------------------------------------- CGI functions --------------------------------------

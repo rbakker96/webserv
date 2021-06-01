@@ -146,6 +146,7 @@ public:
     void            verify_method(std::string cgi_file_types);
     std::string     verify_content_type();
 	void            verify_authorization(location_context location_block, bool *authorization_status);
+	void			remove_file();
 
 
 	//CGI functions
