@@ -127,6 +127,7 @@ void    webserver::run() {
 	                        fd.handled_request_update(client->_fileFD, client->_clientFD, server->_cgi_file_types, client->_handler.verify_content_type(), client->_handler.get_method());
                             if (server->_cgi_file_types.find(client->_handler.verify_content_type()) != std::string::npos) {
                                 client->_cgi_inputFD = client->_handler.create_cgi_fd("input", client->_index);
+								std::cout << "CREATED CGI_INPUT_FD " << std::endl;
                                 fd.set_write_buffer(client->_cgi_inputFD);
                                 fd.update_max(client->_cgi_inputFD);
                             }
@@ -135,11 +136,23 @@ void    webserver::run() {
 
                     if (fd.rdy_for_reading(client->_fileFD)) //read requested file
                     {
+						std::cout << "FILE FD IS READY FOR READING" << std::endl;
+						if (fd.rdy_for_writing(client->_fileFD))
+							std::cout << "FILE FD IS READY FOR WRITING" << std::endl;
+						if (fd.rdy_for_writing(client->_cgi_inputFD))
+							std::cout << "CGI_INPUT_FD IS READY FOR WRITING" << std::endl;
+						std::cout << "CGI FILE TYPES = " << server->_cgi_file_types << std::endl;
+						std::cout << server->_cgi_file_types.find(client->_handler.verify_content_type()) << std::endl;
 						client->set_time_out_check(false);
                         if (fd.rdy_for_writing(client->_fileFD) && client->_handler.get_status() < error_ && client->_handler.get_write_to_file() == false) {
                             if (client->_handler.get_bytes_written() < (int)client->_handler.get_body().size()) {
-                                if (server->_cgi_file_types.find(client->_handler.verify_content_type()) != std::string::npos && fd.rdy_for_writing(client->_cgi_inputFD))
-                                    client->_handler.execute_cgi(client->_cgi_inputFD, client->_fileFD, server->_server_name, server->_port, client->_authorization_status, client->_handler.get_authorization());
+                                if (server->_cgi_file_types.find(client->_handler.verify_content_type()) != std::string::npos && \
+									fd.rdy_for_writing(client->_cgi_inputFD))
+								{
+									std::cout << "???" << std::endl;
+                                    client->_handler.execute_cgi(client->_cgi_inputFD, client->_fileFD, server->_server_name, server->_port, \
+																	client->_authorization_status, client->_handler.get_authorization());
+								}
                                 else
                                     client->_handler.write_body_to_file(client->_fileFD);
                                 continue;
