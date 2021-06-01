@@ -22,6 +22,8 @@ header_handler::header_handler(): _status(okay_), _status_phrases(), _write_to_f
 	_status_phrases.insert (pair(200, "OK"));
 	_status_phrases.insert (pair(201, "Created"));
 	_status_phrases.insert (pair(204, "No Content"));
+	_status_phrases.insert (pair(301, "Moved Permanently"));
+	_status_phrases.insert (pair(307, "Temporary Redirect"));
 	_status_phrases.insert (pair(400, "Bad Request"));
 	_status_phrases.insert (pair(401, "Unauthorized"));
 	_status_phrases.insert (pair(403, "Forbidden"));
@@ -181,6 +183,8 @@ bool     validate_user_password(std::vector<std::string> correct_passwd, std::st
 
 void header_handler::verify_authorization(location_context location_block, bool *authorization_status)
 {
+	if (_status >= 300 && _status <= 310)
+		return;
 	if (location_block.get_auth_basic() != "off" && !*authorization_status)
 	{
 		if (_authorization.empty())	{
@@ -209,9 +213,9 @@ int header_handler::handle_request(std::string cgi_file_types, location_vector l
 	verify_method(cgi_file_types);
 	if (_location_index != -1)
 		verify_authorization(location_blocks[_location_index], authorization_status);
-	if (_status < error_code_)
+	if (_status < moved_permanently_)
     {
-	    if (_method == "PUT")
+		if (_method == "PUT")
 			fd = put_request();
 		else if (_method == "POST" && cgi_file_types.find(verify_content_type()) == std::string::npos)
 			fd = post_request(_max_file_size);
@@ -234,7 +238,7 @@ int header_handler::handle_request(std::string cgi_file_types, location_vector l
         if ((fd = open(&_file_location[0], O_RDONLY)) == -1)
             throw (std::string("Open failed"));
     }
-    if (fd != -1)
+	if (fd != -1)
         fcntl(fd, F_SETFL, O_NONBLOCK);
     return fd;
 }
@@ -295,7 +299,16 @@ std::string	header_handler::match_location_block(header_handler::location_vector
 
 	for (size_t index = 0; index < location_blocks.size(); index++)
 	{
-	    _max_file_size = location_blocks[index].get_max_file_size();
+		if (_uri_location == location_blocks[index].get_location_context())
+		{
+			if (!location_blocks[index].get_return().empty())
+			{
+				_status = location_blocks[index].get_return().begin()->first;
+				_file_location = location_blocks[index].get_return().begin()->second;
+				return ("http redirect");
+			}
+		}
+		_max_file_size = location_blocks[index].get_max_file_size();
 		_allow = location_blocks[index].get_method();
 		_location_block_root = location_blocks[index].get_root();
 		_location_index = index;
@@ -314,7 +327,7 @@ std::string	header_handler::match_location_block(header_handler::location_vector
 				}
 			}
 		}
-		if (location_blocks[index].get_redirect() && location_context.compare(get_first_directory(uri_location)) == 0)
+		if (location_blocks[index].get_alias() && location_context.compare(get_first_directory(uri_location)) == 0)
 			result.append(skip_first_directory(uri_location));
 		else if (_method.compare("PUT") == 0 || (_method.compare("POST") == 0 && (extension != ".php" || extension == ".bla"))) // add post with file upload later?
 			result.append("");
@@ -348,6 +361,8 @@ void        header_handler::verify_file_location(header_handler::location_vector
 		_file_location = generate_error_page_location(error_page);
 		_location_index = -1;
 	}
+	else if (result.compare("http redirect") == 0)
+		return;
 	else
 		_file_location = result;
 	_file_location = remove_duplicate_forward_slashes(_file_location);
@@ -357,6 +372,8 @@ void header_handler::verify_method(std::string cgi_file_types)
 {
 	int i = 0;
 
+	if (_status == moved_permanently_ || _status == temporary_redirect_)
+		return;
 	if (cgi_file_types.find(verify_content_type()) != std::string::npos)
 		i++;
     if (_method == "POST" && verify_content_type() == "bla")
@@ -624,18 +641,21 @@ void    header_handler::create_response(int fileFD, std::string server_name) {
     response.generate_status_line(_protocol, _status, _status_phrases);
 	response.generate_server_name(server_name);
 	response.generate_date();
+	response.generate_content_length(_response_file);
 	if (_status == unauthorized_)
 		response.generate_www_authorization(_auth_basic);
-	response.generate_content_length(_response_file);
-	response.generate_content_type(verify_content_type());
-	response.generate_last_modified(fileFD);
+	if (_status != moved_permanently_ && _status != temporary_redirect_)
+	{
+		response.generate_content_type(verify_content_type());
+		response.generate_last_modified(fileFD);
+		response.generate_content_language();
+	}
 	if (_status == method_not_allowed_)
 		response.generate_allow(_allow);
-	if (_status == created_ || (_method == "POST" && !_body.empty()))
+	if (_status == created_ || (_method == "POST" && !_body.empty()) || _status == moved_permanently_ || _status == temporary_redirect_)
 		response.generate_location(_status, _file_location);
 	if (!_additional_cgi_headers.empty())
 		response.append_cgi_headers(_additional_cgi_headers);
-	response.generate_content_language();
 	response.close_header_section();
 
     _response.append(response.get_response());

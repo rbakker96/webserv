@@ -16,6 +16,7 @@
 //general includes
 #include <string>
 #include <vector>
+#include <map>
 #include <fcntl.h>
 #include "../gnl/get_next_line.hpp"
 
@@ -23,7 +24,7 @@ class location_context {
 public:
     typedef     std::vector<std::string>::iterator vector_iterator;
     typedef     void (location_context::*configure)(const std::string&);
-    enum        location_values{ root_ = 0, method_ = 1, autoindex_ = 2, index_ = 3, redirect_ = 4, max_file_size_ = 5, auth_basic_ = 6, auth_user_info_ = 7, unknown_ = 8 };
+    enum        location_values{ root_ = 0, method_ = 1, autoindex_ = 2, index_ = 3, alias = 4, max_file_size_ = 5, auth_basic_ = 6, auth_user_info_ = 7, return_ = 8, unknown_ = 9 };
 
 private:
     std::string                 _location_context;
@@ -32,9 +33,10 @@ private:
     std::vector<std::string>    _allowed_method;
     int                         _max_file_size;
     bool                        _autoindex;
-	bool						_redirect;
+	bool						_alias;
 	std::string                 _auth_basic;
 	std::vector<std::string>    _auth_user_info;
+	std::map<int, std::string>	_return;
 
 public:
     location_context();
@@ -49,10 +51,11 @@ public:
     void    configure_allowed_method(const std::string &str);
     void    configure_index(const std::string &str);
     void    configure_autoindex(const std::string &str);
-	void	configure_redirect(const std::string &str);
+	void	configure_alias(const std::string &str);
 	void    configure_max_file_size(const std::string &str);
 	void    configure_auth_basic(const std::string &str);
 	void    configure_auth_user_info(const std::string &str);
+	void    configure_return(const std::string &str);
     void    invalid_element(const std::string &str);
 
     //GET functions
@@ -62,9 +65,10 @@ public:
     std::vector<std::string>    get_method();
     int                         get_max_file_size();
     bool                        get_autoindex();
-	bool						get_redirect();
+	bool						get_alias();
 	std::string                 get_auth_basic();
 	std::vector<std::string>    get_auth_user_info();
+	std::map<int, std::string>	get_return();
 
 
 };

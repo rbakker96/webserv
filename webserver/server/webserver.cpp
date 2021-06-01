@@ -126,11 +126,11 @@ void    webserver::run() {
                             client->_fileFD = client->_handler.handle_request(server->_cgi_file_types, server->_location_blocks, server->get_error_page(), client->_index, &client->_authorization_status);
 	                        fd.handled_request_update(client->_fileFD, client->_clientFD, server->_cgi_file_types, client->_handler.verify_content_type(), client->_handler.get_method());
                             if (server->_cgi_file_types.find(client->_handler.verify_content_type()) != std::string::npos) {
-                                client->_cgi_inputFD = client->_handler.create_cgi_fd("input", client->_index);
+								client->_cgi_inputFD = client->_handler.create_cgi_fd("input", client->_index);
                                 fd.set_write_buffer(client->_cgi_inputFD);
                                 fd.update_max(client->_cgi_inputFD);
                             }
-                        }
+						}
                     }
 
                     if (fd.rdy_for_reading(client->_fileFD)) //read requested file
@@ -166,7 +166,7 @@ void    webserver::run() {
 
                     if (fd.rdy_for_writing(client->_clientFD)) //send response
                     {
-						client->set_time_out_check(false);
+                    	client->set_time_out_check(false);
                         if (!client->_handler.get_bytes_written())
                             client->_handler.create_response(client->_fileFD, server->_server_name);
                         client->_handler.send_response(client->_clientFD);
@@ -261,7 +261,7 @@ void webserver::print_struct() {
 
             std::cout << "  Index = " << location.get_index() << std::endl;
             std::cout << "  Autoindex = " << location.get_autoindex() << std::endl;
-			std::cout << "  Redirect = " << location.get_redirect() << std::endl;
+			std::cout << "  Alias = " << location.get_alias() << std::endl;
 			std::cout << "  Max file size = " << location.get_max_file_size() << std::endl;
 			std::cout << "  Auth basic = " << location.get_auth_basic() << std::endl;
 			std::cout << "  Auth user info = ";
@@ -270,6 +270,12 @@ void webserver::print_struct() {
 	        for (std::vector<std::string>::iterator it1 = user_info.begin(); it1 != user_info.end(); it1++) {
 		        std::cout << *it1 << " ";
 	        }
+	        std::cout << std::endl << "  Return = ";
+
+			std::map<int, std::string> return_map = location.get_return();
+			for (std::map<int, std::string>::iterator it = return_map.begin(); it != return_map.end(); it++) {
+				std::cout << "redirection_status: " << (*it).first << " " << "redirection_location: " << (*it).second << std::endl;
+			}
         }
         std::cout << "\n------------- END SERVER BLOCK -------------\n\n";
     }

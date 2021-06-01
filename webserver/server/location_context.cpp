@@ -13,20 +13,21 @@
 #include "location_context.hpp"
 #include "../helper/helper.hpp"
 
-location_context::location_context() : _location_context(), _root(), _index(), _allowed_method(0), _max_file_size(0), _autoindex(false) {}
+location_context::location_context() : _location_context(), _root(), _index(), _allowed_method(0), _max_file_size(0), _autoindex(false), _alias(false), _auth_basic(), _auth_user_info(), _return() {}
 location_context::~location_context(){}
 
 
 //-------------------------------------- CONFIG functions --------------------------------------
 void location_context::configure_location_block(vector_iterator it, vector_iterator end) {
-    configure configure_array[9] = { &location_context::configure_root,
+    configure configure_array[10] = { &location_context::configure_root,
                                      &location_context::configure_allowed_method,
                                      &location_context::configure_autoindex,
                                      &location_context::configure_index,
-									 &location_context::configure_redirect,
+									 &location_context::configure_alias,
                                      &location_context::configure_max_file_size,
                                      &location_context::configure_auth_basic,
                                      &location_context::configure_auth_user_info,
+                                     &location_context::configure_return,
                                      &location_context::invalid_element };
 
     clean_location_instance();
@@ -45,7 +46,7 @@ void    location_context::clean_location_instance() {
 	_allowed_method.clear();
 	_max_file_size = 0;
 	_autoindex = false;
-	_redirect = false;
+	_alias = false;
 	_auth_basic.clear();
 	_auth_user_info.clear();
 
@@ -60,15 +61,17 @@ int     location_context::identify_location_value(const std::string &str){
         return autoindex_;
     else if (str.find("index") != std::string::npos)
         return index_;
-	else if (str.find("redirect") != std::string::npos)
-		return redirect_;
+	else if (str.find("alias") != std::string::npos)
+		return alias;
     else if (str.find("max_file_size") != std::string::npos)
         return max_file_size_;
     else if (str.find("auth_basic ") != std::string::npos)
 	    return auth_basic_;
     else if (str.find("auth_user_file ") != std::string::npos)
 	    return auth_user_info_;
-    return unknown_;
+	else if (str.find("return ") != std::string::npos)
+		return return_;
+	return unknown_;
 }
 
 void    location_context::configure_location_context(const std::string &str) {
@@ -111,9 +114,21 @@ void    location_context::configure_autoindex(const std::string &str){
 }
 
 
-void    location_context::configure_redirect(const std::string &str){
+void    location_context::configure_alias(const std::string &str){
 	if (parse_string(str) == "on")
-        _redirect = true;
+		_alias = true;
+}
+
+void	location_context::configure_return(const std::string &str) {
+	int redirect_code = parse_number(str);
+	if (redirect_code < 300 || redirect_code > 310)
+		throw std::runtime_error("Wrong redirection code");
+
+	size_t status_code_start = str.find_first_of('3');
+	size_t pos = str.find_first_of(' ', status_code_start);
+	std::string new_location = str.substr(pos + 1);
+
+	_return.insert(std::pair<int, std::string>(redirect_code, new_location));
 }
 
 //-------------------------------------- GET functions --------------------------------------
@@ -123,6 +138,7 @@ std::string                 location_context::get_index() {return _index;}
 std::vector<std::string>    location_context::get_method() {return _allowed_method;}
 int                         location_context::get_max_file_size() {return _max_file_size;}
 bool                        location_context::get_autoindex() {return _autoindex;}
-bool						location_context::get_redirect() {return _redirect;}
+bool						location_context::get_alias() {return _alias;}
 std::string                 location_context::get_auth_basic() {return _auth_basic;}
 std::vector<std::string>    location_context::get_auth_user_info() {return _auth_user_info;}
+std::map<int, std::string>  location_context::get_return() {return _return;}

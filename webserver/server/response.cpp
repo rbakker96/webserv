@@ -121,6 +121,8 @@ void    response::generate_location(int status, std::string file_location) {
         std::string file = file_location.substr(file_location.find_last_of('/') + 1);
         location_header.append(file);
     }
+    else if (status == 301 || status == 307)
+    	location_header.append(file_location);
     else
         location_header.append("server_files/www/downloads/POST_file");
     location_header.append("\r\n");

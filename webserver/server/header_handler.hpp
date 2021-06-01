@@ -64,9 +64,11 @@ public:
 								special_x_header_ = 10, unknown_ = 11, error_code_ = 400,
 								folder_ = -1, unused_ = -1};
 	enum		status_values{	okay_ = 200, created_ = 201, no_content_ = 204,
+								moved_permanently_ = 301, temporary_redirect_ = 307,
 								bad_request_ = 400, unauthorized_ = 401, forbidden_ = 403,
 								not_found_ = 404, method_not_allowed_ = 405,
 								payload_too_large_ = 413 };
+
     enum		protection_values{ read_write_ = 1, no_read_write_ = 0 };
 
 protected:
