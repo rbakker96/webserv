@@ -213,7 +213,6 @@ int header_handler::handle_request(std::string cgi_file_types, location_vector l
 	int		fd = unused_;
 
 	verify_file_location(location_blocks, error_page);
-	std::cout << "_FILE_LOCATION = " << _file_location << std::endl;
 	verify_method(cgi_file_types);
 	if (_location_index != -1)
 		verify_authorization(location_blocks[_location_index], authorization_status);
@@ -226,10 +225,7 @@ int header_handler::handle_request(std::string cgi_file_types, location_vector l
 		else if (_method == "DELETE")
 			remove_file();
 		else if (cgi_file_types.find(verify_content_type()) != std::string::npos)
-		{
-			std::cout << "CREATED CGI_OUTPUT_FD" << std::endl;
 		    return create_cgi_fd("output", index);
-		}
 		else if (stat(_file_location.c_str(), &stats) == -1)
 			_status = not_found_;
 		else if (!(stats.st_mode & S_IRUSR))
@@ -396,12 +392,9 @@ std::string     header_handler::verify_content_type() {
     extensions.push_back("bla");
 
     for (vector_iterator it = extensions.begin(); it != extensions.end(); it++) {
-        if (_file_location.find(*it) != std::string::npos) {
-			std::cout << *it << std::endl;
+        if (_file_location.find(*it) != std::string::npos)
             return *it;
-        }
     }
-	std::cout << "folder" << std::endl;
     return "folder";
 }
 
@@ -476,7 +469,6 @@ void header_handler::execute_cgi(int inputFD, int outputFD, std::string server_n
 	pid_t	pid;
 	int 	status = 0;
 
-	std::cout << "EXECUTE_CGI" << std::endl;
 	pid = fork();
 	if (pid == -1)
 		throw std::runtime_error("Fork failed");
@@ -486,7 +478,6 @@ void header_handler::execute_cgi(int inputFD, int outputFD, std::string server_n
 		char 	**envp = create_cgi_envp(server_name, server_port, auth_status, auth_info); // error management
 
 		write(inputFD, _body.c_str(), _body.size());
-		std::cout << "WRITTEN THIS = " << _body.size() << " IN INPUT FD = " << inputFD << std::endl;
 		lseek(inputFD, 0, SEEK_SET);
 		dup2(inputFD, STDIN_FILENO);
 		dup2(outputFD, STDOUT_FILENO);
@@ -495,7 +486,7 @@ void header_handler::execute_cgi(int inputFD, int outputFD, std::string server_n
 	}
 	else {
         waitpid(pid, &status, 0);
-        _bytes_written = _body.size();
+		_bytes_written = _body.size();
     }
 }
 
