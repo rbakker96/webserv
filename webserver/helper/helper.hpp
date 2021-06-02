@@ -21,6 +21,7 @@
 #include <unistd.h>
 #include <iostream>
 #include <sys/stat.h>
+#include <csignal>
 
 #include "../server/location_context.hpp"
 

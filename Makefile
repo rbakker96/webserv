@@ -65,7 +65,7 @@ clean:
 	@echo "$(RED)----------------------------------------------------"
 	@echo "$(WHITE)DELETE ./webserv"
 	@echo "$(RED)----------------------------------------------------"
-	@/bin/rm -f $(NAME) $(TEMP FILES)
+	@/bin/rm -f $(NAME) $(TEMP_FILES)
 
 re: clean all
 

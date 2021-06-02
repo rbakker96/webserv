@@ -22,6 +22,8 @@
 #include <sys/types.h>
 #include <sys/wait.h>
 #include <sys/stat.h>
+#include <sstream>
+#include <climits>
 
 //Custom includes
 #include "response.hpp"
