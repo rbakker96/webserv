@@ -110,6 +110,7 @@ void    server::remove_handled_request(int used_fd){
     map_iterator request = _request_buffer.find(used_fd);
 
     request->second.get_body().clear();
+    request->second.set_body_size(0);
     _request_buffer.erase(request);
 }
 

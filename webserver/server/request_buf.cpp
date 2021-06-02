@@ -68,3 +68,7 @@ int     request_buf::validate_request() {
 std::string                 request_buf::get_headers() {return _headers;}
 std::list<std::string>      request_buf::get_body() {return _body;}
 int                         request_buf::get_body_size() {return _body_size;}
+
+//-------------------------------------- SET functions --------------------------------------
+
+void                         request_buf::set_body_size(int size) {_body_size = size;}

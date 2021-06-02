@@ -29,6 +29,10 @@ public:
     std::string                 get_headers();
     std::list<std::string>      get_body();
     int                         get_body_size();
+
+	//SET functions
+
+	void                        set_body_size(int size);
 };
 
 
