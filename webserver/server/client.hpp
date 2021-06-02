@@ -21,12 +21,9 @@ private:
     //Handler
     header_handler      _handler;
 
-    //Index
-    int                 _index;
-
 public:
     client();
-    client(int newFD, int client_amount);
+    client(int newFD);
     ~client();
 
     //GET functions

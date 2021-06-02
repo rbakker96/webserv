@@ -15,7 +15,7 @@
 #include "webserver.hpp"
 #include "server.hpp"
 
-webserver::webserver() : _servers(), _client_amount(0), _time_out_check(false) {}
+webserver::webserver() : _servers(), _time_out_check(false) {}
 webserver::~webserver(){}
 
 
@@ -74,7 +74,7 @@ void    webserver::establish_connection(){
 	for (size_t index = 0; index < _servers.size(); index++) {
         _servers[index].create_socket();
         _servers[index].bind_socket_address(_servers[index].get_port());
-        _servers[index].create_connection(1000); //CHECK LATER
+        _servers[index].create_connection(1000);
 	}
 }
 
@@ -92,11 +92,9 @@ void    webserver::run() {
 		}
         for (size_t server_index = 0; server_index < _servers.size(); server_index++) {
             server *server = &_servers[server_index];
-//			fd.activate_client(server->_clients);
 
             if (fd.rdy_for_reading(server->get_tcp_socket())) //accept request
             {
-            	std::cout << RED << "ACCEPT" << RESET << std::endl;
                 int newFD = accept(server->get_tcp_socket(), (struct sockaddr *) &server->_addr, (socklen_t *) &server->_addr_len);
                 if (newFD == -1) {
                 	std::cout << strerror(errno) << std::endl;
@@ -105,12 +103,10 @@ void    webserver::run() {
                 fd.set_time_out(newFD);
                 fcntl(newFD, F_SETFL, O_NONBLOCK);
                 fd.accepted_request_update(newFD);
-                server->_clients.push_back(client(newFD, _client_amount));
+                server->_clients.push_back(client(newFD));
 
                 if (server->_clients.size() == 1)
                 	server->_clients.begin()->_active = true;
-
-                _client_amount++;
             }
 
             for(size_t client_index = 0;  client_index < server->_clients.size(); client_index++) {
@@ -133,10 +129,10 @@ void    webserver::run() {
                         if (!request_headers.empty() && server->update_request_buffer(client_current->_clientFD, request_headers) == valid_) {
                             client_current->_handler.parse_request(server->_request_buffer[client_current->_clientFD]);
                             server->remove_handled_request(client_current->_clientFD);
-                            client_current->_fileFD = client_current->_handler.handle_request(server->_cgi_file_types, server->_location_blocks, server->get_error_page(), client_current->_index, &client_current->_authorization_status);
+                            client_current->_fileFD = client_current->_handler.handle_request(server->_cgi_file_types, server->_location_blocks, server->get_error_page(), &client_current->_authorization_status);
 	                        fd.handled_request_update(client_current->_fileFD, client_current->_clientFD, server->_cgi_file_types, client_current->_handler.verify_content_type(), client_current->_handler.get_method());
                             if (server->_cgi_file_types.find(client_current->_handler.verify_content_type()) != std::string::npos) {
-                                client_current->_cgi_inputFD = client_current->_handler.create_cgi_fd("input", client_current->_index);
+                                client_current->_cgi_inputFD = client_current->_handler.create_cgi_fd("input");
                                 fd.set_write_buffer(client_current->_cgi_inputFD);
                                 fd.update_max(client_current->_cgi_inputFD);
                             }
@@ -202,7 +198,7 @@ void    webserver::run() {
                     if (_time_out_check == true) {
 						fd.update_active_client(server->_clients, client_current->_clientFD);
 						fd.check_time_out(server->_clients, client_current->get_clientFD(), server->_time_out);
-					}
+                    }
 
 
                 } //TRY BLOCK

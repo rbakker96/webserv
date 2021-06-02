@@ -42,12 +42,10 @@ public:
     void        read_request_update(int fileFD, int activeFD);
 	void        sync_maxFD(file_descriptors::vector servers);
 	void		update_active_client(std::vector<client> &clients, int clientFD);
-	void 		activate_client(std::vector<client> &clients);
 
     //SET functions
     void        set_read_buffer(int fd);
     void        set_write_buffer(int fd);
-    void		set_active(bool status);
 
     //CLR functions
     void        clr_from_read_buffer(int fd);

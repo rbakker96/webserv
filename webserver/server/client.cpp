@@ -1,8 +1,8 @@
 #include "client.hpp"
 
-client::client() : _active(false), _clientFD(-1), _fileFD(-1), _cgi_inputFD(-1), _authorization_status(false), _handler(), _index(0){}
+client::client() : _active(false), _clientFD(-1), _fileFD(-1), _cgi_inputFD(-1), _authorization_status(false), _handler() {}
 
-client::client(int newFD, int client_amount) : _clientFD(newFD), _fileFD(-1), _cgi_inputFD(-1), _authorization_status(false), _handler(), _index(client_amount) {}
+client::client(int newFD) : _clientFD(newFD), _fileFD(-1), _cgi_inputFD(-1), _authorization_status(false), _handler() {}
 
 client::~client() {}
 

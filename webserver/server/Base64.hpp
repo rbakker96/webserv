@@ -1,7 +1,3 @@
-//
-// Created by Peer De bakker on 11/1/20.
-//
-
 #ifndef WEBSERV_BASE64_H
 # define WEBSERV_BASE64_H
 # include <string>

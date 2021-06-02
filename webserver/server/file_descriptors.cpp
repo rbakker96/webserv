@@ -76,6 +76,8 @@ void    file_descriptors::sync_maxFD(file_descriptors::vector servers) {
 			if (maxFD < client->get_cgi_inputFD())
 				maxFD = client->get_cgi_inputFD();
 		}
+		if (maxFD < server->get_tcp_socket())
+			maxFD = server->get_tcp_socket();
 	}
 	_max = maxFD + 1;
 }
@@ -99,14 +101,6 @@ void 	file_descriptors::update_active_client(std::vector<client> &clients, int c
 	}
 	if (restart_cycle == true)
 		clients.begin()->set_active(true);
-}
-
-void	file_descriptors::activate_client(std::vector<client> &clients) {
-	for (client_iterator it = clients.begin(); it != clients.end(); it++) {
-		if (it->get_active() == true)
-			return;
-	}
-	clients.begin()->set_active(true);
 }
 
 
@@ -160,7 +154,6 @@ void     file_descriptors::check_time_out(std::vector<client> &clients, int clie
 		{
 			map_iterator recorded_time = _time_out_monitor.find(clientFD);
 			if (recorded_time->second != 0 && (time - recorded_time->second) >= time_out) {
-				std::cout << RED << "TIME OUT [" << clientFD << "]\n" << RESET;
 				clr_from_read_buffer(clientFD);
 				close(clientFD);
 				clients.erase(it);

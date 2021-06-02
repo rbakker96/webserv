@@ -39,7 +39,7 @@ void location_context::configure_location_block(vector_iterator it, vector_itera
 }
 
 void    location_context::clean_location_instance() {
-	_location_context.clear(); // DOUBLE CHECK
+	_location_context.clear();
 	_root.clear();
 	_index.clear();
 	_allowed_method.clear();
