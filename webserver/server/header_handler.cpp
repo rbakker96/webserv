@@ -63,7 +63,7 @@ void        header_handler::parse_request(request_buf request_buffer) {
         (this->*function)(*it);
     }
     parse_body(request_buffer);
-    print_request(); //DEBUG
+//    print_request(); //DEBUG
 }
 
 int         header_handler::identify_request_value(const std::string &str) {
@@ -417,9 +417,9 @@ std::string     header_handler::verify_content_type() {
 
 int header_handler::create_cgi_fd(std::string type, int index)
 {
-	std::string str_filename = "/tmp/cgi_out_";
+	std::string str_filename = "/tmp/cgi_out";
 	if (type == "input")
-		str_filename = "/tmp/cgi_in_";
+		str_filename = "/tmp/cgi_in";
 	char	*index_str = ft_itoa(index);
 
 	str_filename.append(index_str);
@@ -664,7 +664,7 @@ void    header_handler::create_response(int fileFD, std::string server_name) {
 	}
 	if (_status == method_not_allowed_)
 		response.generate_allow(_allow);
-	if (_status == created_ || (_method == "POST" && !_body.empty()) || _status == moved_permanently_ || _status == temporary_redirect_)
+	if (_status == created_ || _status == moved_permanently_ || _status == temporary_redirect_ || ((_method == "POST" && !_body.empty() && _uri_location.find(".bla") == std::string::npos) && _uri_location.find(".php") == std::string::npos))
 		response.generate_location(_status, _file_location);
 	if (!_additional_cgi_headers.empty())
 		response.append_cgi_headers(_additional_cgi_headers);
