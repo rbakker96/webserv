@@ -6,7 +6,7 @@
 /*   By: roybakker <roybakker@student.codam.nl>       +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2021/03/30 16:30:47 by roybakker     #+#    #+#                 */
-/*   Updated: 2021/05/28 11:33:52 by gbouwen       ########   odam.nl         */
+/*   Updated: 2021/05/28 13:55:59 by gbouwen       ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -137,11 +137,16 @@ void    webserver::run() {
                     {
 						client->set_time_out_check(false);
                         if (fd.rdy_for_writing(client->_fileFD) && client->_handler.get_status() < error_ && client->_handler.get_write_to_file() == false) {
-                            if (client->_handler.get_bytes_written() < (int)client->_handler.get_body().size()) {
-                                if (server->_cgi_file_types.find(client->_handler.verify_content_type()) != std::string::npos && fd.rdy_for_writing(client->_cgi_inputFD))
-                                    client->_handler.execute_cgi(client->_cgi_inputFD, client->_fileFD, server->_server_name, server->_port, client->_authorization_status, client->_handler.get_authorization());
+                            if ((client->_handler.get_bytes_written() < (int)client->_handler.get_body().size()) ||
+								(int)client->_handler.get_body().size() == 0) {
+                                if (server->_cgi_file_types.find(client->_handler.verify_content_type()) != std::string::npos && \
+									fd.rdy_for_writing(client->_cgi_inputFD))
+                                    client->_handler.execute_cgi(client->_cgi_inputFD, client->_fileFD, server->_server_name, server->_port, \
+																	client->_authorization_status, client->_handler.get_authorization());
                                 else
                                     client->_handler.write_body_to_file(client->_fileFD);
+								if ((int)client->_handler.get_body().size() == 0)
+									client->_handler.set_write_to_file(true);
                                 continue;
                             }
                             client->_handler.set_bytes_written(0);
@@ -220,7 +225,7 @@ void    webserver::run() {
 
         } // FOR LOOP SERVERS
 
-        fd.sync_maxFD(_servers);
+		fd.sync_maxFD(_servers);
 
     } //WHILE(TRUE) LOOP
 

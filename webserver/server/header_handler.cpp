@@ -6,7 +6,7 @@
 /*   By: gbouwen <marvin@codam.nl>                    +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2021/05/03 12:34:40 by gbouwen       #+#    #+#                 */
-/*   Updated: 2021/05/27 13:20:43 by gbouwen       ########   odam.nl         */
+/*   Updated: 2021/05/28 14:11:04 by gbouwen       ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -63,7 +63,7 @@ void        header_handler::parse_request(request_buf request_buffer) {
         (this->*function)(*it);
     }
     parse_body(request_buffer);
-//    print_request(); //DEBUG
+    print_request(); //DEBUG
 }
 
 int         header_handler::identify_request_value(const std::string &str) {
@@ -204,6 +204,13 @@ void header_handler::verify_authorization(location_context location_block, bool 
 	}
 }
 
+void	header_handler::remove_file()
+{
+	int	ret = remove(_file_location.c_str());
+	if (ret != 0)
+		_status = not_found_;
+}
+
 int header_handler::handle_request(std::string cgi_file_types, location_vector location_blocks, std::string error_page,
                                    int index, bool *authorization_status) {
 	struct  stat stats;
@@ -219,6 +226,8 @@ int header_handler::handle_request(std::string cgi_file_types, location_vector l
 			fd = put_request();
 		else if (_method == "POST" && cgi_file_types.find(verify_content_type()) == std::string::npos)
 			fd = post_request(_max_file_size);
+		else if (_method == "DELETE")
+			remove_file();
 		else if (cgi_file_types.find(verify_content_type()) != std::string::npos)
 		    return create_cgi_fd("output", index);
 		else if (stat(_file_location.c_str(), &stats) == -1)
@@ -342,6 +351,8 @@ std::string	header_handler::match_location_block(header_handler::location_vector
 	}
 	_allow.clear();
 	_allow.push_back("GET");
+	if (_method.compare("DELETE") == 0)
+		_allow.push_back("DELETE");
 	return ("not found");
 }
 
@@ -398,9 +409,8 @@ std::string     header_handler::verify_content_type() {
     extensions.push_back("bla");
 
     for (vector_iterator it = extensions.begin(); it != extensions.end(); it++) {
-        if (_file_location.find(*it) != std::string::npos) {
+        if (_file_location.find(*it) != std::string::npos)
             return *it;
-        }
     }
     return "folder";
 }
@@ -466,6 +476,8 @@ void        header_handler::write_body_to_file(int file_fd) {
 }
 
 
+
+
 //-------------------------------------- CGI functions --------------------------------------
 
 void header_handler::execute_cgi(int inputFD, int outputFD, std::string server_name, int server_port, bool auth_status,
@@ -491,7 +503,7 @@ void header_handler::execute_cgi(int inputFD, int outputFD, std::string server_n
 	}
 	else {
         waitpid(pid, &status, 0);
-        _bytes_written = _body.size();
+		_bytes_written = _body.size();
     }
 }
 
@@ -617,7 +629,7 @@ int        header_handler::read_cgi_output_file(int fd, int body_size) {
     char        buff[6000000];
 
     if (_bytes_read == 0)
-        _response_file.reserve(body_size);
+        _response_file.reserve(body_size + 500);
     lseek(fd, _bytes_read, SEEK_SET);
     if ((ret = read(fd, buff, 6000000)) == -1)
         throw (std::string("Read cgi file failed"));
