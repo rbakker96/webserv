@@ -10,7 +10,6 @@
 /*                                                                            */
 /* ************************************************************************** */
 
-#include <sstream>
 #include "header_handler.hpp"
 
 header_handler::header_handler(): _status(okay_), _status_phrases(), _write_to_file(false), _read_from_file(false), _write_to_browser(false), _bytes_written(0), _bytes_read(0), _max_file_size(0), _content_length(0), _content_type("Content-Type: text/"),
@@ -270,8 +269,9 @@ std::string	header_handler::location_of_uploaded_file(location_context location_
         result = root;
         result.append(uri_location);
     }
-    if ((s.st_mode & S_IFREG) && (location_from_uri.compare(location_block.get_location_context()) == 0 && (_method == "POST" && extension == ".bla")))
-        result = root;
+    if ((s.st_mode & S_IFREG) && (location_from_uri.compare(location_block.get_location_context()) == 0 && (_method == "POST" && extension == ".bla"))) {
+		result = root;
+	}
 	return (result);
 }
 
