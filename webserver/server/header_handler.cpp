@@ -134,6 +134,7 @@ void        header_handler::parse_body(request_buf request) {
             _body.append(str.substr(len_hex_nb+2, chunk_size));
             pos = (int)str.find("\r\n", pos) + chunk_size + 4;
         }
+        str.clear();
     }
 }
 
@@ -389,13 +390,14 @@ std::string     header_handler::verify_content_type() {
 
 int header_handler::create_cgi_fd(std::string type, int index)
 {
-	std::string str_filename = "server_files/www/temp_files/cgi_out_";
-	if (type == "input")
-		str_filename = "server_files/www/temp_files/cgi_in_";
-	char	*index_str = ft_itoa(index);
+	std::string str_filename = "server_files/www/temp_files/cgi_out";
+	if (type == "input") //remove index
+		str_filename = "server_files/www/temp_files/cgi_in";
+	index++;
+//	char	*index_str = ft_itoa(index);
 
-	str_filename.append(index_str);
-	free(index_str);
+//	str_filename.append(index_str);
+//	free(index_str);
 	const char *filename = str_filename.c_str();
 	int	cgiFD = open(filename, O_CREAT | O_RDWR | O_TRUNC, S_IRWXU);
 	if (cgiFD == -1)

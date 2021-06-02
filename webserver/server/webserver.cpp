@@ -92,9 +92,11 @@ void    webserver::run() {
 		}
         for (size_t server_index = 0; server_index < _servers.size(); server_index++) {
             server *server = &_servers[server_index];
+//			fd.activate_client(server->_clients);
 
             if (fd.rdy_for_reading(server->get_tcp_socket())) //accept request
             {
+            	std::cout << RED << "ACCEPT" << RESET << std::endl;
                 int newFD = accept(server->get_tcp_socket(), (struct sockaddr *) &server->_addr, (socklen_t *) &server->_addr_len);
                 if (newFD == -1) {
                 	std::cout << strerror(errno) << std::endl;
@@ -112,19 +114,13 @@ void    webserver::run() {
             }
 
             for(size_t client_index = 0;  client_index < server->_clients.size(); client_index++) {
-                client *client_nxt;
-            	if (client_index + 1 < server->_clients.size())
-            		client_nxt = &server->_clients[client_index+1];
-            	else
-            		client_nxt = &server->_clients[0];
                 client *client_current = &server->_clients[client_index];
-
                 int ret;
 
                 try {
                 	_time_out_check = true;
 
-                	if (!client_current->_active)
+                	if (client_current->_active == false)
                 		continue;
 
                     if (fd.rdy_for_reading(client_current->_clientFD)) //handle requested file
@@ -171,7 +167,6 @@ void    webserver::run() {
                             client_current->_handler.set_bytes_read(0);
                             client_current->_handler.set_read_from_file(true);
 							_time_out_check = false;
-							fd.set_time_out(client_current->_clientFD);
                         }
                         fd.read_request_update(client_current->_fileFD, client_current->_clientFD);
                         if (client_current->_cgi_inputFD != unused_)
@@ -185,7 +180,11 @@ void    webserver::run() {
                         if (!client_current->_handler.get_bytes_written())
                             client_current->_handler.create_response(client_current->_fileFD, server->_server_name);
                         client_current->_handler.send_response(client_current->_clientFD);
-                        if (client_current->_handler.get_bytes_written() < (int)client_current->_handler.get_response_size())
+
+                        //PROGRESS MONITOR
+                        std::cout << GREEN << "ACTIVE CLIENTS [" << server->_clients.size() << "] CLIENT [" << client_current->_clientFD << "] RESPONSE [" << client_current->_handler.get_bytes_written() << "] RESPONSE NB [" << response_count << "]" << RESET << std::endl;
+
+						if (client_current->_handler.get_bytes_written() < (int)client_current->_handler.get_response_size())
                             continue;
                         client_current->_handler.set_bytes_written(0);
                         fd.clr_from_write_buffer(client_current->_clientFD);
@@ -196,24 +195,12 @@ void    webserver::run() {
                         client_current->_fileFD = unused_;
                         fd.set_read_buffer(client_current->_clientFD);
 
-                        if (client_index + 1 < server->_clients.size()) {
-							client_current->_active = false;
-							server->_clients[client_index + 1]._active = true;
-						}
-                        else
-                        	server->_clients.begin()->_active = true;
-
-                      
-                        client_current->_active = false;
-                        client_nxt->_active = true;
-
-                        std::cout << GREEN << server->_clients.size() << " of "<< client_current->_clientFD << " response nb [" << response_count << "]" << RESET << std::endl;
+						fd.update_active_client(server->_clients, client_current->_clientFD);
 
                         response_count++;
                     }
                     if (_time_out_check == true) {
-                    	client_current->_active = false; 
-                    	client_nxt->_active = true; 
+						fd.update_active_client(server->_clients, client_current->_clientFD);
 						fd.check_time_out(server->_clients, client_current->get_clientFD(), server->_time_out);
 					}
 

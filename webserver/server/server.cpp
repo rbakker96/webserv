@@ -109,6 +109,7 @@ void    server::reset_server(){
 void    server::remove_handled_request(int used_fd){
     map_iterator request = _request_buffer.find(used_fd);
 
+    request->second.get_body().clear();
     _request_buffer.erase(request);
 }
 
@@ -127,7 +128,7 @@ void    server::remove_client(int clientFD) {
 int     server::update_request_buffer(int fd, const std::string& request_data) {
 	for (std::map<int, request_buf>::iterator print = _request_buffer.begin(); print != _request_buffer.end(); print++) {
 		if (print->second.get_body_size() != 0)
-			std::cout << "[" << print->first << "] -> [" << print->second.get_body_size() << "]" << std::endl;
+			std::cout << CYAN << "CLIENT [" << print->first << "] REQUEST [" << print->second.get_body_size() << "]" << RESET << std::endl;
 	}
 
     std::map<int, request_buf>::iterator it = _request_buffer.find(fd);

@@ -34,12 +34,14 @@ public:
     int         get_fileFD();
     int         get_cgi_inputFD();
     bool        get_authorization_status();
+    bool		get_active();
 
     //SET functions
     void        set_clientFD(int fd);
     void        set_fileFD(int fd);
     void        set_cgi_inputFD(int fd);
     void        set_authorization_status(bool status);
+    void		set_active(bool status);
 
 };
 

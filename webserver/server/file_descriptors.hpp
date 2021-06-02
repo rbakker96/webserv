@@ -37,14 +37,17 @@ public:
 
     //UPDATE functions
     void        accepted_request_update(int activeFD);
-    void handled_request_update(int fileFD, int activeFD, std::string cgi_file_types, std::string content_type,
+    void 		handled_request_update(int fileFD, int activeFD, std::string cgi_file_types, std::string content_type,
                                 std::string method);
     void        read_request_update(int fileFD, int activeFD);
 	void        sync_maxFD(file_descriptors::vector servers);
+	void		update_active_client(std::vector<client> &clients, int clientFD);
+	void 		activate_client(std::vector<client> &clients);
 
     //SET functions
     void        set_read_buffer(int fd);
     void        set_write_buffer(int fd);
+    void		set_active(bool status);
 
     //CLR functions
     void        clr_from_read_buffer(int fd);
@@ -56,7 +59,6 @@ public:
 
     //TIME OUT functions
     void        set_time_out(int fd);
-//    void        check_time_out(std::vector<client> &clients, int time_out);
 	void		check_time_out(std::vector<client> &clients, int clientFD, int time_out);
 
 
