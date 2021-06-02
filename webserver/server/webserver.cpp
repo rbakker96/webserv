@@ -143,7 +143,7 @@ void    webserver::run() {
                     {
 
                         if (fd.rdy_for_writing(client_current->_fileFD) && client_current->_handler.get_status() < error_ && client_current->_handler.get_write_to_file() == false) {
-                            if (client_current->_handler.get_bytes_written() < (int)client_current->_handler.get_body().size()) {
+                            if (client_current->_handler.get_bytes_written() < (int)client_current->_handler.get_body().size() || (int)client_current->_handler.get_body().size() == 0) {
                                 if (server->_cgi_file_types.find(client_current->_handler.verify_content_type()) != std::string::npos && fd.rdy_for_writing(client_current->_cgi_inputFD))
                                     client_current->_handler.execute_cgi(client_current->_cgi_inputFD, client_current->_fileFD, server->_server_name, server->_port, client_current->_authorization_status, client_current->_handler.get_authorization());
                                 else
