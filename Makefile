@@ -31,7 +31,7 @@ SOURCES			=	webserver/main.cpp \
 					webserver/server/Base64.cpp
 
 
-TEMP FILES      =   server_files/www/temp_files/cgi_in \
+TEMP_FILES      =   server_files/www/temp_files/cgi_in \
                     server_files/www/temp_files/cgi_out \
                     server_files/www/downloads/file_should_exist_after \
                     server_files/www/downloads/POST_file \
