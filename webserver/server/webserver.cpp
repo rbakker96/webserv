@@ -87,8 +87,8 @@ void    webserver::run() {
         fd.synchronize(_servers);
         if (select(fd.get_max(), &fd.get_read(), &fd.get_write(), 0, 0) == -1)
 		{
-			std::cout << strerror(errno) << std::endl;
-            throw std::runtime_error("Select failed");
+			fd.clr_fd_sets();
+			continue ;
 		}
         for (size_t server_index = 0; server_index < _servers.size(); server_index++) {
             server *server = &_servers[server_index];
@@ -97,10 +97,7 @@ void    webserver::run() {
             {
                 int newFD = accept(server->get_tcp_socket(), (struct sockaddr *) &server->_addr, (socklen_t *) &server->_addr_len);
                 if (newFD == -1)
-				{
-					std::cout << strerror(errno) << std::endl;
-                    throw (std::runtime_error("Accept failed"));
-				}
+					continue ;
                 fd.set_time_out(newFD);
                 fcntl(newFD, F_SETFL, O_NONBLOCK);
                 fd.accepted_request_update(newFD);
@@ -230,7 +227,6 @@ void    webserver::run() {
     } //WHILE(TRUE) LOOP
 
 }//RUN FUNCTION
-
 
 // // // // // // // // // // // // //  DEBUG functions // // // // // // // // // // // // //
 #include <iostream>
