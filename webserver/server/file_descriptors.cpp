@@ -63,28 +63,50 @@ void     file_descriptors:: read_request_update(int fileFD, int activeFD) {
 }
 
 void    file_descriptors::sync_maxFD(file_descriptors::vector servers) {
-    int maxFD = 0;
+	int maxFD = 0;
 
-    for (size_t server_index = 0; server_index < servers.size(); server_index++) {
-        server *server = &servers[server_index];
-        for(size_t client_index = 0;  client_index < server->_clients.size(); client_index++) {
-            client *client = &server->_clients[client_index];
-            if (maxFD < client->get_clientFD())
-                maxFD = client->get_clientFD();
-            if (maxFD < client->get_fileFD())
-                maxFD = client->get_fileFD();
-            if (maxFD < client->get_cgi_inputFD())
-                maxFD = client->get_cgi_inputFD();
-        }
-    }
-    _max = maxFD + 1;
+	for (size_t server_index = 0; server_index < servers.size(); server_index++) {
+		server *server = &servers[server_index];
+		for(size_t client_index = 0;  client_index < server->_clients.size(); client_index++) {
+			client *client = &server->_clients[client_index];
+			if (maxFD < client->get_clientFD())
+				maxFD = client->get_clientFD();
+			if (maxFD < client->get_fileFD())
+				maxFD = client->get_fileFD();
+			if (maxFD < client->get_cgi_inputFD())
+				maxFD = client->get_cgi_inputFD();
+		}
+		if (maxFD < server->get_tcp_socket())
+			maxFD = server->get_tcp_socket();
+	}
+	_max = maxFD + 1;
+}
+
+void 	file_descriptors::update_active_client(std::vector<client> &clients, int clientFD) {
+	bool activate = false;
+	bool restart_cycle = true;
+
+	for (client_iterator it = clients.begin(); it != clients.end(); it++) {
+		int fd = it->get_clientFD();
+		it->set_active(false);
+		if (fd == clientFD) {
+            activate = true;
+			continue;
+		}
+		if (activate == true) {
+			it->set_active(true);
+			activate = false;
+			restart_cycle = false;
+		}
+	}
+	if (restart_cycle == true)
+		clients.begin()->set_active(true);
 }
 
 
 //-------------------------------------- SET functions --------------------------------------
 void     file_descriptors::set_read_buffer(int fd) {FD_SET(fd, &_read_buffer);}
 void     file_descriptors::set_write_buffer(int fd) {FD_SET(fd, &_write_buffer);}
-
 
 //-------------------------------------- CLR functions --------------------------------------
 void     file_descriptors::clr_from_read_buffer(int fd) {FD_CLR(fd, &_read_buffer);}

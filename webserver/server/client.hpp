@@ -9,6 +9,9 @@ public:
     friend class webserver;
 
 private:
+	//Status
+	bool 				_active;
+
     //File descriptors
     int                 _clientFD;
     int                 _fileFD;
@@ -18,15 +21,9 @@ private:
     //Handler
     header_handler      _handler;
 
-    //Index
-    int                 _index;
-
-	//Time out check
-	bool				_time_out_check;
-
 public:
     client();
-    client(int newFD, int client_amount);
+    client(int newFD);
     ~client();
 
     //GET functions
@@ -34,15 +31,14 @@ public:
     int         get_fileFD();
     int         get_cgi_inputFD();
     bool        get_authorization_status();
-	bool		get_time_out_check();
+    bool		get_active();
 
     //SET functions
     void        set_clientFD(int fd);
     void        set_fileFD(int fd);
     void        set_cgi_inputFD(int fd);
     void        set_authorization_status(bool status);
-	void		set_time_out_check(bool time_out_check);
-
+    void		set_active(bool status);
 };
 
 

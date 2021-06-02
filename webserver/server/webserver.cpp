@@ -15,7 +15,7 @@
 #include "webserver.hpp"
 #include "server.hpp"
 
-webserver::webserver() : _servers(), _client_amount(0) {}
+webserver::webserver() : _servers(), _time_out_check(false) {}
 webserver::~webserver(){}
 
 
@@ -74,21 +74,21 @@ void    webserver::establish_connection(){
 	for (size_t index = 0; index < _servers.size(); index++) {
         _servers[index].create_socket();
         _servers[index].bind_socket_address(_servers[index].get_port());
-        _servers[index].create_connection(1000); //CHECK LATER
+        _servers[index].create_connection(1000);
 	}
 }
 
 void    webserver::run() {
+	int response_count = 0;
     file_descriptors    fd;
     fd.initialize_max(_servers);
     std::cout << "--- Waiting for activity... ---" << std::endl;
     while (true)
     {
         fd.synchronize(_servers);
-        if (select(fd.get_max(), &fd.get_read(), &fd.get_write(), 0, 0) == -1)
-		{
+        if (select(fd.get_max(), &fd.get_read(), &fd.get_write(), 0, 0) == -1) {
 			std::cout << strerror(errno) << std::endl;
-            throw std::runtime_error("Select failed");
+        	throw std::runtime_error("Select failed");
 		}
         for (size_t server_index = 0; server_index < _servers.size(); server_index++) {
             server *server = &_servers[server_index];
@@ -96,128 +96,141 @@ void    webserver::run() {
             if (fd.rdy_for_reading(server->get_tcp_socket())) //accept request
             {
                 int newFD = accept(server->get_tcp_socket(), (struct sockaddr *) &server->_addr, (socklen_t *) &server->_addr_len);
-                if (newFD == -1)
-				{
-					std::cout << strerror(errno) << std::endl;
-                    throw (std::runtime_error("Accept failed"));
+                if (newFD == -1) {
+                	std::cout << strerror(errno) << std::endl;
+					throw (std::runtime_error("Accept failed"));
 				}
                 fd.set_time_out(newFD);
                 fcntl(newFD, F_SETFL, O_NONBLOCK);
                 fd.accepted_request_update(newFD);
-                server->_clients.push_back(client(newFD, _client_amount));
-                _client_amount++;
+                server->_clients.push_back(client(newFD));
+
+                if (server->_clients.size() == 1)
+                	server->_clients.begin()->_active = true;
             }
 
-            for (size_t client_index = 0;  client_index < server->_clients.size(); client_index++) {
-                client *client = &server->_clients[client_index];
+            for(size_t client_index = 0;  client_index < server->_clients.size(); client_index++) {
+                client *client_current = &server->_clients[client_index];
                 int ret;
 
                 try {
-                    if (fd.rdy_for_reading(client->_clientFD)) //handle requested file
+                	_time_out_check = true;
+
+                	if (client_current->_active == false)
+                		continue;
+
+                    if (fd.rdy_for_reading(client_current->_clientFD)) //handle requested file
                     {
-						client->set_time_out_check(false);
-                        std::string request_headers = read_browser_request(request_headers, client->_clientFD);
+                        std::string request_headers = read_browser_request(request_headers, client_current->_clientFD);
                         if (!request_headers.empty()) {
-                            fd.set_time_out(client->_clientFD);
+                            _time_out_check = false;
+                            fd.set_time_out(client_current->_clientFD);
                         }
-                        if (server->update_request_buffer(client->_clientFD, request_headers) == valid_) {
-                            client->_handler.parse_request(server->_request_buffer[client->_clientFD]);
-                            server->remove_handled_request(client->_clientFD);
-                            client->_fileFD = client->_handler.handle_request(server->_cgi_file_types, server->_location_blocks, server->get_error_page(), client->_index, &client->_authorization_status);
-	                        fd.handled_request_update(client->_fileFD, client->_clientFD, server->_cgi_file_types, client->_handler.verify_content_type(), client->_handler.get_method());
-                            if (server->_cgi_file_types.find(client->_handler.verify_content_type()) != std::string::npos) {
-								client->_cgi_inputFD = client->_handler.create_cgi_fd("input", client->_index);
-                                fd.set_write_buffer(client->_cgi_inputFD);
-                                fd.update_max(client->_cgi_inputFD);
+                        if (!request_headers.empty() && server->update_request_buffer(client_current->_clientFD, request_headers) == valid_) {
+                            client_current->_handler.parse_request(server->_request_buffer[client_current->_clientFD]);
+                            server->remove_handled_request(client_current->_clientFD);
+                            client_current->_fileFD = client_current->_handler.handle_request(server->_cgi_file_types, server->_location_blocks, server->get_error_page(), &client_current->_authorization_status);
+	                        fd.handled_request_update(client_current->_fileFD, client_current->_clientFD, server->_cgi_file_types, client_current->_handler.verify_content_type(), client_current->_handler.get_method());
+                            if (server->_cgi_file_types.find(client_current->_handler.verify_content_type()) != std::string::npos) {
+                                client_current->_cgi_inputFD = client_current->_handler.create_cgi_fd("input");
+                                fd.set_write_buffer(client_current->_cgi_inputFD);
+                                fd.update_max(client_current->_cgi_inputFD);
                             }
 						}
                     }
 
-                    if (fd.rdy_for_reading(client->_fileFD)) //read requested file
+                    if (fd.rdy_for_reading(client_current->_fileFD)) //read requested file
                     {
-						client->set_time_out_check(false);
-                        if (fd.rdy_for_writing(client->_fileFD) && client->_handler.get_status() < error_ && client->_handler.get_write_to_file() == false) {
-                            if ((client->_handler.get_bytes_written() < (int)client->_handler.get_body().size()) ||
-								(int)client->_handler.get_body().size() == 0) {
-                                if (server->_cgi_file_types.find(client->_handler.verify_content_type()) != std::string::npos && \
-									fd.rdy_for_writing(client->_cgi_inputFD))
-                                    client->_handler.execute_cgi(client->_cgi_inputFD, client->_fileFD, server->_server_name, server->_port, \
-																	client->_authorization_status, client->_handler.get_authorization());
+
+                        if (fd.rdy_for_writing(client_current->_fileFD) && client_current->_handler.get_status() < error_ && client_current->_handler.get_write_to_file() == false) {
+                            if (client_current->_handler.get_bytes_written() < (int)client_current->_handler.get_body().size()) {
+                                if (server->_cgi_file_types.find(client_current->_handler.verify_content_type()) != std::string::npos && fd.rdy_for_writing(client_current->_cgi_inputFD))
+                                    client_current->_handler.execute_cgi(client_current->_cgi_inputFD, client_current->_fileFD, server->_server_name, server->_port, client_current->_authorization_status, client_current->_handler.get_authorization());
                                 else
-                                    client->_handler.write_body_to_file(client->_fileFD);
-								if ((int)client->_handler.get_body().size() == 0)
-									client->_handler.set_write_to_file(true);
+                                    client_current->_handler.write_body_to_file(client_current->_fileFD);
+								if ((int)client_current->_handler.get_body().size() == 0)
+									client_current->_handler.set_write_to_file(true);
                                 continue;
                             }
-                            client->_handler.set_bytes_written(0);
-                            client->_handler.set_write_to_file(true);
+                            client_current->_handler.set_bytes_written(0);
+                            client_current->_handler.set_write_to_file(true);
+							_time_out_check = false;
                         }
-                        if (client->_handler.get_status() != 204 && client->_handler.get_read_from_file() == false) {
-                            if (client->_handler.verify_content_type() == "bla" && client->_handler.get_method() == "POST")
-                                ret = client->_handler.read_cgi_output_file(client->_fileFD, (int)client->_handler.get_body().size());
+                        if (client_current->_handler.get_status() != 204 && client_current->_handler.get_read_from_file() == false) {
+                            if (client_current->_handler.verify_content_type() == "bla" && client_current->_handler.get_method() == "POST")
+                                ret = client_current->_handler.read_cgi_output_file(client_current->_fileFD, (int)client_current->_handler.get_body().size());
                             else
-                                ret = client->_handler.read_requested_file(client->_fileFD);
+                                ret = client_current->_handler.read_requested_file(client_current->_fileFD);
                             if (ret)
                                 continue;
-                            client->_handler.set_bytes_read(0);
-                            client->_handler.set_read_from_file(true);
+                            client_current->_handler.set_bytes_read(0);
+                            client_current->_handler.set_read_from_file(true);
+							_time_out_check = false;
                         }
-                        fd.read_request_update(client->_fileFD, client->_clientFD);
-                        if (client->_cgi_inputFD != unused_)
-                            fd.clr_from_write_buffer(client->_cgi_inputFD);
+                        fd.read_request_update(client_current->_fileFD, client_current->_clientFD);
+                        if (client_current->_cgi_inputFD != unused_)
+                            fd.clr_from_write_buffer(client_current->_cgi_inputFD);
                     }
-					else
-						client->set_time_out_check(true);
 
-                    if (fd.rdy_for_writing(client->_clientFD)) //send response
+                    if (fd.rdy_for_writing(client_current->_clientFD)) //send response
                     {
-                    	client->set_time_out_check(false);
-                        if (!client->_handler.get_bytes_written())
-                            client->_handler.create_response(client->_fileFD, server->_server_name);
-                        client->_handler.send_response(client->_clientFD);
-                        if (client->_handler.get_bytes_written() < (int)client->_handler.get_response_size())
-                            continue;
-                        client->_handler.set_bytes_written(0);
-                        fd.clr_from_write_buffer(client->_clientFD);
-                        if (client->_cgi_inputFD != unused_)
-                            close(client->_cgi_inputFD);
-                        client->_cgi_inputFD = unused_;
-                        close(client->_fileFD);
-                        client->_fileFD = unused_;
-                        fd.set_read_buffer(client->_clientFD);
-                    }
+						_time_out_check = false;
 
-                    if (client->get_time_out_check())
-					    fd.check_time_out(server->_clients, client->get_clientFD(), server->_time_out);
+                        if (!client_current->_handler.get_bytes_written())
+                            client_current->_handler.create_response(client_current->_fileFD, server->_server_name);
+                        client_current->_handler.send_response(client_current->_clientFD);
+
+                        //PROGRESS MONITOR
+                        std::cout << GREEN << "ACTIVE CLIENTS [" << server->_clients.size() << "] CLIENT [" << client_current->_clientFD << "] RESPONSE [" << client_current->_handler.get_bytes_written() << "] RESPONSE NB [" << response_count << "]" << RESET << std::endl;
+
+						if (client_current->_handler.get_bytes_written() < (int)client_current->_handler.get_response_size())
+                            continue;
+                        client_current->_handler.set_bytes_written(0);
+                        fd.clr_from_write_buffer(client_current->_clientFD);
+                        if (client_current->_cgi_inputFD != unused_)
+                            close(client_current->_cgi_inputFD);
+                        client_current->_cgi_inputFD = unused_;
+                        close(client_current->_fileFD);
+                        client_current->_fileFD = unused_;
+                        fd.set_read_buffer(client_current->_clientFD);
+
+						fd.update_active_client(server->_clients, client_current->_clientFD);
+
+                        response_count++;
+                    }
+                    if (_time_out_check == true) {
+						fd.update_active_client(server->_clients, client_current->_clientFD);
+						fd.check_time_out(server->_clients, client_current->get_clientFD(), server->_time_out);
+                    }
 
                 } //TRY BLOCK
 
                 catch (std::string &e) {
-                    if(fd.rdy_for_reading(client->_clientFD))
-                        fd.clr_from_read_buffer(client->_clientFD);
-                    if (fd.rdy_for_writing(client->_clientFD))
-                        fd.clr_from_write_buffer(client->_clientFD);
+                    if(fd.rdy_for_reading(client_current->_clientFD))
+                        fd.clr_from_read_buffer(client_current->_clientFD);
+                    if (fd.rdy_for_writing(client_current->_clientFD))
+                        fd.clr_from_write_buffer(client_current->_clientFD);
 
-                    if(fd.rdy_for_reading(client->_fileFD))
-                        fd.clr_from_read_buffer(client->_fileFD);
-                    if (fd.rdy_for_writing(client->_fileFD))
-                        fd.clr_from_write_buffer(client->_fileFD);
-                    if (client->_fileFD != unused_)
-                        close(client->_fileFD);
+                    if(fd.rdy_for_reading(client_current->_fileFD))
+                        fd.clr_from_read_buffer(client_current->_fileFD);
+                    if (fd.rdy_for_writing(client_current->_fileFD))
+                        fd.clr_from_write_buffer(client_current->_fileFD);
+                    if (client_current->_fileFD != unused_)
+                        close(client_current->_fileFD);
 
-                    if(fd.rdy_for_reading(client->_cgi_inputFD))
-                        fd.clr_from_read_buffer(client->_cgi_inputFD);
-                    if (fd.rdy_for_writing(client->_cgi_inputFD))
-                        fd.clr_from_write_buffer(client->_cgi_inputFD);
-                    if (client->_cgi_inputFD != unused_)
-                        close(client->_cgi_inputFD);
+                    if(fd.rdy_for_reading(client_current->_cgi_inputFD))
+                        fd.clr_from_read_buffer(client_current->_cgi_inputFD);
+                    if (fd.rdy_for_writing(client_current->_cgi_inputFD))
+                        fd.clr_from_write_buffer(client_current->_cgi_inputFD);
+                    if (client_current->_cgi_inputFD != unused_)
+                        close(client_current->_cgi_inputFD);
 
                     if (server->_clients.size() == 1) {
-                        close(client->_clientFD);
+                        close(client_current->_clientFD);
                         server->_clients.clear();
                     }
                     else
-                        server->remove_client(client->_clientFD);
+                        server->remove_client(client_current->_clientFD);
                     std::cout << RED << e << RESET << std::endl; //PRINT ERROR MESSAGE
                 } //CATCH BLOCK
 

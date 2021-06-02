@@ -51,6 +51,7 @@ public:
 	friend class webserver;
     friend class file_descriptors;
 
+
 public:
     typedef     std::vector<std::string>::iterator      vector_iterator;
     typedef     std::map<int, request_buf>::iterator    map_iterator;

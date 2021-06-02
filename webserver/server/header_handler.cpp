@@ -93,8 +93,6 @@ int         header_handler::identify_request_value(const std::string &str) {
 }
 
 void        header_handler::parse_first_line(const std::string &str) {
-//    if (str.find("../") != std::string::npos)
-//        throw std::runtime_error("Nice try, but not allowed ;)");
     int		index;
     size_t	start = (str[0] == '\n') ? 1 : 0;
     size_t	end = str.find_first_of(' ', start);
@@ -135,6 +133,7 @@ void        header_handler::parse_body(request_buf request) {
             _body.append(str.substr(len_hex_nb+2, chunk_size));
             pos = (int)str.find("\r\n", pos) + chunk_size + 4;
         }
+        str.clear();
     }
 }
 
@@ -204,6 +203,7 @@ void header_handler::verify_authorization(location_context location_block, bool 
 	}
 }
 
+
 void	header_handler::remove_file()
 {
 	int	ret = remove(_file_location.c_str());
@@ -211,8 +211,8 @@ void	header_handler::remove_file()
 		_status = not_found_;
 }
 
-int header_handler::handle_request(std::string cgi_file_types, location_vector location_blocks, std::string error_page,
-                                   int index, bool *authorization_status) {
+
+int header_handler::handle_request(std::string cgi_file_types, location_vector location_blocks, std::string error_page, bool *authorization_status) {
 	struct  stat stats;
 	int		fd = unused_;
 
@@ -229,7 +229,7 @@ int header_handler::handle_request(std::string cgi_file_types, location_vector l
 		else if (_method == "DELETE")
 			remove_file();
 		else if (cgi_file_types.find(verify_content_type()) != std::string::npos)
-		    return create_cgi_fd("output", index);
+		    return create_cgi_fd("output");
 		else if (stat(_file_location.c_str(), &stats) == -1)
 			_status = not_found_;
 		else if (!(stats.st_mode & S_IRUSR))
@@ -281,8 +281,8 @@ std::string	header_handler::location_of_uploaded_file(location_context location_
         result = root;
         result.append(uri_location);
     }
-    if ((s.st_mode & S_IFREG) && (location_from_uri.compare(location_block.get_location_context()) == 0 && (_method == "POST" && extension == ".bla")))
-	{
+
+    if ((s.st_mode & S_IFREG) && (location_from_uri.compare(location_block.get_location_context()) == 0 && (_method == "POST" && extension == ".bla"))) {
 		result = root;
 	}
 	return (result);
@@ -415,15 +415,12 @@ std::string     header_handler::verify_content_type() {
     return "folder";
 }
 
-int header_handler::create_cgi_fd(std::string type, int index)
+int header_handler::create_cgi_fd(std::string type)
 {
-	std::string str_filename = "/tmp/cgi_out";
+	std::string str_filename = "server_files/www/temp_files/cgi_out";
 	if (type == "input")
-		str_filename = "/tmp/cgi_in";
-	char	*index_str = ft_itoa(index);
+		str_filename = "server_files/www/temp_files/cgi_in";
 
-	str_filename.append(index_str);
-	free(index_str);
 	const char *filename = str_filename.c_str();
 	int	cgiFD = open(filename, O_CREAT | O_RDWR | O_TRUNC, S_IRWXU);
 	if (cgiFD == -1)
@@ -499,7 +496,7 @@ void header_handler::execute_cgi(int inputFD, int outputFD, std::string server_n
 		dup2(inputFD, STDIN_FILENO);
 		dup2(outputFD, STDOUT_FILENO);
 		execve(args[0], args, envp);
-		exit(EXIT_FAILURE); // handle error
+		exit(EXIT_FAILURE);
 	}
 	else {
         waitpid(pid, &status, 0);
@@ -675,7 +672,7 @@ void    header_handler::create_response(int fileFD, std::string server_name) {
         _response.append(_response_file);
     _response_size = _response.size();
 
-    print_response_headers(response.get_response()); //DEBUG
+//    print_response_headers(response.get_response()); //DEBUG
 }
 
 void    header_handler::send_response(int clientFD) {

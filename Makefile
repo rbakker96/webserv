@@ -30,8 +30,11 @@ SOURCES			=	webserver/main.cpp \
 					webserver/helper/verify_file_location_functions.cpp \
 					webserver/server/Base64.cpp
 
-TEMP_FILES      =   server_files/www/downloads/file_should_exist_after \
-						server_files/www/downloads/POST_file \
+
+TEMP FILES      =   server_files/www/temp_files/cgi_in \
+                    server_files/www/temp_files/cgi_out \
+                    server_files/www/downloads/file_should_exist_after \
+                    server_files/www/downloads/POST_file \
                     server_files/www/downloads/multiple_same
 
 OBJECTS 		=	${SOURCES:%.c=%.o}

@@ -69,8 +69,6 @@ public:
 								not_found_ = 404, method_not_allowed_ = 405,
 								payload_too_large_ = 413 };
 
-    enum		protection_values{ read_write_ = 1, no_read_write_ = 0 };
-
 protected:
 	//status
 	int				            _status;
@@ -134,12 +132,11 @@ public:
 	void            invalid_argument(const std::string &str);
 
     //HANDLE functions
-    int             handle_request( std::string cgi_file_types, location_vector location_blocks, std::string error_page, int index,
-                                    bool *authorization_status);
+    int             handle_request( std::string cgi_file_types, location_vector location_blocks, std::string error_page, bool *authorization_status);
     int             put_request();
     int             post_request(int max_file_size);
     void            write_body_to_file(int file_fd);
-	int 			create_cgi_fd(std::string type, int index);
+	int 			create_cgi_fd(std::string type);
     void            verify_file_location(location_vector location_blocks, std::string error_page);
 	std::string		match_location_block(header_handler::location_vector location_blocks, std::string file_location);
 	std::string		generate_error_page_location(std::string error_page);
