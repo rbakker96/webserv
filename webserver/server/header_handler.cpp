@@ -495,7 +495,7 @@ void header_handler::execute_cgi(int inputFD, int outputFD, std::string server_n
 			char	**args = create_cgi_args();
 			char 	**envp = create_cgi_envp(server_name, server_port, auth_status, auth_info);
 
-			if (write(inputFD, _body.c_str(), _body.size()) == -1 ||
+			if (write(inputFD, _body.c_str(), _body.size()) != (int)_body.size() ||
 			lseek(inputFD, 0, SEEK_SET) == -1 ||
 			dup2(inputFD, STDIN_FILENO) == -1 ||
 			dup2(outputFD, STDOUT_FILENO) == -1 ||
