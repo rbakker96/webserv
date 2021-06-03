@@ -1,4 +1,5 @@
 #include "helper.hpp"
+#include "../server/client.hpp"
 
 int     check_server_block(std::vector<std::string> server_block) {
     int         open_bracket = 0;

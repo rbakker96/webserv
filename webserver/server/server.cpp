@@ -129,19 +129,20 @@ void    server::remove_client(int clientFD) {
 int     server::update_request_buffer(int fd, const std::string& request_data) {
 	std::map<int, request_buf>::iterator it = _request_buffer.find(fd);
 
-	//PROGRESS MONITOR
-	std::cout << CYAN << "CLIENT [" << fd << "] REQUEST [" << it->second.get_body_size() << "]" << RESET << std::endl;
-
     if (it == _request_buffer.end()) {
         request_buf tmp;
         _request_buffer.insert(std::pair<int, request_buf>(fd, tmp));
-//        it = _request_buffer.find(fd);
     }
 
-    if (!_request_buffer[fd].headers_received())
-        _request_buffer[fd].add_header_data(request_data);
-    else
-        _request_buffer[fd].add_body_data(request_data);
+    if (!_request_buffer[fd].headers_received()) {
+		_request_buffer[fd].add_header_data(request_data);
+	}
+    else {
+		_request_buffer[fd].add_body_data(request_data);
+	}
+
+	//PROGRESS MONITOR
+	std::cout << CYAN << "CLIENT [" << fd << "] REQUEST [" << it->second.get_body_size() << "]" << RESET << std::endl;
 
     if (!_request_buffer[fd].headers_received())
         return invalid_;

@@ -13,7 +13,7 @@ file_descriptors::~file_descriptors() {
 
 
 //-------------------------------------- GENERAL functions --------------------------------------
-void    file_descriptors::synchronize(file_descriptors::vector servers) {
+void    file_descriptors::synchronize(file_descriptors::vector &servers) {
     _read = _read_buffer;
     _write = _write_buffer;
 
@@ -62,19 +62,19 @@ void     file_descriptors:: read_request_update(int fileFD, int activeFD) {
     set_write_buffer(activeFD);
 }
 
-void    file_descriptors::sync_maxFD(file_descriptors::vector servers) {
+void    file_descriptors::sync_maxFD(file_descriptors::vector &servers) {
 	int maxFD = 0;
 
 	for (size_t server_index = 0; server_index < servers.size(); server_index++) {
 		server *server = &servers[server_index];
 		for(size_t client_index = 0;  client_index < server->_clients.size(); client_index++) {
-			client *client = &server->_clients[client_index];
-			if (maxFD < client->get_clientFD())
-				maxFD = client->get_clientFD();
-			if (maxFD < client->get_fileFD())
-				maxFD = client->get_fileFD();
-			if (maxFD < client->get_cgi_inputFD())
-				maxFD = client->get_cgi_inputFD();
+			client *current_client = &server->_clients[client_index];
+			if (maxFD < current_client->get_clientFD())
+				maxFD = current_client->get_clientFD();
+			if (maxFD < current_client->get_fileFD())
+				maxFD = current_client->get_fileFD();
+			if (maxFD < current_client->get_cgi_inputFD())
+				maxFD = current_client->get_cgi_inputFD();
 		}
 		if (maxFD < server->get_tcp_socket())
 			maxFD = server->get_tcp_socket();
@@ -101,6 +101,16 @@ void 	file_descriptors::update_active_client(std::vector<client> &clients, int c
 	}
 	if (restart_cycle == true)
 		clients.begin()->set_active(true);
+}
+
+void file_descriptors::check_active_fd(std::vector<client> &clients) {
+	int counter = 0;
+
+	for (client_iterator it = clients.begin(); it != clients.end(); it++) {
+		if (it->get_active() == true)
+			counter++;
+	}
+	std::cout << GREEN << "active fds = " << counter << RESET << std::endl;
 }
 
 
@@ -154,6 +164,7 @@ void     file_descriptors::check_time_out(std::vector<client> &clients, int clie
 		{
 			map_iterator recorded_time = _time_out_monitor.find(clientFD);
 			if (recorded_time->second != 0 && (time - recorded_time->second) >= time_out) {
+				update_active_client(clients, clientFD);
 				clr_from_read_buffer(clientFD);
 				close(clientFD);
 				clients.erase(it);

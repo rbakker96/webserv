@@ -13,6 +13,7 @@
 
 class file_descriptors {
 public:
+	friend class webserver;
     typedef     std::vector<server>                   vector;
     typedef     std::map<int, long long>::iterator    map_iterator;
     typedef     std::vector<client>::iterator         client_iterator;
@@ -31,7 +32,7 @@ public:
     ~file_descriptors();
 
     //GENERAL functions
-    void    	synchronize(vector servers);
+    void    	synchronize(vector &servers);
     void    	initialize_max(vector servers);
     void		update_max(int fd);
 
@@ -40,7 +41,7 @@ public:
     void 		handled_request_update(int fileFD, int activeFD, std::string cgi_file_types, std::string content_type,
                                 std::string method);
     void        read_request_update(int fileFD, int activeFD);
-	void        sync_maxFD(file_descriptors::vector servers);
+	void        sync_maxFD(vector &servers);
 	void		update_active_client(std::vector<client> &clients, int clientFD);
 
     //SET functions
@@ -66,6 +67,10 @@ public:
     fd_set&     get_read_buffer();
     fd_set&     get_write_buffer();
     int			get_max();
+
+    // TO REMOVE
+	void check_active_fd(std::vector<client> &clients);
+
 };
 
 #endif //WEBSERVER_FILE_DESCRIPTORS_HPP
