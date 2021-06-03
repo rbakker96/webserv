@@ -188,7 +188,7 @@ void    webserver::run() {
 
 						//PROGRESS MONITOR
 						std::cout << GREEN << "ACTIVE CLIENTS [" << server->_clients.size() << "] CLIENT [" << client_current->_clientFD <<  "] RESPONSE NB [" << response_count << "]" << RESET << std::endl;
-						
+
                         response_count++;
                     }
 
