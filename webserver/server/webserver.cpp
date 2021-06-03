@@ -98,8 +98,9 @@ void    webserver::run() {
                 int newFD = accept(server->get_tcp_socket(), (struct sockaddr *) &server->_addr, (socklen_t *) &server->_addr_len);
                 if (newFD == -1)
 					continue ;
+                if (fcntl(newFD, F_SETFL, O_NONBLOCK) == -1)
+					continue ;
                 fd.set_time_out(newFD);
-                fcntl(newFD, F_SETFL, O_NONBLOCK);
                 fd.accepted_request_update(newFD);
                 server->_clients.push_back(client(newFD, _client_amount));
                 _client_amount++;
