@@ -248,17 +248,11 @@ int header_handler::handle_request(std::string cgi_file_types, location_vector l
         if ((fd = open(&_file_location[0], O_RDONLY)) == -1)
             throw (std::string("Open failed"));
     }
-<<<<<<< HEAD
-	if (fd != -1)
-        fcntl(fd, F_SETFL, O_NONBLOCK);
-    return fd;
-=======
     if (fd != -1) {
 		if (fcntl(fd, F_SETFL, O_NONBLOCK) == -1)
 			throw (std::string("FCNTL failed"));
 	}
 	return fd;
->>>>>>> 2acef37edd040303f17ef93cca50fa9bca46211e
 }
 
 std::string	header_handler::get_referer_part()
