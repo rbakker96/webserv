@@ -76,7 +76,8 @@ void    server::invalid_element(const std::string& str) {parse_invalid(str);}
 void	server::create_socket() {
     if ((this->_tcp_socket = socket(AF_INET, SOCK_STREAM, 0)) == -1)
 		throw (std::runtime_error("Socket creation failed"));
-    fcntl(this->_tcp_socket, F_SETFL, O_NONBLOCK);
+    if (fcntl(this->_tcp_socket, F_SETFL, O_NONBLOCK) == -1)
+		throw (std::runtime_error("FCNTL failed"));
 }
 
 void	server::bind_socket_address(int port) {
