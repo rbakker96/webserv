@@ -142,9 +142,6 @@ int     server::update_request_buffer(int fd, const std::string& request_data) {
 		_request_buffer[fd].add_body_data(request_data);
 	}
 
-	//PROGRESS MONITOR
-	std::cout << CYAN << "CLIENT [" << fd << "] REQUEST [" << it->second.get_body_size() << "]" << RESET << std::endl;
-
     if (!_request_buffer[fd].headers_received())
         return invalid_;
     else
