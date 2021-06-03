@@ -30,7 +30,7 @@ void location_context::configure_location_block(vector_iterator it, vector_itera
                                      &location_context::configure_return,
                                      &location_context::invalid_element };
 
-    clean_location_instance();
+    clean_location_instance(); // CAN BE REMOVED?
 	configure_location_context(*it);
     for(; it != end; it++) {
         int location_value = identify_location_value(*it);
