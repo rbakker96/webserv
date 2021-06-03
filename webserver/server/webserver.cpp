@@ -105,23 +105,26 @@ void    webserver::run() {
                 fd.accepted_request_update(newFD);
                 server->_clients.push_back(client(newFD));
 
-                if (server->_clients.size() == 1)
+                if (server->_clients.size() == 1) {
+					std::cout << CYAN << "ACTIVATED\n" << RESET;
                 	server->_clients.begin()->_active = true;
+				}
             }
 
             for(size_t client_index = 0;  client_index < server->_clients.size(); client_index++) {
                 client *client_current = &server->_clients[client_index];
+
                 int ret;
 
                 try {
-					_time_out_check = true;
+					_time_out_check = (server->_request_buffer[client_current->_clientFD].get_body_size() != 0 || client_current->_handler.get_bytes_written()) ? false : true;
 
                 	if (client_current->_active == false)
                 		continue;
 
                     if (fd.rdy_for_reading(client_current->_clientFD)) //handle requested file
                     {
-                        std::string request_headers;
+                    	std::string request_headers;
                         read_browser_request(request_headers, client_current->_clientFD);
                         if (!request_headers.empty()) {
                             _time_out_check = false;
@@ -142,7 +145,6 @@ void    webserver::run() {
 
                     if (fd.rdy_for_reading(client_current->_fileFD)) //read requested file
                     {
-
                         if (fd.rdy_for_writing(client_current->_fileFD) && client_current->_handler.get_status() < error_ && client_current->_handler.get_write_to_file() == false) {
                             if (client_current->_handler.get_bytes_written() < (int)client_current->_handler.get_body().size() || (int)client_current->_handler.get_body().size() == 0) {
                                 if (server->_cgi_file_types.find(client_current->_handler.verify_content_type()) != std::string::npos && fd.rdy_for_writing(client_current->_cgi_inputFD))
@@ -185,27 +187,16 @@ void    webserver::run() {
                         std::cout << GREEN << "ACTIVE CLIENTS [" << server->_clients.size() << "] CLIENT [" << client_current->_clientFD << "] RESPONSE [" << client_current->_handler.get_bytes_written() << "] RESPONSE NB [" << response_count << "]" << RESET << std::endl;
 
 						if (client_current->_handler.get_bytes_written() < (int)client_current->_handler.get_response_size())
-						{
-							std::cout << "Bytes written = " << client_current->_handler.get_bytes_written() << " Response size = " << (int)client_current->_handler.get_response_size() << std::endl;
 							continue;
-						}
-						std::cout << "1 - Bytes written = " << client_current->_handler.get_bytes_written() << " Response size = " << (int)client_current->_handler.get_response_size() << std::endl;
-
 						client_current->_handler.set_bytes_written(0);
-                        fd.clr_from_write_buffer(client_current->_clientFD);
-                        if (client_current->_cgi_inputFD != unused_)
-                            close(client_current->_cgi_inputFD);
-                        client_current->_cgi_inputFD = unused_;
-                        close(client_current->_fileFD);
-                        client_current->_fileFD = unused_;
-                        fd.set_read_buffer(client_current->_clientFD);
-						std::cout << GREEN << "update active client" << RESET << std::endl;
+						fd.send_response_update(server->_clients[client_index]);
 						fd.update_active_client(server->_clients, client_current->_clientFD);
 
                         response_count++;
                     }
+
                     if (_time_out_check == true) {
-                    	std::cout << RED << "update active client" << RESET << std::endl;
+						fd.update_active_client(server->_clients, client_current->_clientFD);
 						fd.check_time_out(server->_clients, client_current->get_clientFD(), server->_time_out);
                     }
 

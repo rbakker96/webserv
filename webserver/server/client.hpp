@@ -7,6 +7,7 @@
 class client {
 public:
     friend class webserver;
+    friend class file_descriptors;
 
 private:
 	//Status

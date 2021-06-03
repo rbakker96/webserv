@@ -41,6 +41,7 @@ public:
     void 		handled_request_update(int fileFD, int activeFD, std::string cgi_file_types, std::string content_type,
                                 std::string method);
     void        read_request_update(int fileFD, int activeFD);
+    void		send_response_update(client &client_current);
 	void        sync_maxFD(vector &servers);
 	void		update_active_client(std::vector<client> &clients, int clientFD);
 
@@ -67,9 +68,6 @@ public:
     fd_set&     get_read_buffer();
     fd_set&     get_write_buffer();
     int			get_max();
-
-    // TO REMOVE
-	void check_active_fd(std::vector<client> &clients);
 
 };
 

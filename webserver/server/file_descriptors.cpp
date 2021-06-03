@@ -55,11 +55,21 @@ void file_descriptors::handled_request_update(int fileFD, int activeFD, std::str
         set_write_buffer(fileFD);
 }
 
-void     file_descriptors:: read_request_update(int fileFD, int activeFD) {
+void     file_descriptors::read_request_update(int fileFD, int activeFD) {
     if (rdy_for_writing(fileFD))
         clr_from_write_buffer(fileFD);
     clr_from_read_buffer(fileFD);
     set_write_buffer(activeFD);
+}
+
+void 	file_descriptors::send_response_update(client &client_current) {
+	clr_from_write_buffer(client_current._clientFD);
+	if (client_current._cgi_inputFD != -1)
+		close(client_current._cgi_inputFD);
+	client_current._cgi_inputFD = -1;
+	close(client_current._fileFD);
+	client_current._fileFD = -1;
+	set_read_buffer(client_current._clientFD);
 }
 
 void    file_descriptors::sync_maxFD(file_descriptors::vector &servers) {
@@ -103,17 +113,6 @@ void 	file_descriptors::update_active_client(std::vector<client> &clients, int c
 		clients.begin()->set_active(true);
 }
 
-void file_descriptors::check_active_fd(std::vector<client> &clients) {
-	int counter = 0;
-
-	for (client_iterator it = clients.begin(); it != clients.end(); it++) {
-		if (it->get_active() == true)
-			counter++;
-	}
-	std::cout << GREEN << "active fds = " << counter << RESET << std::endl;
-}
-
-
 //-------------------------------------- SET functions --------------------------------------
 void     file_descriptors::set_read_buffer(int fd) {FD_SET(fd, &_read_buffer);}
 void     file_descriptors::set_write_buffer(int fd) {FD_SET(fd, &_write_buffer);}
@@ -134,7 +133,6 @@ int     file_descriptors::rdy_for_writing(int fd) {
         return 0;
     return FD_ISSET(fd, &_write);
 }
-
 
 //-------------------------------------- TIME OUT functions --------------------------------------
 void    file_descriptors::set_time_out(int fd) {
@@ -164,7 +162,6 @@ void     file_descriptors::check_time_out(std::vector<client> &clients, int clie
 		{
 			map_iterator recorded_time = _time_out_monitor.find(clientFD);
 			if (recorded_time->second != 0 && (time - recorded_time->second) >= time_out) {
-				update_active_client(clients, clientFD);
 				clr_from_read_buffer(clientFD);
 				close(clientFD);
 				clients.erase(it);
