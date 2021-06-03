@@ -85,7 +85,7 @@ public:
     ~server();
 
     //GENERAL functions
-    void    create_new_server(std::vector<std::string> server_config);
+    void    create_new_server(std::vector<std::string>& server_config);
 
     //CONFIG functions
     int     identify_server_value(const std::string& str);

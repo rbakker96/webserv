@@ -34,7 +34,7 @@ TEMP_FILES      =   server_files/www/downloads/file_should_exist_after \
 						server_files/www/downloads/POST_file \
                     server_files/www/downloads/multiple_same
 
-OBJECTS 		=	${SOURCES:%.c=%.o}
+OBJECTS 		=	${SOURCES:%.cpp=%.o}
 
 FLAGS 			=	-Wall -Wextra -Werror
 
@@ -63,7 +63,7 @@ clean:
 	@echo "$(RED)----------------------------------------------------"
 	@echo "$(WHITE)DELETE ./webserv"
 	@echo "$(RED)----------------------------------------------------"
-	@/bin/rm -f $(NAME) $(TEMP_FILES)
+	@/bin/rm -f $(NAME) $(TEMP_FILES) $(OBJECTS)
 
 re: clean all
 
