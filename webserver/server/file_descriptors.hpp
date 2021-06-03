@@ -51,6 +51,7 @@ public:
     //CLR functions
     void        clr_from_read_buffer(int fd);
     void        clr_from_write_buffer(int fd);
+	void		clr_fd_sets(void);
 
     //IS_SET functions
     int         rdy_for_reading(int fd);

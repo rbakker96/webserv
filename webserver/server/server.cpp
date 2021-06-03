@@ -19,7 +19,7 @@ server::~server(){}
 
 
 //-------------------------------------- GENERAL functions --------------------------------------
-void    server::create_new_server(std::vector <std::string> server_config) {
+void    server::create_new_server(std::vector <std::string>& server_config) {
     location_context                location;
     configure configure_array[7] = { &server::configure_port,
                                      &server::configure_host,
@@ -29,7 +29,7 @@ void    server::create_new_server(std::vector <std::string> server_config) {
                                      &server::configure_cgi_file_types,
                                      &server::invalid_element };
 
-    reset_server();
+    reset_server(); // CAN BE REMOVED?
     for (vector_iterator it = server_config.begin(); it != server_config.end(); it++) {
         int server_value = identify_server_value(*it);
         if (server_value == location_) {
@@ -76,7 +76,8 @@ void    server::invalid_element(const std::string& str) {parse_invalid(str);}
 void	server::create_socket() {
     if ((this->_tcp_socket = socket(AF_INET, SOCK_STREAM, 0)) == -1)
 		throw (std::runtime_error("Socket creation failed"));
-    fcntl(this->_tcp_socket, F_SETFL, O_NONBLOCK);
+    if (fcntl(this->_tcp_socket, F_SETFL, O_NONBLOCK) == -1)
+		throw (std::runtime_error("FCNTL failed"));
 }
 
 void	server::bind_socket_address(int port) {

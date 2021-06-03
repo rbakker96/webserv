@@ -122,6 +122,12 @@ void     file_descriptors::set_write_buffer(int fd) {FD_SET(fd, &_write_buffer);
 void     file_descriptors::clr_from_read_buffer(int fd) {FD_CLR(fd, &_read_buffer);}
 void     file_descriptors::clr_from_write_buffer(int fd) {FD_CLR(fd, &_write_buffer);}
 
+void	file_descriptors::clr_fd_sets(void)
+{
+	FD_ZERO(&_read_buffer);
+	FD_ZERO(&_write_buffer);
+}
+
 
 //-------------------------------------- IS_SET functions --------------------------------------
 int     file_descriptors::rdy_for_reading(int fd) {

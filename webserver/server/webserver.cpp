@@ -87,8 +87,8 @@ void    webserver::run() {
     {
         fd.synchronize(_servers);
         if (select(fd.get_max(), &fd.get_read(), &fd.get_write(), 0, 0) == -1) {
-			std::cout << strerror(errno) << std::endl;
-        	throw std::runtime_error("Select failed");
+			fd.clr_fd_sets();
+			continue ;
 		}
         for (size_t server_index = 0; server_index < _servers.size(); server_index++) {
             server *server = &_servers[server_index];
@@ -96,12 +96,11 @@ void    webserver::run() {
             if (fd.rdy_for_reading(server->get_tcp_socket())) //accept request
             {
                 int newFD = accept(server->get_tcp_socket(), (struct sockaddr *) &server->_addr, (socklen_t *) &server->_addr_len);
-                if (newFD == -1) {
-                	std::cout << strerror(errno) << std::endl;
-					throw (std::runtime_error("Accept failed"));
-				}
+                if (newFD == -1)
+					continue ;
+                if (fcntl(newFD, F_SETFL, O_NONBLOCK) == -1)
+					continue ;
                 fd.set_time_out(newFD);
-                fcntl(newFD, F_SETFL, O_NONBLOCK);
                 fd.accepted_request_update(newFD);
                 server->_clients.push_back(client(newFD));
 
@@ -109,10 +108,8 @@ void    webserver::run() {
                 	server->_clients.begin()->_active = true;
             }
 
-            for(size_t client_index = 0;  client_index < server->_clients.size(); client_index++) {
+            for (size_t client_index = 0;  client_index < server->_clients.size(); client_index++) {
                 client *client_current = &server->_clients[client_index];
-                int ret;
-
                 try {
 					_time_out_check = true;
 
@@ -158,7 +155,8 @@ void    webserver::run() {
 							_time_out_check = false;
                         }
                         if (client_current->_handler.get_status() != 204 && client_current->_handler.get_read_from_file() == false) {
-                            if (client_current->_handler.verify_content_type() == "bla" && client_current->_handler.get_method() == "POST")
+							int ret = 0;
+							if (client_current->_handler.verify_content_type() == "bla" && client_current->_handler.get_method() == "POST")
                                 ret = client_current->_handler.read_cgi_output_file(client_current->_fileFD, (int)client_current->_handler.get_body().size());
                             else
                                 ret = client_current->_handler.read_requested_file(client_current->_fileFD);
@@ -249,7 +247,6 @@ void    webserver::run() {
     } //WHILE(TRUE) LOOP
 
 }//RUN FUNCTION
-
 
 // // // // // // // // // // // // //  DEBUG functions // // // // // // // // // // // // //
 #include <iostream>
