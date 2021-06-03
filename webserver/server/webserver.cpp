@@ -108,8 +108,6 @@ void    webserver::run() {
 
             for (size_t client_index = 0;  client_index < server->_clients.size(); client_index++) {
                 client *client = &server->_clients[client_index];
-                int ret;
-
                 try {
                     if (fd.rdy_for_reading(client->_clientFD)) //handle requested file
                     {
@@ -151,7 +149,8 @@ void    webserver::run() {
                             client->_handler.set_write_to_file(true);
                         }
                         if (client->_handler.get_status() != 204 && client->_handler.get_read_from_file() == false) {
-                            if (client->_handler.verify_content_type() == "bla" && client->_handler.get_method() == "POST")
+							int ret = 0;
+							if (client->_handler.verify_content_type() == "bla" && client->_handler.get_method() == "POST")
                                 ret = client->_handler.read_cgi_output_file(client->_fileFD, (int)client->_handler.get_body().size());
                             else
                                 ret = client->_handler.read_requested_file(client->_fileFD);

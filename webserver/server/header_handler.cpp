@@ -52,7 +52,7 @@ void        header_handler::parse_request(request_buf request_buffer) {
 													&header_handler::parse_special_x_header,
 													&header_handler::invalid_argument};
 
-    reset_handler();
+    reset_handler(); // CAN BE REMOVED?
     vector_iterator first_line = (request_elements.begin()->empty()) ? ++request_elements.begin() : request_elements.begin();
     parse_first_line(*first_line);
     for (vector_iterator it = request_elements.begin(); it != request_elements.end(); it++) {
@@ -61,7 +61,7 @@ void        header_handler::parse_request(request_buf request_buffer) {
         (this->*function)(*it);
     }
     parse_body(request_buffer);
-    print_request(); //DEBUG
+//    print_request(); //DEBUG
 }
 
 int         header_handler::identify_request_value(const std::string &str) {
@@ -474,21 +474,28 @@ void header_handler::execute_cgi(int inputFD, int outputFD, std::string server_n
 
 	pid = fork();
 	if (pid == -1)
-		throw std::runtime_error("Fork failed");
-	if (pid == 0)
-	{
-		char	**args = create_cgi_args(); // error management
-		char 	**envp = create_cgi_envp(server_name, server_port, auth_status, auth_info); // error management
+		throw (std::string("fork() failed"));
+	if (pid == 0) {
+		try {
+			char	**args = create_cgi_args();
+			char 	**envp = create_cgi_envp(server_name, server_port, auth_status, auth_info);
 
-		write(inputFD, _body.c_str(), _body.size());
-		lseek(inputFD, 0, SEEK_SET);
-		dup2(inputFD, STDIN_FILENO);
-		dup2(outputFD, STDOUT_FILENO);
-		execve(args[0], args, envp);
-		exit(EXIT_FAILURE); // handle error
+			if (write(inputFD, _body.c_str(), _body.size()) == -1 ||
+			lseek(inputFD, 0, SEEK_SET) == -1 ||
+			dup2(inputFD, STDIN_FILENO) == -1 ||
+			dup2(outputFD, STDOUT_FILENO) == -1 ||
+			execve(args[0], args, envp) == -1)
+				exit(EXIT_FAILURE);
+		}
+		catch (std::string &e) {
+			std::cout << e << std::endl;
+			exit(EXIT_FAILURE);
+		}
 	}
 	else {
         waitpid(pid, &status, 0);
+        if (WIFEXITED(status) && WEXITSTATUS(status) == EXIT_FAILURE)
+			throw (std::string("execute cgi child process failure"));
 		_bytes_written = _body.size();
     }
 }
@@ -524,7 +531,8 @@ char	**header_handler::create_cgi_args()
 	char	**args = new char *[3];
 	char 	server_root[PATH_MAX];
 
-	getcwd(server_root, (size_t)PATH_MAX);
+	if (!getcwd(server_root, (size_t)PATH_MAX))
+		throw (std::string("getcwd() failed"));
 	if (_file_location.find(".php") != std::string::npos)
 		args[0] = ft_strdup("/usr/bin/php");
 	else if (_file_location.find(".bla") != std::string::npos)
@@ -543,9 +551,12 @@ char **header_handler::create_cgi_envp(const std::string &server_name, int serve
 {
 	vector	cgi_envps;
 	char 	server_root[PATH_MAX];
-	getcwd(server_root, (size_t)PATH_MAX);
+	if (!getcwd(server_root, (size_t)PATH_MAX))
+		throw (std::string("getcwd() failed"));
 
 	char *tmp = ft_itoa(_content_length);
+	if (!tmp)
+		throw (std::string("ft_itoa() failed"));
 	cgi_envps.push_back(((std::string)"CONTENT_LENGTH=").append(tmp));
 	free(tmp);
 	cgi_envps.push_back(((std::string)"CONTENT_TYPE=").append(_content_type));
@@ -573,6 +584,8 @@ char **header_handler::create_cgi_envp(const std::string &server_name, int serve
 	cgi_envps.push_back(((std::string)"SCRIPT_NAME=").append(get_location_without_root(_uri_location)));
 	cgi_envps.push_back(((std::string)"SERVER_NAME=").append(server_name));
 	char *tmp2 = ft_itoa(server_port);
+	if (!tmp2)
+		throw (std::string("ft_itoa() failed"));
 	cgi_envps.push_back(((std::string)"SERVER_PORT=").append(tmp2));
 	free(tmp2);
 	cgi_envps.push_back(((std::string)"SERVER_PROTOCOL=").append(get_protocol()));
