@@ -1,3 +1,0 @@
-/home/qli/Documents/Codam/webserv/cmake-build-debug/CMakeFiles/edit_cache.dir
-/home/qli/Documents/Codam/webserv/cmake-build-debug/CMakeFiles/rebuild_cache.dir
-/home/qli/Documents/Codam/webserv/cmake-build-debug/CMakeFiles/webserver.dir

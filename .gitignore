@@ -1,3 +1,9 @@
+.idea
+
+/cmake-build-debug
+
+CMakeLists.txt
+
 server_files/www/downloads/file_should_exist_after
 
 server_files/www/downloads/POST_file
