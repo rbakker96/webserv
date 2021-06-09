@@ -9,7 +9,7 @@ response::~response() {
 
 //-------------------------------------- GENERATE functions --------------------------------------
 void    response::allocate_size(std::string requested_file) {
-    int size = 100 + requested_file.size();
+    int size = 500 + requested_file.size();
     _response.reserve(size);
 }
 

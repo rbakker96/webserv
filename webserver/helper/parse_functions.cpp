@@ -54,7 +54,6 @@ vector    str_to_vector(std::string request) {
     size_t      pos = 0;
     std::string value;
 
-
     while ((int)(pos = request.find_first_of('\r')) != -1) {
         value = request.substr(0, pos);
         request_elements.push_back(value);

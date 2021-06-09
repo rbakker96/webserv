@@ -24,7 +24,7 @@ void    webserver::load_configuration(char *config_file) {
     std::vector<std::string>    server_block;
     server                      server;
     char                        *line = NULL;
-    int                         ret;
+    int                         ret = 0;
     int                         fd = open(config_file, O_RDONLY);
 
 	if (fd == -1)
@@ -122,7 +122,7 @@ void    webserver::run() {
                     if (fd.rdy_for_reading(client_current->_clientFD)) //handle requested file
                     {
                     	std::string request_headers;
-                        read_browser_request(request_headers, client_current->_clientFD);
+                    	read_browser_request(request_headers, client_current->_clientFD);
                         if (!request_headers.empty()) {
                             _time_out_check = false;
                             fd.set_time_out(client_current->_clientFD);
@@ -181,14 +181,14 @@ void    webserver::run() {
                             client_current->_handler.create_response(client_current->_fileFD, server->_server_name);
                         client_current->_handler.send_response(client_current->_clientFD);
 
-                        //PROGRESS MONITOR
-                        std::cout << GREEN << "ACTIVE CLIENTS [" << server->_clients.size() << "] CLIENT [" << client_current->_clientFD << "] RESPONSE [" << client_current->_handler.get_bytes_written() << "] RESPONSE NB [" << response_count << "]" << RESET << std::endl;
-
 						if (client_current->_handler.get_bytes_written() < (int)client_current->_handler.get_response_size())
 							continue;
 						client_current->_handler.set_bytes_written(0);
 						fd.send_response_update(server->_clients[client_index]);
 						fd.update_active_client(server->_clients, client_current->_clientFD);
+
+						//PROGRESS MONITOR
+						std::cout << GREEN << "RESPONSE NB [" << response_count << "]" << RESET << std::endl;
 
                         response_count++;
                     }

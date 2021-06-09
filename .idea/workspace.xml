@@ -1,0 +1,207 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="CMakeRunConfigurationManager" shouldGenerate="true" shouldDeleteObsolete="true">
+    <generated>
+      <config projectName="webserver" targetName="webserver" />
+    </generated>
+  </component>
+  <component name="CMakeSettings">
+    <configurations>
+      <configuration PROFILE_NAME="Debug" CONFIG_NAME="Debug" ENABLED="true" />
+    </configurations>
+  </component>
+  <component name="ChangeListManager">
+    <list default="true" id="007a8f7d-b85e-4a2f-9cfc-d199fd51f253" name="Default Changelist" comment="changed a few naming &amp; updated send response function">
+      <change beforePath="$PROJECT_DIR$/Makefile" beforeDir="false" afterPath="$PROJECT_DIR$/Makefile" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/configuration_files/valid/default.conf" beforeDir="false" afterPath="$PROJECT_DIR$/configuration_files/valid/default.conf" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/configuration_files/valid/test.conf" beforeDir="false" afterPath="$PROJECT_DIR$/configuration_files/valid/test.conf" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/webserver/helper/parse_functions.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/webserver/helper/parse_functions.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/webserver/server/header_handler.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/webserver/server/header_handler.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/webserver/server/response.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/webserver/server/response.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/webserver/server/server.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/webserver/server/server.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/webserver/server/webserver.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/webserver/server/webserver.cpp" afterDir="false" />
+    </list>
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="ClangdSettings">
+    <option name="formatViaClangd" value="false" />
+  </component>
+  <component name="ExecutionTargetManager" SELECTED_TARGET="CMakeBuildProfile:Debug" />
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="CMakeLists.txt" />
+      </list>
+    </option>
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="GitSEFilterConfiguration">
+    <file-type-list>
+      <filtered-out-file-type name="LOCAL_BRANCH" />
+      <filtered-out-file-type name="REMOTE_BRANCH" />
+      <filtered-out-file-type name="TAG" />
+      <filtered-out-file-type name="COMMIT_BY_MESSAGE" />
+    </file-type-list>
+  </component>
+  <component name="ProjectId" id="1qTrde5rcdQBaobyC5UWk6MX8gU" />
+  <component name="ProjectLevelVcsManager" settingsEditedManually="true">
+    <ConfirmationsSetting value="2" id="Add" />
+  </component>
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent">
+    <property name="ASKED_ADD_EXTERNAL_FILES" value="true" />
+    <property name="RunOnceActivity.OpenProjectViewOnStart" value="true" />
+    <property name="RunOnceActivity.ShowReadmeOnStart" value="true" />
+    <property name="RunOnceActivity.cidr.known.project.marker" value="true" />
+    <property name="WebServerToolWindowFactoryState" value="false" />
+    <property name="cf.first.check.clang-format" value="false" />
+    <property name="cidr.known.project.marker" value="true" />
+    <property name="cmake.loaded.for.project" value="true" />
+    <property name="last_opened_file_path" value="$USER_HOME$/Desktop/ft_containers" />
+    <property name="nodejs_package_manager_path" value="npm" />
+    <property name="restartRequiresConfirmation" value="false" />
+    <property name="settings.editor.selected.configurable" value="preferences.lookFeel" />
+  </component>
+  <component name="RecentsManager">
+    <key name="CopyFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/server_files/www/downloads" />
+      <recent name="$PROJECT_DIR$/server_files/www/downloads/test" />
+      <recent name="$PROJECT_DIR$" />
+      <recent name="$PROJECT_DIR$/practice_CGI" />
+      <recent name="$PROJECT_DIR$/images" />
+    </key>
+    <key name="MoveFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/server_files/www/downloads" />
+      <recent name="$PROJECT_DIR$/server_files/www" />
+      <recent name="$PROJECT_DIR$/server_files" />
+      <recent name="$PROJECT_DIR$" />
+    </key>
+  </component>
+  <component name="RunManager">
+    <configuration name="webserver" type="CMakeRunConfiguration" factoryName="Application" PROGRAM_PARAMS="configuration_files/valid/test.conf" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" WORKING_DIR="file://$PROJECT_DIR$/" PASS_PARENT_ENVS_2="true" PROJECT_NAME="webserver" TARGET_NAME="webserver" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="webserver" RUN_TARGET_NAME="webserver">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+  </component>
+  <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="007a8f7d-b85e-4a2f-9cfc-d199fd51f253" name="Default Changelist" comment="" />
+      <created>1617114512097</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1617114512097</updated>
+      <workItem from="1617114514312" duration="638000" />
+      <workItem from="1617200538140" duration="3306000" />
+      <workItem from="1617297118739" duration="252000" />
+      <workItem from="1617297439689" duration="211000" />
+      <workItem from="1617702209649" duration="22000" />
+      <workItem from="1617710162689" duration="346000" />
+      <workItem from="1617710553460" duration="1647000" />
+      <workItem from="1618217017307" duration="562000" />
+      <workItem from="1618217788508" duration="5747000" />
+      <workItem from="1618224888154" duration="2000" />
+      <workItem from="1618227850199" duration="5989000" />
+      <workItem from="1618392951653" duration="5104000" />
+      <workItem from="1618820429784" duration="514000" />
+      <workItem from="1618823741082" duration="2858000" />
+      <workItem from="1618925715173" duration="237000" />
+      <workItem from="1618926569410" duration="3253000" />
+      <workItem from="1618930811773" duration="3684000" />
+      <workItem from="1618938328557" duration="7000" />
+      <workItem from="1618992899167" duration="23478000" />
+      <workItem from="1619023138282" duration="15000" />
+      <workItem from="1619610522694" duration="58000" />
+      <workItem from="1619610649436" duration="148000" />
+      <workItem from="1619610897266" duration="6081000" />
+      <workItem from="1620056860612" duration="1166000" />
+      <workItem from="1620294091667" duration="406000" />
+      <workItem from="1620294510012" duration="300000" />
+      <workItem from="1620299453367" duration="13866000" />
+      <workItem from="1620314479646" duration="681000" />
+      <workItem from="1620315185530" duration="37000" />
+      <workItem from="1620657213895" duration="1827000" />
+      <workItem from="1620659233284" duration="4000" />
+      <workItem from="1620659328218" duration="10000" />
+      <workItem from="1620659387673" duration="61000" />
+      <workItem from="1620659564793" duration="248000" />
+      <workItem from="1620660294647" duration="5000" />
+      <workItem from="1620921828148" duration="204000" />
+      <workItem from="1622448906627" duration="815000" />
+      <workItem from="1622449745816" duration="7435000" />
+      <workItem from="1622468374122" duration="1932000" />
+      <workItem from="1622538917622" duration="1619000" />
+      <workItem from="1622543944566" duration="11271000" />
+      <workItem from="1622625468313" duration="1491000" />
+      <workItem from="1622631514448" duration="1161000" />
+      <workItem from="1622632704433" duration="6502000" />
+      <workItem from="1622641320970" duration="23000" />
+      <workItem from="1622644414116" duration="5457000" />
+      <workItem from="1622661995732" duration="1640000" />
+      <workItem from="1622664010298" duration="180000" />
+      <workItem from="1622664253541" duration="249000" />
+      <workItem from="1622664551387" duration="2636000" />
+      <workItem from="1622707904749" duration="14479000" />
+      <workItem from="1622725692797" duration="182000" />
+      <workItem from="1622725913720" duration="1658000" />
+      <workItem from="1622797486724" duration="113000" />
+    </task>
+    <task id="LOCAL-00001" summary="update nullptr to NULL">
+      <created>1618927829594</created>
+      <option name="number" value="00001" />
+      <option name="presentableId" value="LOCAL-00001" />
+      <option name="project" value="LOCAL" />
+      <updated>1618927829594</updated>
+    </task>
+    <task id="LOCAL-00002" summary="renamed handler to header_handler &amp; location to file_location">
+      <created>1618931155479</created>
+      <option name="number" value="00002" />
+      <option name="presentableId" value="LOCAL-00002" />
+      <option name="project" value="LOCAL" />
+      <updated>1618931155479</updated>
+    </task>
+    <task id="LOCAL-00003" summary="changed a few naming &amp; updated send response function">
+      <created>1619007847630</created>
+      <option name="number" value="00003" />
+      <option name="presentableId" value="LOCAL-00003" />
+      <option name="project" value="LOCAL" />
+      <updated>1619007847630</updated>
+    </task>
+    <option name="localTasksCounter" value="4" />
+    <servers />
+  </component>
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="version" value="3" />
+  </component>
+  <component name="Vcs.Log.Tabs.Properties">
+    <option name="TAB_STATES">
+      <map>
+        <entry key="MAIN">
+          <value>
+            <State />
+          </value>
+        </entry>
+      </map>
+    </option>
+    <option name="oldMeFiltersMigrated" value="true" />
+  </component>
+  <component name="VcsManagerConfiguration">
+    <MESSAGE value="update nullptr to NULL" />
+    <MESSAGE value="renamed handler to header_handler &amp; location to file_location" />
+    <MESSAGE value="changed a few naming &amp; updated send response function" />
+    <option name="LAST_COMMIT_MESSAGE" value="changed a few naming &amp; updated send response function" />
+  </component>
+  <component name="XSLT-Support.FileAssociations.UIState">
+    <expand />
+    <select />
+  </component>
+</project>

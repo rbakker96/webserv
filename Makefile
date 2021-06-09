@@ -59,12 +59,12 @@ $(NAME): $(OBJECTS)
 	@echo "----------------------------------------------------$(RESET)"
 
 %.o: %.cpp
-	@echo "$(GREY)Compiling...				$(WHITE)$<"
+	@echo "$(GREY)Compiling...	$(GREY)$<"
 	@$(COMPILE) $(FLAGS) -c -o $@ $<
 
 clean:
 	@echo "$(RED)----------------------------------------------------"
-	@echo "$(WHITE)DELETE ./webserv"
+	@echo "$(GREY)DELETE ./webserv"
 	@echo "$(RED)----------------------------------------------------"
 	@/bin/rm -f $(NAME) $(TEMP_FILES) $(OBJECTS)
 

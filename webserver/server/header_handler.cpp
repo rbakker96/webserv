@@ -495,7 +495,7 @@ void header_handler::execute_cgi(int inputFD, int outputFD, std::string server_n
 			char	**args = create_cgi_args();
 			char 	**envp = create_cgi_envp(server_name, server_port, auth_status, auth_info);
 
-			if (write(inputFD, _body.c_str(), _body.size()) == -1 ||
+			if (write(inputFD, _body.c_str(), _body.size()) != (int)_body.size() ||
 			lseek(inputFD, 0, SEEK_SET) == -1 ||
 			dup2(inputFD, STDIN_FILENO) == -1 ||
 			dup2(outputFD, STDOUT_FILENO) == -1 ||
@@ -551,8 +551,8 @@ char	**header_handler::create_cgi_args()
 	if (_file_location.find(".php") != std::string::npos)
 		args[0] = ft_strdup("/usr/bin/php");
 	else if (_file_location.find(".bla") != std::string::npos)
-		args[0] = ft_strjoin(server_root, "/tester_executables/cgi_tester");
-//		args[0] = ft_strjoin(server_root, "/tester_executables/ubuntu_cgi_tester");
+//		args[0] = ft_strjoin(server_root, "/tester_executables/cgi_tester");
+		args[0] = ft_strjoin(server_root, "/tester_executables/ubuntu_cgi_tester");
 
 	char *tmp = ft_strjoin(server_root, "/");
 	args[1] = ft_strjoin(tmp, _file_location.c_str());
