@@ -104,17 +104,16 @@ void    webserver::run() {
                 fd.accepted_request_update(newFD);
                 server->_clients.push_back(client(newFD));
 
-                if (server->_clients.size() == 1) {
-					std::cout << CYAN << "ACTIVATED\n" << RESET;
+                if (server->_clients.size() == 1)
                 	server->_clients.begin()->_active = true;
-				}
             }
 
             for (size_t client_index = 0;  client_index < server->_clients.size(); client_index++) {
                 client *client_current = &server->_clients[client_index];
 
                 try {
-					_time_out_check = (server->_request_buffer[client_current->_clientFD].get_body_size() != 0 || client_current->_handler.get_bytes_written()) ? false : true;
+					_time_out_check = ((server->_request_buffer.find(client_current->_clientFD) != server->_request_buffer.end() && server->_request_buffer[client_current->_clientFD].get_body_size() != 0)
+										|| client_current->_handler.get_bytes_written()) ? false : true;
 
                 	if (client_current->_active == false)
                 		continue;
@@ -188,7 +187,7 @@ void    webserver::run() {
 						fd.update_active_client(server->_clients, client_current->_clientFD);
 
 						//PROGRESS MONITOR
-						std::cout << GREEN << "RESPONSE NB [" << response_count << "]" << RESET << std::endl;
+						std::cout << GREEN << "ACTIVE CLIENTS [" << server->_clients.size() << "] CLIENT [" << client_current->_clientFD <<  "] RESPONSE NB [" << response_count << "]" << RESET << std::endl;
 
                         response_count++;
                     }

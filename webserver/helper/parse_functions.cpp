@@ -69,8 +69,8 @@ void read_browser_request(std::string &request, int fd) {
 
     request.reserve(1);
     ret = read(fd, buff, 6000000);
+	if (ret == -1)
+		throw (std::string("Read browser request failed"));
     buff[ret] = '\0';
     request.append(buff, ret);
-    if (ret == -1)
-        throw (std::string("Read browser request failed"));
 }
